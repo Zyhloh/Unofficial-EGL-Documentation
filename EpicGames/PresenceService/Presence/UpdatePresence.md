@@ -2,9 +2,11 @@
 
 Overlay presence publish. Sent on Epic Connect connect, on status / party changes, and as a heartbeat every 15-30 min (random). Identical payloads on the same connection are throttled for 60s. Skipped while Epic Connect is down. The manual status picker sends `statusSettings` and no `party`.
 
+Required for party voice: a client that never publishes presence shows as Offline to friends and EGL hides its party invites. Publish right after the Epic Connect connection exists and again after creating the party.
+
 URL: https://api.epicgames.dev/epic/presence/internal/v1/:namespace/:accountId/presence/:connectionId \
 Method: POST \
-Auth Required: Yes (Bearer elevated EG1 access token)
+Auth Required: Yes (Bearer EG1 access token, any client)
 
 ## Headers
 `Content-Type`: application/json <br/>
@@ -16,29 +18,38 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 ## Path Parameters
 `namespace`: Always `_` in the overlay <br/>
 `accountId`: Your account id <br/>
-`connectionId`: Epic Connect `connectionId` from `core.connect.v1.connected` <br/>
+`connectionId`: Epic Connect `connectionId` (STOMP `CONNECTED` `session` header) <br/>
 
 ## Body
+Body a standalone client sent after creating its party (accepted; friends saw it online and EGL showed the invite):
 ```json
 {
   "status": "online",
-  "statusSettings": { "mode": "manual_set" },
   "party": {
-    "id": "...",
-    "type": "OPEN",
-    "timestamp": "2026-10-14T00:00:00.000Z",
-    "memberCount": 2,
+    "id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
+    "type": "INVITE_ONLY",
+    "timestamp": "2026-10-14T16:53:45.111Z",
+    "memberCount": 1,
     "clientJoinable": true
   },
   "conn": { "props": {} }
 }
 ```
 
-`status`: `online` / `away` (manual picker may also send other values). `statusSettings.mode`: `manual_set`, or `manual_unset` when going back to `online`. `party` omitted when parties are disabled; without an active multi-member party it carries only the default joinability (`type`, `timestamp`, `clientJoinable`). The response field `own` is a presence object (same shape as `presence.v1.UPDATE`).
+Overlay body with the manual status picker (from the client code):
+```json
+{
+  "status": "away",
+  "statusSettings": { "mode": "manual_set" },
+  "conn": { "props": {} }
+}
+```
+
+`status`: `online` / `away` (manual picker may also send other values). `statusSettings.mode`: `manual_set`, or `manual_unset` when going back to `online`. `party` omitted when parties are disabled; without an active party it carries only the default joinability (`type`, `timestamp`, `clientJoinable`). `party.type` is the party `joinability`, `timestamp` the party `created_at`.
 
 ---
 
-_Example Response (shape from client; only `own` is read)_
+_Example Response (not captured; shape from client, only `own` is read)_
 
 ```json
 {
@@ -46,8 +57,10 @@ _Example Response (shape from client; only `own` is read)_
     "accountId": "94b1569506b04f9f8557af611e8c5e47",
     "status": "online",
     "perNs": [
-      { "ns": "_", "status": "online", "party": { "id": "...", "joinable": true, "invitable": true, "memberCount": 2 }, "conns": [] }
+      { "ns": "_", "status": "online", "party": { "joinable": false, "invitable": true }, "conns": [] }
     ]
   }
 }
 ```
+
+Friends receive the result as `presence.v1.UPDATE` over Epic Connect ([Connect](../../../Launcher/Social/Connect.md#presencev1update-payload)).

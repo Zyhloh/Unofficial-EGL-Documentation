@@ -1,6 +1,6 @@
 ## Public Key Service - Public Key: Get Signing Keys
 
-Keys that sign the public key JWTs. Fetched once and cached; used to verify every incoming chat message.
+Keys that sign the public key JWTs (`kid` `20230621` seen on voice moderation JWTs). Fetched once and cached by the overlay; used to verify every incoming chat message.
 
 URL: https://publickey-service-prod.ecbc.live.use1a.on.epicgames.com/publickey/v2/publickey/signing \
 Method: GET \

@@ -1,6 +1,6 @@
 ## RTC Service - Room: Kick Participant
 
-SDK operation `RemoveParticipant`, behind `EOS_RTCAdmin_Kick`. Not used by the launcher. The kicked client receives a `kick_user` control message ([RTC Signaling](../../../Launcher/Voice/RTCSignaling.md)).
+SDK operation `RemoveParticipant`, behind `EOS_RTCAdmin_Kick`. Not used by the launcher or by party voice: party voice credentials come from the Party Service ([Get Voice Room Connection](../../PartyService/Conferences/ConnectVoiceRoom.md)). The kicked client receives a `kick_user` control message ([RTC Signaling](../../../Launcher/Voice/RTCSignaling.md)).
 
 URL: https://api.epicgames.dev/rtc/v1/:deploymentId/room/:roomId/participants/:puid \
 Method: DELETE \

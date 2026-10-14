@@ -1,13 +1,12 @@
 ## Party Service - Users: Get Parties Summary
 
-Current party, pending invites (both directions) and join requests of the signed-in user. Fetched on overlay start (`fetch-initial-party-data`), on `party.v2.MEMBER_REFRESH_SUMMARY`, before create/join (to leave the old party) and by `reconcile-active-party`.
+Current party, pending invites (both directions) and join requests of the signed-in user. Fetched on overlay start (`fetch-initial-party-data`), on `party.v2.MEMBER_REFRESH_SUMMARY`, before create/join (to leave the old party) and by `reconcile-active-party`. A standalone client calls it first and leaves `current` before creating a party (one party per account).
 
 URL: https://api.epicgames.dev/epic/party/internal/v2/users/:accountId \
 Method: GET \
-Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.getsignedinuser().accesstoken`)
+Auth Required: Yes (Bearer EG1 access token, any client)
 
 ## Headers
-`Content-Type`: application/json <br/>
 `X-Epic-Agent`: epic-social <br/>
 `X-EPIC-CORRELATION-ID`: random UUID v4 <br/>
 
@@ -18,74 +17,41 @@ Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.get
 
 ---
 
-_Example Response (shape from client)_
+_Example Response (not in a party)_
+
+```json
+{
+  "invites": [],
+  "join_requests": []
+}
+```
+
+_Example Response (in a party; `current` is the party object from [Get Party](../Parties/GetParty.md), invite entries as returned by [Send Party Invite](../Invites/SendInvite.md); populated summary not captured)_
 
 ```json
 {
   "current": {
-    "id": "a3f6c2d1e9b84f7a8c5d0e1f2a3b4c5d",
-    "created_at": "2026-10-14T16:00:00.000Z",
-    "updated_at": "2026-10-14T16:00:00.000Z",
-    "is_reportable": true,
-    "chat_conversation_id": "ep-a3f6c2d1e9b84f7a8c5d0e1f2a3b4c5d",
-    "source_chat_conversation_id": null,
-    "meta": {
-      "created_by": "94b1569506b04f9f8557af611e8c5e47"
-    },
-    "revision": 1,
-    "members": [
-      {
-        "account_id": "94b1569506b04f9f8557af611e8c5e47",
-        "connections": [
-          {
-            "id": "b1e2c3d4a5f60718293a4b5c6d7e8f90",
-            "connected_at": "2026-10-14T16:00:00.000Z",
-            "updated_at": "2026-10-14T16:00:00.000Z",
-            "is_first_party": true,
-            "local_play_enabled": false,
-            "account_pl": "egs",
-            "account_pl_dn": "Player",
-            "meta": {
-              "osName": "Windows",
-              "platformName": "egs",
-              "productName": "Epic Games Launcher"
-            }
-          }
-        ],
-        "joined_at": "2026-10-14T16:00:00.000Z",
-        "updated_at": "2026-10-14T16:00:00.000Z",
-        "meta": {
-          "active_voice_connection": "b1e2c3d4a5f60718293a4b5c6d7e8f90",
-          "platform_name": "Windows",
-          "product_name": "Epic Games Launcher"
-        },
-        "revision": 2,
-        "suspended": false
-      }
-    ],
+    "id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
     "party_lead": "94b1569506b04f9f8557af611e8c5e47",
-    "config": {
-      "joinability": "OPEN",
-      "max_size": 16,
-      "discoverability": "..."
-    }
+    "config": { "joinability": "INVITE_ONLY", "max_size": 16 },
+    "meta": { "created_by": "94b1569506b04f9f8557af611e8c5e47" },
+    "revision": 0,
+    "chat_conversation_id": "ep-2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
+    "is_reportable": false,
+    "members": []
   },
   "invites": [
     {
-      "sent_by": "1b8b8b2f4f3a4e6c9d0e5a7f2c4b6d81",
-      "sent_to": "94b1569506b04f9f8557af611e8c5e47",
-      "party_id": "a3f6c2d1e9b84f7a8c5d0e1f2a3b4c5d",
-      "expires_at": "2026-10-15T16:00:00.000Z",
+      "party_id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
+      "sent_by": "94b1569506b04f9f8557af611e8c5e47",
       "auto": false,
-      "group_id": null
+      "meta": {},
+      "sent_to": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+      "sent_at": "2026-10-14T16:53:45.315Z",
+      "updated_at": "2026-10-14T16:53:45.315Z",
+      "expires_at": "2026-10-14T17:53:45.315Z"
     }
   ],
-  "join_requests": [
-    {
-      "requester_id": "1b8b8b2f4f3a4e6c9d0e5a7f2c4b6d81",
-      "expires_at": "2026-10-14T16:05:00.000Z",
-      "auto": false
-    }
-  ]
+  "join_requests": []
 }
 ```

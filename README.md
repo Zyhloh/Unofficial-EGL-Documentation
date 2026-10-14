@@ -17,6 +17,8 @@ See [Architecture](./Launcher/Architecture.md) for how the launcher is put toget
 
 Start with the [sign in flow](./Launcher/Flows/SignIn.md) to see how the launcher gets its tokens, and the [OAuth clients](./Launcher/Auth/Clients.md) it uses.
 
+Party voice chat works end to end outside the launcher: start with the [Voice Chat flow](./Launcher/Flows/VoiceChat.md) and the [reference client](./Launcher/Voice/ReferenceClient.md).
+
 Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
 
 ## Content
@@ -89,16 +91,21 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
     - [Artwork](./Launcher/Library/Artwork.md)
     - [External Sources](./Launcher/Library/ExternalSources.md)
   - [Voice](./Launcher/Voice)
-    - [Native Bridge](./Launcher/Voice/NativeBridge.md)
+    - [Reference Client](./Launcher/Voice/ReferenceClient.md)
     - [RTC Signaling](./Launcher/Voice/RTCSignaling.md)
-    - [Settings](./Launcher/Voice/Settings.md)
+    - [Media](./Launcher/Voice/Media.md)
+    - [Audio Signing](./Launcher/Voice/AudioSigning.md)
     - [Moderation](./Launcher/Voice/Moderation.md)
+    - [Settings](./Launcher/Voice/Settings.md)
+    - [Native Bridge](./Launcher/Voice/NativeBridge.md)
   - [Social Overlay](./Launcher/Social)
     - [Overview](./Launcher/Social/Overview.md)
     - [Bridge](./Launcher/Social/Bridge.md)
     - [Connect (WebSocket)](./Launcher/Social/Connect.md)
     - [GraphQL](./Launcher/Social/GraphQL.md)
     - [Message Signing](./Launcher/Social/Signing.md)
+- [Examples](./Examples)
+  - [Voice Client](./Examples/VoiceClient)
 - [Third Party](./ThirdParty)
   - [IGDB](./ThirdParty/IGDB)
   - [LaunchDarkly](./ThirdParty/LaunchDarkly)

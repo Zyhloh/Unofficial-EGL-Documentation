@@ -6,30 +6,83 @@ Epic Connect is the realtime push channel: STOMP over WebSocket. The overlay ope
 
 URL: `wss://connect.ol.epicgames.com/?auth-token=<elevated token>&avatarFnDeploymentId=62a9473a2dca46b29ccf17577fcf42d7&accept-language=<locale>`
 
-- `auth-token` is the elevated (EG1) access token (`account-info.elevatedToken`).
+- `auth-token` is the EG1 access token (`account-info.elevatedToken`); any client's EG1 token works.
 - Any `wss://`, `ws://`, `https://`, `http://` prefix in the configured URL is stripped and replaced with `wss://`.
 - WebSocket subprotocols offered: `v12.stomp`, `v11.stomp`, `v10.stomp`.
-- No STOMP CONNECT headers besides the defaults: `accept-version: 1.2,1.1,1.0`, `heart-beat: 45000,0` (client sends a heartbeat every 45s, expects none).
+- No STOMP CONNECT headers besides the defaults: `accept-version: 1.2,1.1,1.0`, `heart-beat: 45000,0` (client sends a heartbeat every 45s, expects none). The server answers `heart-beat:0,45000`.
 
 ### Flow
 
-1. Open the socket, send `CONNECT`, receive `CONNECTED`.
+1. Open the socket, send `CONNECT`, receive `CONNECTED`. The `session` header of `CONNECTED` is the connection id.
 2. `SUBSCRIBE` with `id: sub-0`, `destination: <uuid>/account/<accountId>`. The prefix is a `crypto.randomUUID()` generated per client instance (the code names it `deployment`).
-3. Every `MESSAGE` body is JSON. The first one is `core.connect.v1.connected`; its `connectionId` is stored as `epicConnectId` and used as the presence connection id ([Update Presence](../../EpicGames/PresenceService/Presence/UpdatePresence.md)).
+3. Every `MESSAGE` body is JSON. The first one is `core.connect.v1.connected`; its `connectionId` (same value as `session`) is stored as `epicConnectId` and used as the presence connection id ([Update Presence](../../EpicGames/PresenceService/Presence/UpdatePresence.md)) and the party connection id ([Create Party](../../EpicGames/PartyService/Parties/CreateParty.md)).
 4. Reconnect on drop: delay `min(500ms * 2^attempt, 5min) * (0.8..1.2)`; STOMP `ERROR` frames carry `{ statusCode, message, type, correlationId }` and only status codes `4003`, `4004`, `4006`, `4009` are retried. A token or locale change forces a full reconnect.
+
+Any EG1 token works (a standalone client with a `launcherAppClient2` token received the same events). Server frames can be binary WebSocket messages; decode as UTF-8 and strip the trailing NUL.
+
+### Captured frames
+
+```
+CONNECT
+accept-version:1.2,1.1,1.0
+heart-beat:45000,0
+
+^@
+```
+
+```
+CONNECTED
+version:1.2
+heart-beat:0,45000
+session:3a9c51fffe7d2e48-00000001-0007c2d4-5b1e9f0a7c3d2b6e-4f8a1c2d
+
+^@
+```
+
+```
+SUBSCRIBE
+id:sub-0
+destination:20d0a958-8dd0-490a-bb7f-fe8939e7be44/account/94b1569506b04f9f8557af611e8c5e47
+
+^@
+```
+
+```
+MESSAGE
+destination:20d0a958-8dd0-490a-bb7f-fe8939e7be44/account/94b1569506b04f9f8557af611e8c5e47
+subscription:sub-0
+message-id:6f2b8c1e-4d7a-4e93-b5c0-1a9d3e7f2b64
+content-type:application/json
+content-length:195
+
+{"correlationId":"d2d7de01-db20-4daa-ba85-f71bcc689c6e","timestamp":1791996819605,"connectionId":"3a9c51fffe7d2e48-00000001-0007c2d4-5b1e9f0a7c3d2b6e-4f8a1c2d","type":"core.connect.v1.connected"}^@
+```
+
+The connection id format is `<16 hex>-<8 hex>-<8 hex>-<16 hex>-<8 hex>`. Fortnite (EOS) connections append `#sub-eas-<n>` / `#sub-eas-private-<n>`.
 
 ### Message envelope
 
 ```json
 {
-  "id": "6a7c3f0e-...",
-  "type": "presence.v1.UPDATE",
-  "connectionId": "94b1569506b04f9f8557af611e8c5e47",
-  "correlationId": "...",
-  "timestamp": 1728900000000,
-  "payload": {}
+  "correlationId": "31e2f66b-2d79-4da9-828c-6e01a0c06c24",
+  "timestamp": 1791996825167,
+  "id": "NzE0YjJlOGQ1YzNhNDZmMT",
+  "connectionId": "3a9c51fffe7d2e48-00000001-0007c2d4-5b1e9f0a7c3d2b6e-4f8a1c2d",
+  "payload": {
+    "namespace": "_",
+    "metadata": { "partyId": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f" },
+    "conversationId": "ep-2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
+    "type": "epic_party",
+    "members": [ "94b1569506b04f9f8557af611e8c5e47" ],
+    "isReportable": false,
+    "dateCreated": "2026-10-14T16:53:45.123Z",
+    "isActive": true
+  },
+  "type": "social.chat.v1.CONVERSATION_CREATED"
 }
 ```
+
+`correlationId` echoes the `X-EPIC-CORRELATION-ID` of the REST call that caused the event (`EOS-<32 hex>` when an EOS SDK client caused it). `id` equals the STOMP `message-id` for most events.
 
 ### Message types handled
 
@@ -66,30 +119,53 @@ The client-only types `social.chat.v1.PENDING_MESSAGE`, `PENDING_MESSAGE_FAILED`
 
 ### presence.v1.UPDATE payload
 
+Captured (a friend playing Fortnite on Switch):
+
 ```json
 {
-  "accountId": "94b1569506b04f9f8557af611e8c5e47",
+  "accountId": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
   "status": "online",
   "perNs": [
     {
-      "ns": "_",
       "status": "online",
-      "statusManual": false,
-      "party": { "id": "...", "joinable": true, "invitable": true, "memberCount": 2 },
-      "conns": [ { "props": { "running_app_id": "...", "running_app_name": "..." } } ]
+      "activity": {},
+      "party": { "joinable": false, "invitable": true },
+      "ns": "_",
+      "conns": [
+        { "id": "8d2e47fffe1b9c63-00000001-05a1c3e7-2f6b8d0e4a9c7135-7e3d5b1a#sub-eas-private-1029384756", "props": {} }
+      ]
     },
     {
-      "ns": "<deployment>",
+      "productId": "prod-fn",
+      "appId": "fghi4567FNFBKFz3E4TROb0bmPS8h1GW",
       "status": "online",
-      "productId": "...",
-      "activity": { "value": "In Lobby" },
-      "props": { "EOS_ProductName": "...", "EOS_Platform": "...", "EOS_IntegratedPlatform": "EGS", "EOS_Lobby": "...", "EOS_Session": "...", "X_NonEOS_ProductName": "..." }
+      "activity": { "value": "Available" },
+      "ns": "62a9473a2dca46b29ccf17577fcf42d7",
+      "props": {
+        "EOS_ProductName": "Fortnite",
+        "EOS_ProductVersion": "++Fortnite+Release-42.30-CL-58557680",
+        "EOS_Platform": "SWT",
+        "EOS_IntegratedPlatform": "UNKNOWN",
+        "EOS_OnlinePlatformType": "2000",
+        "EOS_Session": "{\"version\":3}",
+        "EOS_Lobby": "{\"version\":3}",
+        "FortPartySize": "i1",
+        "FortSubGame": "i1",
+        "FortLFG": "i0",
+        "IsInZone": "bfalse",
+        "InUnjoinableMatch": "bfalse",
+        "IslandCode": "s",
+        "party.joininfodata.286331153": "m{\"bIsPrivate\":true}"
+      },
+      "conns": [
+        { "id": "8d2e47fffe1b9c63-00000001-05a1c3e7-2f6b8d0e4a9c7135-7e3d5b1a#sub-eas-1029384756", "props": {} }
+      ]
     }
   ]
 }
 ```
 
-_Shape from client_. Status values: `online`, `away`, `xa` (shown as away), `dnd` (shown as offline), `offline`. The `_` namespace carries party presence; the best non-`_` entry (ordered `online < away < dnd < xa`) supplies the game shown.
+Fortnite `props` values are type-prefixed strings (`i` int, `b` bool, `s` string, `m` JSON). After the friend joined an EGL party, `party.joininfodata.286331153` carried `m{"sDN":"ExampleFriend","sP":"SWT","p":"2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f-<n>-default","d":"Fortnite",...}`. Status values: `online`, `away`, `xa` (shown as away), `dnd` (shown as offline), `offline`. The `_` namespace carries party presence; the best non-`_` entry (ordered `online < away < dnd < xa`) supplies the game shown. Overlay-side fields read from the `_` entry also include `party.id`, `party.memberCount` and `conns[].props.running_app_id` / `running_app_name` (from the client code).
 
 ## Launcher connection (Rust)
 

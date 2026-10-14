@@ -11,3 +11,9 @@ This are some (not all) Hosts that you can access the Connect Service from
 Recommended Hosts:
 
 - connect.ol.epicgames.com
+
+| Method | Path | Page |
+| --- | --- | --- |
+| GET (WebSocket) | `/` | [Connect](WebSocket.md) |
+
+STOMP over WebSocket; authenticated with an EG1 token from any client. Message types: [Connect](../../Launcher/Social/Connect.md).

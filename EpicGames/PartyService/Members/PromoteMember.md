@@ -4,7 +4,7 @@ Makes another member party lead (`promote-party-member`).
 
 URL: https://api.epicgames.dev/epic/party/internal/v2/parties/:partyId/members/:accountId/promote \
 Method: POST \
-Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.getsignedinuser().accesstoken`)
+Auth Required: Yes (Bearer EG1 access token, any client; the overlay uses `window.ue.common.getsignedinuser().accesstoken`)
 
 ## Headers
 `Content-Type`: application/json <br/>

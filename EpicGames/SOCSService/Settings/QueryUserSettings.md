@@ -4,7 +4,7 @@ Loads the overlay settings once the account id and `osName` are known (`fetch-in
 
 URL: https://api.epicgames.dev/epic/socs/v1/users/:accountId/settings/query \
 Method: POST \
-Auth Required: Yes (Bearer elevated EG1 access token)
+Auth Required: Yes (Bearer EG1 access token, any client)
 
 ## Headers
 `Content-Type`: application/json <br/>
@@ -27,30 +27,37 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
   "settings": [
-    {
-      "id": "v1VoiceChatMode",
-      "default": "openMic",
-      "userOverrides": [
-        {
-          "scopes": { "v1Platform": "Windows", "v1DeploymentId": "d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f" },
-          "value": "pushToTalk"
-        }
-      ]
-    },
-    {
-      "id": "v1VoicePushToTalkKeybinding",
-      "default": "...",
-      "userOverrides": [
-        { "scopes": { "v1Platform": "Windows" }, "value": "CONTROL+V" }
-      ]
-    }
+    { "id": "v1AccessibilityAllowVoiceDictation", "userOverrides": [], "default": "false" },
+    { "id": "v1AccessibilityReadMessagesAloud", "userOverrides": [], "default": "false" },
+    { "id": "v1AgeVerificationChatRestrictionNotificationSeen", "userOverrides": [], "default": "false" },
+    { "id": "v1EpicPartiesProfileMoveHasSeenDisclosure", "userOverrides": [], "default": "true" },
+    { "id": "v1GlobalNicknamesHasSeenDisclosure", "userOverrides": [ { "scopes": {}, "value": "true" } ], "default": "false" },
+    { "id": "v1VoiceChatMode", "userOverrides": [], "default": "openMic" },
+    { "id": "v1VoiceChatReportingDisclosureAcceptanceStatus", "userOverrides": [ { "scopes": {}, "value": "seen-accepted" } ], "default": "never-shown" },
+    { "id": "v1VoiceInputDevice", "userOverrides": [], "default": "" },
+    { "id": "v1VoiceInputVolume", "userOverrides": [], "default": "50" },
+    { "id": "v1VoiceOutputDevice", "userOverrides": [], "default": "" },
+    { "id": "v1VoiceOutputVolume", "userOverrides": [], "default": "50" },
+    { "id": "v1VoicePushToTalkKeybinding", "userOverrides": [], "default": "" }
   ]
 }
 ```
 
-Resolution: the first `userOverrides` entry whose `scopes.v1Platform` matches (or is absent) wins, else `default`. Note the client's matcher has an operator-precedence quirk and in practice returns `userOverrides[0]`.
+A scoped override looks like (shape from client):
+
+```json
+{
+  "id": "v1VoiceChatMode",
+  "userOverrides": [
+    { "scopes": { "v1Platform": "Windows", "v1DeploymentId": "_" }, "value": "pushToTalk" }
+  ],
+  "default": "openMic"
+}
+```
+
+Resolution: the first `userOverrides` entry whose `scopes.v1Platform` matches (or is absent) wins, else `default`. Note the client's matcher has an operator-precedence quirk and in practice returns `userOverrides[0]`. Chime settings are absent from the response until written (missing = enabled).

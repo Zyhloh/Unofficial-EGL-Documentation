@@ -1,81 +1,397 @@
-# Voice - RTC Signaling And Media
+# Voice - RTC Signaling
 
-What the EOS SDK does on the wire once the overlay hands it `participantToken` / `roomName` / `clientBaseUrl`. Everything here comes from `EOSSDK-Win64-Shipping.dll` `1.19.4230.0-57929184@LauncherV2` (IDA, `LibRtc::*` and `Epic::OnlineServices::FRTC*`). No traffic was captured; field names are exact, values and ordering of a live session are not.
+The control channel between a party voice participant and the media server: a websocket to `client_base_url` from [Get Voice Room Connection](../../EpicGames/PartyService/Conferences/ConnectVoiceRoom.md). Every message below was captured on 2026-10-14, both from EGL's own EOS SDK (`1.19.4230.0-57929184@LauncherV2`, hooked) and from a standalone client that talked to EGL in both directions. Messages marked "not observed" come only from the SDK binary (`LibRtc::*`).
 
-## Stack
+Media (SDP / ICE / DTLS / RTP) is on [Media](Media.md), audio packet signing on [Audio Signing](AudioSigning.md), the end-to-end order on [Voice Chat](../Flows/VoiceChat.md).
+
+## Stack (EGL)
 
 | Layer | Implementation |
 | --- | --- |
 | Room API | `FRTCRoom` / `RTCRoomHelper`, source `PartiesInternalApi` (other sources: `RtcApi`, `LobbyApi`, `PartiesApi`) |
 | Client library | `LibRtc` (Epic, "RTCP"): `FConferenceService`, `FConnectionService`, `FMediaServiceClient`, `FRtcpConnection` |
-| Control channel | websocket (`FLwsWebSocket`, libwebsockets) to the media server, JSON messages with a `type` field |
-| Media | libwebrtc (`ThirdParty\WebRTC\7204`), one `PeerConnection` per room, Opus `opus/48000/2`, DTLS-SRTP, RTP/RTCP mux, SCTP data channel |
+| Control channel | websocket (`FLwsWebSocket`, libwebsockets), JSON text messages with a `type` field |
+| Media | libwebrtc (`ThirdParty\WebRTC\7204`), one `PeerConnection` per room, Opus, DTLS-SRTP, RTP/RTCP mux |
 | Audio I/O | XAudio2 (render) and RtAudio (capture) through `FRTCAudio`, WebRTC APM (AEC3 / NS / AGC1 or AGC2) |
 
-## Connect
+## Connection
 
-1. `PartyFeature::HandleConnectVoiceRoomIntent` receives `connect-voice-room` `{ participantToken, roomName, clientBaseUrl, roomSettings }`. One room per local user; a second room is refused (`Connection to multiple rooms is not supported`).
-2. `FRTCRoom::Join` stores `clientBaseUrl` as the requested media server URL (`MsUrlRequested`). `RTCSessionResolver` can map it to a different URL after a `transfer` (`MsUrlActual`, `UrlAndTokenReplaced`).
-3. The SDK parses the URL for analytics: a host containing `rtcp.on.epicgames.com` yields `RegionName`, a path segment starting `signaling-service-` yields `SignalingServiceType`. This is the only hint of the URL shape in the binary (`client_base_url` itself is opaque, needs a capture).
-4. LibRtc opens the control websocket (`[MediaService] Control channel connected`) and sends `join`.
-5. The server answers `join_res`. The client builds the remote SDP itself from it (inferred from the SDP template strings next to the `join_res` parser; no SDP field exists in any control message): `a=ice-lite`, `a=ice-ufrag` / `a=ice-pwd` from `ice`, `a=fingerprint` from `fingerprint`, one `a=candidate` per address from `ipv4` / `ipv6` with `udp_port`, `tcp_port`, `ssltcp_port`, Opus fmtp with `maxaveragebitrate`, `ptime`, `useinbandfec=1`. TURN entries (`turn:` / `turns:`) and the default STUN `stun:stun.l.google.com:19302` come from `ice.servers` / config.
-6. ICE + DTLS complete; `OnConferenceSignalingConnectionEstablished`, room status becomes connected and the SDK publishes the `voice-room` state to the overlay.
-7. Keep-alive on the control channel: `[MediaService] Start ping with interval %f`, `Ping Sent` / `Pong received`; a missed pong ends the session with `BrokenPingPong` and triggers reconnect (`ReconnectionAttemptsStarted`, bounded by attempt count and timeout).
+- Open `client_base_url` unchanged (`wss://signaling-service-prod.<region>.live.rtcp.on.epicgames.com/ws?ms=...&p=epicparty&t=...`). No extra headers or subprotocols needed.
+- Frames are text, one JSON object per frame, no envelope besides `type`.
+- Keepalive: a text frame containing a single space `" "`, every 5s, in both directions. The server also sends `" "`; ignore it.
+- Do not send WebSocket ping control frames: the server closes the socket with `1002` (protocol error). Disable library auto-ping.
+- Close: send `user_left` for yourself, then close the socket.
 
-## Control messages
+Captured order (standalone client joining a room where EGL already was):
 
-Client to server (type table at `0x18222FCF0`):
+1. client `join`
+2. server `dominant_speaker` (current speaker, can arrive before `join_res`)
+3. server `join_res`
+4. client `join_update` (DTLS fingerprint), then ICE / DTLS / SRTP start ([Media](Media.md))
+5. server `user_joined` for the participant already in the room (about 100ms after `join_res`)
+6. client `subscribe` for that participant
+7. server `mute_audio`, `audio_only`, `network_status`, `speaking` as state changes
+
+`join_res.users` was `[]` in every capture, including joins into a room that already had a participant; existing participants arrived as `user_joined`. Handle both: subscribe to every entry of `join_res.users[]` and to every `user_joined`.
+
+## Client -> server
+
+### join
+
+Sent by EGL:
+
+```json
+{
+  "type": "join",
+  "ticket": "<jwt>",
+  "user_token": "94b1569506b04f9f8557af611e8c5e47",
+  "options": [
+    "subscribe",
+    "dtx",
+    "rtcp_rsize",
+    "new_audio_only_reasons",
+    "v2",
+    "unified_plan",
+    "speaking",
+    "speaking_self_only",
+    "ras_csrc",
+    "reserved_audio_streams",
+    "signed_audio"
+  ],
+  "version": "1.19.4230.0-57929184@LauncherV2",
+  "device": {
+    "os": "Windows",
+    "model": "",
+    "manufacturer": "",
+    "online_platform_type": "0"
+  },
+  "status": {
+    "is_muted": 1,
+    "audio_muted_reason": 1,
+    "is_audio_only": 1,
+    "reason_enum": 6,
+    "is_screencast": 0
+  },
+  "connection_id": "B5BE40C1389FCEA61DF04E587C8C1833",
+  "video": {
+    "width": 0,
+    "height": 0,
+    "codecs": []
+  },
+  "voice_moderation": {
+    "signed_public_key": "<jwt>"
+  }
+}
+```
+
+| Field | Notes |
+| --- | --- |
+| `ticket` | `participant_token` from the Party Service |
+| `user_token` | own account id (= token `clientId`) |
+| `options` | conference features (`FMediaServiceClientImpl::GenerateConferenceFeatures`). `signed_audio` only with `voice_moderation` |
+| `version` | SDK version string; the standalone client sent the same value |
+| `device.online_platform_type` | `"0"` on Windows |
+| `status` | initial state. `is_audio_only: 1` + `reason_enum: 6` = no video. EGL joins muted (`is_muted: 1`, `audio_muted_reason: 1`) and unmutes right after `join_update`; joining with `is_muted: 0`, `audio_muted_reason: 0` also works |
+| `connection_id` | random 32 hex chars, uppercase, new per join |
+| `voice_moderation.signed_public_key` | JWT from [Register Public Key](../../EpicGames/PublicKeyService/PublicKey/Register.md). Omitted together with `signed_audio` for an unmoderated join |
+
+The first participant fixes the room's moderation mode. Always join with `signed_audio` + `signed_public_key`: a room created by an unmoderated join makes every later EGL join fail with `VoiceModerationModeMismatch` ("Unable to connect to voice chat"). See [Moderation](Moderation.md#voice-moderation-key).
+
+Fields in the SDK serializer that were not sent: `data_streams [{ ordered, protocol, type, id }]`, `reserved_audio_streams_max_pool_size`, `test { force_proximity_radius }`, `voice_moderation.mode`.
+
+### join_update
+
+Sent once after `join_res`, carrying the client's DTLS certificate fingerprint:
+
+```json
+{
+  "type": "join_update",
+  "fingerprint": {
+    "fingerprint": "sha-256 7E:2D:4C:6B:8A:0F:1E:3D:5C:7B:9A:8F:6E:4D:2C:1B:0A:9F:8E:7D:6C:5B:4A:39:28:17:06:F5:E4:D3:C2:B1"
+  }
+}
+```
+
+No ICE credentials or candidates are sent; the server is ICE-lite and learns the client from its STUN checks ([Media](Media.md#ice)).
+
+### subscribe
+
+Required once per remote participant, or the server forwards no audio from them:
+
+```json
+{
+  "type": "subscribe",
+  "sender_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "audio": true,
+  "data": false,
+  "video": false,
+  "message_id": 0
+}
+```
+
+`audio: false` stops receiving that sender (EGL's deafen sends it for every participant, undeafen sends `audio: true` again).
+
+### mute_audio
+
+```json
+{
+  "type": "mute_audio",
+  "is_muted": 1,
+  "user_token": "94b1569506b04f9f8557af611e8c5e47",
+  "reason_enum": 1
+}
+```
+
+| `is_muted` / `reason_enum` | When EGL sent it |
+| --- | --- |
+| `0` / `0` | unmuted (after any of the below) |
+| `1` / `1` | mic muted (`update-voice-settings { inputMuted: true }`, SDK `AudioDisabled`); also the first step of deafen |
+| `1` / `2` | right after `join_update`, immediately followed by `0` / `0` (initial state sync); peers see this pair every time EGL joins |
+| `1` / `3` | deafen (`audioEnabled: false`, SDK `AudioNotListeningDisabled`), sent after `1` / `1`, together with `subscribe audio: false` per participant |
+
+Deafen captured as: `mute_audio 1/1`, `mute_audio 1/3`, `subscribe { audio: false }`. Undeafen: `mute_audio 0/0`, `subscribe { audio: true }`. The SDK maps `reason_enum 3` on a peer to "not listening" (inferred from `AudioNotListeningDisabled`).
+
+### block
+
+```json
+{
+  "type": "block",
+  "sender_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "block": true
+}
+```
+
+On every `user_joined` EGL sent `block true`, `subscribe { audio: true }`, `block false` in the same millisecond (re-applying its blocked set, `set-blocked-participants`). A blocked participant keeps `block: true`.
+
+### user_left
+
+```json
+{
+  "type": "user_left",
+  "user_token": "94b1569506b04f9f8557af611e8c5e47"
+}
+```
+
+Sent with the own account id before closing. EGL also sent it once right before re-joining a room.
+
+### Not observed (from the SDK)
 
 | `type` | Fields |
 | --- | --- |
-| `join` | `ticket`, `user_token`, `options` (array: `dtx`, `ras_csrc`, `speaking_self_only`, `reserved_audio_streams`, ...), `version`, `device { os, model, manufacturer, online_platform_type }`, `status { is_muted, audio_muted_reason, is_audio_only, reason_enum, is_screencast }`, `connection_id`, `data_streams [{ ordered, protocol, type, id }]`, `video { width, height, codecs }`, `reserved_audio_streams_max_pool_size`, `test { force_proximity_radius }`, `voice_moderation { signed_public_key, ... mode }` |
-| `join_update` | `fingerprint` |
-| `mute_audio` | `is_muted`, `user_token`, `reason_enum` |
 | `audio_only` | `is_audio_only`, `user_token`, `reason_enum` |
-| `subscribe` | `sender_token`, `audio`, `data`, `video`, `message_id` |
 | `video_resolution` | `user_token`, `sender_token`, `resolution`, `framerate` |
 | `position` | `position` (proximity rooms) |
-| `user_left` | `user_token` |
 
-Server to client:
+## Server -> client
+
+### join_res
+
+```json
+{
+  "type": "join_res",
+  "status": 0,
+  "user_token": "94b1569506b04f9f8557af611e8c5e47",
+  "abort_on_inactivity": true,
+  "crypto": { "key_params": "" },
+  "fingerprint": {
+    "fingerprint": "sha-256 5C:1E:9A:7F:3D:2B:8E:4A:6F:0C:1D:2E:3B:4A:59:68:77:86:95:A4:B3:C2:D1:E0:F1:A2:B3:C4:D5:E6:F7:08"
+  },
+  "ice": {
+    "pwd": "RSGJwJCR1N+2gKgzgHmOvWcREmsCRAXC",
+    "servers": [],
+    "ufrag": "oHnpOjDxTPw"
+  },
+  "ipv4": "203.0.113.24",
+  "ipv6": "2001:db8:48d:5b0c::24",
+  "udp_port": 41872,
+  "tcp_port": 0,
+  "ssltcp_port": 43120,
+  "maxaveragebitrate": 0,
+  "options": [ "speaking", "dtx", "reserved_audio_streams", "unified_plan", "ras_csrc", "signed_audio" ],
+  "ptime": 60,
+  "reserved_audio_streams": [
+    { "ssrc": 20 },
+    { "ssrc": 30 },
+    { "ssrc": 40 },
+    { "ssrc": 50 },
+    { "ssrc": 60 }
+  ],
+  "ssrc": {
+    "audio": 10,
+    "video": 11,
+    "video_rtx": 15,
+    "video_sim": [ 12, 13, 14 ],
+    "video_sim_rtx": [ 16, 17, 18 ]
+  },
+  "stream": {
+    "audio": { "audio_muted_reason": 1, "is_muted": true, "ssrc": 10 },
+    "status": 0,
+    "stream_id": "default",
+    "video": {
+      "audio_only_reason": 6,
+      "height": 0,
+      "is_audio_only": 1,
+      "is_screencast": 0,
+      "rtx_ssrc": 15,
+      "sim_rtx_ssrc": [ 16, 17, 18 ],
+      "sim_ssrc": [ 12, 13, 14 ],
+      "ssrc": 11,
+      "width": 0
+    }
+  },
+  "users": [],
+  "video": { "codecs": [] },
+  "video_max_bitrate_p2p": 800000,
+  "video_max_size": 0
+}
+```
+
+| Field | Use |
+| --- | --- |
+| `status` | `0` = joined. Anything else: see reject reasons below |
+| `ssrc.audio` | SSRC your outgoing audio RTP must use. Assigned per join: `10` for the first participant, `70` for the second in the captures |
+| `reserved_audio_streams[].ssrc` | SSRCs the server sends mixed-in remote audio on; one receive stream per entry |
+| `ice.ufrag` / `ice.pwd` | server ICE credentials for the remote SDP. `ice.servers` was empty |
+| `fingerprint.fingerprint` | server DTLS certificate fingerprint (`<hash> <hex>`); the certificate looked static across sessions |
+| `ipv4` / `udp_port` | the single host candidate. `ipv6` and `ssltcp_port` were present but not needed; `tcp_port` was `0` |
+| `ptime` | `60`; Opus frame duration in ms |
+| `options` | the subset of requested options the server enabled; `signed_audio` echoed only for moderated joins |
+| `stream` | your own initial stream state, mirrors the `join` `status` |
+| `users` | participants already in the room; empty in all captures (see above) |
+| `abort_on_inactivity`, `maxaveragebitrate`, `video*`, `crypto` | not needed for audio |
+
+### dominant_speaker
+
+```json
+{
+  "type": "dominant_speaker",
+  "user_token": "94b1569506b04f9f8557af611e8c5e47"
+}
+```
+
+### user_joined
+
+A participant that joined (EGL client, moderated):
+
+```json
+{
+  "type": "user_joined",
+  "user_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "metadata": { "online_platform_type": "0", "platform": "windows" },
+  "ssrc": { "audio": 70, "rtx": 75, "video": 71 },
+  "status": {
+    "audio_muted_reason": 1,
+    "is_audio_only": 1,
+    "is_muted": 1,
+    "is_screencast": 0,
+    "reason": "unsupported"
+  },
+  "streams": [
+    {
+      "audio": { "audio_muted_reason": 1, "is_muted": true, "ssrc": 70 },
+      "stream_id": "default",
+      "video": {
+        "audio_only_reason": 6,
+        "height": 0,
+        "is_audio_only": 1,
+        "is_screencast": 0,
+        "rtx_ssrc": 75,
+        "sim_rtx_ssrc": [ 76, 77, 78 ],
+        "sim_ssrc": [ 72, 73, 74 ],
+        "ssrc": 71,
+        "width": 0
+      }
+    }
+  ],
+  "voice_moderation": { "signed_public_key": "<jwt>" }
+}
+```
+
+`ssrc.audio` is the participant's own audio SSRC; it appears as the CSRC of the forwarded packets on the reserved streams ([Media](Media.md#rtp)). `voice_moderation.signed_public_key` is their key JWT (claims as in [Register Public Key](../../EpicGames/PublicKeyService/PublicKey/Register.md)); verify their audio with the `key` claim. Send `subscribe` for `user_token`.
+
+### user_left
+
+```json
+{
+  "type": "user_left",
+  "user_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b"
+}
+```
+
+### speaking
+
+```json
+{
+  "type": "speaking",
+  "user_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "is_speaking": 1,
+  "stream_id": "default"
+}
+```
+
+Sent for every participant including yourself, `is_speaking` `1` / `0`.
+
+### mute_audio
+
+```json
+{
+  "type": "mute_audio",
+  "user_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "is_muted": true,
+  "reason_enum": 2,
+  "stream_id": "default"
+}
+```
+
+Relayed client `mute_audio`; `is_muted` is a boolean here. Same `reason_enum` table as above.
+
+### audio_only
+
+```json
+{
+  "type": "audio_only",
+  "user_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "is_audio_only": 1,
+  "reason": "unsupported",
+  "reason_enum": 6,
+  "stream_id": "default"
+}
+```
+
+### network_status
+
+```json
+{
+  "type": "network_status",
+  "user_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+  "uplink": 0,
+  "downlink": 0
+}
+```
+
+### Not observed (from the SDK)
 
 | `type` | Fields |
 | --- | --- |
-| `join_res` | `user_token`, `ssrc`, `video`, `data_streams`, `udp_port`, `ssltcp_port`, `tcp_port`, `status` (`LibRtc::FJoinResMessage::STATUS_TYPE`), `maxaveragebitrate`, `ptime`, `video_max_bitrate_p2p`, `options`, `ice { servers, ufrag, pwd }`, `fingerprint`, `users`, `ipv4`, `ipv6`, `power_mode`, `abort_on_inactivity`, `reserved_audio_streams { ssrc }`, `proximity { radius }` |
-| `user_joined` | `ssrc`, `status`, `metadata`, `user_token`, `voice_moderation` |
-| `user_left` | `user_token` |
-| `mute_audio` | `is_muted`, `user_token`, `reason_enum` |
 | `remote_mute_audio` | `is_muted` (server-side hard mute of the local user) |
-| `speaking` | `user_token`, `is_speaking` |
-| `audio_only` | `is_audio_only`, `user_token`, `reason_enum` |
 | `screencast` | `is_screencast`, `user_token` |
 | `kick_user` | `reason` |
-| `transfer` | `url`, `ticket` (media server migration: the client joins `url` with the new `ticket`, then leaves the old conference) |
-| `network_status` | |
+| `transfer` | `url`, `ticket` (media server migration: join `url` with the new `ticket`, then leave the old conference) |
 | `control_secondary` | `enabled`, `audio_sending_enabled` |
 | `subscribe_res` | `status` (`LibRtc::ESubscribeResStatus`), `message_id` |
 | `audio_streams_mapping` | `mapping` |
 
-`ticket` and `user_token`: `transfer` replaces the room URL together with a new `ticket`, which matches the `clientBaseUrl` + `participantToken` pair, so `ticket` is the participant token and `user_token` the participant id (inferred from that pairing, not from a capture).
+## Reject reasons
 
-Server-side reject reasons (`LibRtc` result strings): `CredentialAccessDenied`, `RoomNotFound`, `RoomFull`, `TokenBanned`, `ServerUnsupportedApiVersion`, `ServerGenericError`, `RoomOptionsMismatch`, `VoiceModerationModeMismatch`, `PublicKeyValidationFailed`, `DuplicateSession` ("same user connected from elsewhere"), `KickedFromConference`, `ServerTermination`, `ServerUnavailable`.
+`LibRtc` result strings: `CredentialAccessDenied`, `RoomNotFound`, `RoomFull`, `TokenBanned`, `ServerUnsupportedApiVersion`, `ServerGenericError`, `RoomOptionsMismatch`, `VoiceModerationModeMismatch`, `PublicKeyValidationFailed`, `DuplicateSession` ("same user connected from elsewhere"), `KickedFromConference`, `ServerTermination`, `ServerUnavailable`. Only `VoiceModerationModeMismatch` was reproduced (EGL joining a room first joined without `signed_audio`). The wire encoding of the reasons was not captured.
 
-## Mute, deafen, participant state
+## EGL (SDK) side
 
-- Local mute / deafen arrive as `update-voice-settings` (`inputMuted`, `audioEnabled`). The SDK maps them to `EOS_RTCAS_Enabled` / `EOS_RTCAS_Disabled` / `EOS_RTCAS_NotListeningDisabled` for sending (`PartyFeature::HandleUpdateSending`) and toggles receiving (`UpdateAudioReceiving`). "Mic-on + deafen is not representable on the wire; peers see NotListeningDisabled." On the wire this is `mute_audio` with `is_muted` + `reason_enum`.
-- Per-participant volume / local mute: `set-participant-audio` `{ id, volume }` or `{ id, muted }` -> `UpdateParticipantVolume` / `UpdateReceiving` (local only).
-- Blocking: `set-blocked-participants` `{ participants: [{ id }] }` replaces the blocked set; blocked users are unsubscribed (`FRTCRoom::BlockParticipant`).
-- Remote changes (`user_joined`, `user_left`, `mute_audio`, `speaking`) update `FVoiceRoomState`, published to the overlay as `voice-room.participants[]` `{ id, muted, speaking, notListening, voiceChatOff }`.
-- Audio priority list goes over the SCTP data channel (`Audio priority list has been sent`).
-
-## Leave
-
-`disconnect-voice-room` -> `PartyFeature::DisconnectPartyConference` -> `LeaveConference`, websocket closed (`[MediaService] Closing websocket ...`). On teardown the SDK emits audio output `Idle` and a `party-leave-analytics` row (`AccountId`, `RoomName`, `DisconnectReason`, `AvgRoundTripTimeSec`, `IncomingAvgPacketLossFraction`, `OutgoingAvgPacketLossFraction`, `AvgJitterBufferDelaySec`, `VoiceModerationEnabled`, `VoiceModerationEnabledDurationSec`, `VoiceChatOutgoingActivitySec`, `VoiceChatIncomingActivitySec`) built from WebRTC stats (`inbound-rtp`, `outbound-rtp`, `remote-inbound-rtp`, `candidate-pair`). The launcher subscribes with `EOS_PartyFeature_AddNotifyLeaveAnalytics`.
-
-## Token refresh
-
-When the SDK needs new credentials (reconnect after expiry) it sets state `request-session-info` `{ roomName, requestUniqueIndex }` (`PartyFeature::OnSessionInfoRequest`, timeout `SessionInfoRequestTimeoutSeconds`). The overlay calls the Party Service again and answers with intent `update-session-info` `{ participantToken, roomName, clientBaseUrl, requestUniqueIndex }`.
-
-## Voice moderation (signed audio)
-
-With voice reporting enabled the room joins with `voice_moderation` (`signed_public_key`), audio frames are signed (`RegisterAudioOutgoingSigningAlgorithm`, `UpdateModerationSendingSignature`) and a rolling local recording (`FRTCAudioLogicRecord`) is kept for reports. Upload path: [Reporting](Moderation.md).
+- `PartyFeature::HandleConnectVoiceRoomIntent` receives `connect-voice-room` `{ participantToken, roomName, clientBaseUrl, roomSettings }`. One room per local user (`Connection to multiple rooms is not supported`).
+- `FRTCRoom::Join` keeps `clientBaseUrl` as `MsUrlRequested`; `RTCSessionResolver` can swap it after a `transfer` (`MsUrlActual`, `UrlAndTokenReplaced`). For analytics the SDK derives `RegionName` from the `*.rtcp.on.epicgames.com` host and `SignalingServiceType` from the `signaling-service-` segment.
+- Local mute / deafen arrive as `update-voice-settings` (`inputMuted`, `audioEnabled`) and become the `mute_audio` / `subscribe` sequences above. Per-participant volume / local mute (`set-participant-audio`) stay local.
+- `set-blocked-participants` `{ participants: [{ id }] }` drives `block`.
+- Remote events update `FVoiceRoomState`, published to the overlay as `voice-room.participants[]` `{ id, muted, speaking, notListening, voiceChatOff }`.
+- Token refresh: the SDK sets `request-session-info` `{ roomName, requestUniqueIndex }` (`PartyFeature::OnSessionInfoRequest`, timeout `SessionInfoRequestTimeoutSeconds`); the overlay calls the Party Service again and answers `update-session-info` `{ participantToken, roomName, clientBaseUrl, requestUniqueIndex }`.
+- Leave: `disconnect-voice-room` -> `PartyFeature::DisconnectPartyConference` -> `user_left` + websocket close, then a `party-leave-analytics` row (`AccountId`, `RoomName`, `DisconnectReason`, `AvgRoundTripTimeSec`, `IncomingAvgPacketLossFraction`, `OutgoingAvgPacketLossFraction`, `AvgJitterBufferDelaySec`, `VoiceModerationEnabled`, `VoiceModerationEnabledDurationSec`, `VoiceChatOutgoingActivitySec`, `VoiceChatIncomingActivitySec`) for `EOS_PartyFeature_AddNotifyLeaveAnalytics`.
+- SDK logs redact message bodies (`[MediaService] Sending message. Type[...] Json[<Redacted>]`); the bodies above come from hooking the websocket send / receive.

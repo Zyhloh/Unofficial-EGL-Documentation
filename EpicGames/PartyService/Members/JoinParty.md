@@ -4,7 +4,7 @@ Joins a party (`accept-party-invite`, accepted join request, join from presence)
 
 URL: https://api.epicgames.dev/epic/party/internal/v2/parties/:partyId/members/:accountId/join \
 Method: POST \
-Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.getsignedinuser().accesstoken`)
+Auth Required: Yes (Bearer EG1 access token, any client; the overlay uses `window.ue.common.getsignedinuser().accesstoken`)
 
 ## Headers
 `Content-Type`: application/json <br/>
@@ -19,8 +19,8 @@ Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.get
 ```json
 {
   "connection": {
-    "id": "b1e2c3d4a5f60718293a4b5c6d7e8f90",
-    "deployment_id": "d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f",
+    "id": "3a9c51fffe7d2e48-00000001-0007c2d4-5b1e9f0a7c3d2b6e-4f8a1c2d",
+    "deployment_id": "_",
     "meta": {
       "osName": "Windows",
       "platformName": "egs",
@@ -30,12 +30,14 @@ Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.get
 }
 ```
 
+Body not captured; `connection` is built by the same code as [Create Party](../Parties/CreateParty.md) `join_info.connection`, which EGL was captured sending with `deployment_id: "_"`.
+
 ---
 
 _Example Response (shape from client)_
 
 ```json
 {
-  "party_id": "a3f6c2d1e9b84f7a8c5d0e1f2a3b4c5d"
+  "party_id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f"
 }
 ```

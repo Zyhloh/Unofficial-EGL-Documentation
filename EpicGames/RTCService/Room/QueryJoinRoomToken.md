@@ -1,6 +1,6 @@
 ## RTC Service - Room: Query Join Room Token
 
-Creates (or reuses) a voice room and issues participant tokens. SDK operation `JoinRoom`, behind `EOS_RTCAdmin_QueryJoinRoomToken`. Not used by the launcher.
+Creates (or reuses) a voice room and issues participant tokens. SDK operation `JoinRoom`, behind `EOS_RTCAdmin_QueryJoinRoomToken`. Not used by the launcher or by party voice: party voice credentials come from the Party Service ([Get Voice Room Connection](../../PartyService/Conferences/ConnectVoiceRoom.md)).
 
 URL: https://api.epicgames.dev/rtc/v1/:deploymentId/room/:roomId \
 Method: POST \

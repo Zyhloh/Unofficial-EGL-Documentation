@@ -4,7 +4,7 @@ Writes one overlay setting. Fired from the voice settings panel (device, volume,
 
 URL: https://api.epicgames.dev/epic/socs/v1/users/:accountId/settings/:settingId \
 Method: PUT \
-Auth Required: Yes (Bearer elevated EG1 access token)
+Auth Required: Yes (Bearer EG1 access token, any client)
 
 ## Headers
 `Content-Type`: application/json <br/>
@@ -21,7 +21,7 @@ Scoped setting:
 {
   "scopes": {
     "v1Platform": "Windows",
-    "v1DeploymentId": "d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f"
+    "v1DeploymentId": "_"
   },
   "value": "pushToTalk"
 }
@@ -35,4 +35,4 @@ Unscoped setting:
 }
 ```
 
-Success is any `2xx`; the body is not read.
+`v1DeploymentId` is the native app deployment id (inferred to be `_` for EGL, the value it sends as party `deployment_id`; a scoped write was not captured). Success is any `2xx`; the body is not read.

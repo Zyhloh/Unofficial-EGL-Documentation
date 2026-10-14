@@ -4,7 +4,7 @@ Rejects a received join request (`decline-join-party-request`).
 
 URL: https://api.epicgames.dev/epic/party/internal/v2/users/:accountId/joinRequests/:requesterId \
 Method: DELETE \
-Auth Required: Yes (Bearer elevated EG1 access token, from `window.ue.common.getsignedinuser().accesstoken`)
+Auth Required: Yes (Bearer EG1 access token, any client; the overlay uses `window.ue.common.getsignedinuser().accesstoken`)
 
 ## Headers
 `Content-Type`: application/json <br/>

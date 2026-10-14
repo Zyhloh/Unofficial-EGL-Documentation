@@ -10,7 +10,7 @@ Recommended Hosts:
 
 - api.epicgames.dev
 
-EOS SDK `1.19.4230.0-57929184@LauncherV2` (shipped as `EOSSDK-Win64-Shipping.dll`) holds three routes under service name `RTC`. They back `EOS_RTCAdmin_*` (trusted server / client-credentials API). The launcher does not call them: party voice credentials come from the Party Service ([Get Voice Room Connection](../PartyService/Conferences/ConnectVoiceRoom.md)).
+EOS SDK `1.19.4230.0-57929184@LauncherV2` (shipped as `EOSSDK-Win64-Shipping.dll`) holds three routes under service name `RTC`. They back `EOS_RTCAdmin_*` (trusted server / client-credentials API). The launcher does not call them, and neither did the working standalone party voice client: party voice credentials (`participant_token`, `client_base_url`, `room_name`) come from the Party Service ([Get Voice Room Connection](../PartyService/Conferences/ConnectVoiceRoom.md)). Kept for completeness; none of these routes were exercised.
 
 | Operation | Method | Path | Page |
 | --- | --- | --- | --- |
@@ -18,4 +18,4 @@ EOS SDK `1.19.4230.0-57929184@LauncherV2` (shipped as `EOSSDK-Win64-Shipping.dll
 | `ModifyParticipant` | POST | `/v1/:deploymentId/room/:roomId/participants/:puid` | [Set Hard Mute](Room/SetParticipantHardMute.md) |
 | `RemoveParticipant` | DELETE | `/v1/:deploymentId/room/:roomId/participants/:puid` | [Kick Participant](Room/KickParticipant.md) |
 
-The voice media itself does not go over REST. The SDK opens a websocket control channel to the room's `client_base_url` and runs WebRTC; see [RTC Signaling](../../Launcher/Voice/RTCSignaling.md).
+The voice media itself does not go over REST. The SDK opens a websocket control channel to the room's `client_base_url` and runs WebRTC; see [RTC Signaling](../../Launcher/Voice/RTCSignaling.md) and [Media](../../Launcher/Voice/Media.md).

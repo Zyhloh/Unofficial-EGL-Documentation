@@ -26,4 +26,4 @@ Notes on the Rust / Tauri Epic Games Launcher ("eglv2", reversed from `0.95.1+ge
 - Auth: [Clients](Auth/Clients.md), [Token Storage](Auth/TokenStorage.md), [DPoP](Auth/DPoP.md), [EOS](Auth/EOS.md), [Cabined Mode](Auth/CabinedMode.md), [Account Links](Auth/AccountLinks.md), [V1 Carryover](Auth/V1Carryover.md), [IPC](Auth/IPC.md)
 - Library: [Caching](Library/Caching.md), [Artwork](Library/Artwork.md), [External Sources](Library/ExternalSources.md)
 - Social: [Overview](Social/Overview.md), [Bridge](Social/Bridge.md), [Connect](Social/Connect.md), [GraphQL](Social/GraphQL.md), [Signing](Social/Signing.md)
-- Voice: [Native Bridge](Voice/NativeBridge.md), [RTC Signaling](Voice/RTCSignaling.md), [Settings](Voice/Settings.md), [Moderation](Voice/Moderation.md)
+- Voice: [Reference Client](Voice/ReferenceClient.md), [RTC Signaling](Voice/RTCSignaling.md), [Media](Voice/Media.md), [Audio Signing](Voice/AudioSigning.md), [Moderation](Voice/Moderation.md), [Settings](Voice/Settings.md), [Native Bridge](Voice/NativeBridge.md)

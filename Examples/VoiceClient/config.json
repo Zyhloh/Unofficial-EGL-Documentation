@@ -1,0 +1,21 @@
+{
+  "inviteAccountId": "",
+  "inviteWaitSeconds": 120,
+  "durationSeconds": 60,
+  "sendAudio": "",
+  "recordDir": "~/.egl-voice-client/recordings",
+  "tokenFile": "~/.egl-voice-client/tokens.json",
+  "client": {
+    "id": "34a02cf8f4414e29b15921876da36f9a",
+    "secret": "daafbccc737745039dffe53d94fc76cf"
+  },
+  "connectionMeta": {
+    "osName": "Windows",
+    "platformName": "egs",
+    "productName": "Epic Games Launcher"
+  },
+  "memberMeta": {
+    "platform_name": "Windows",
+    "product_name": "Epic Games Launcher"
+  }
+}
