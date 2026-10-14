@@ -33,9 +33,17 @@ _Example Response_
 
 ```json
 {
-  "jwt": "<jwt>"
+  "key": "KjiNzdIo9qri4fFyUm0u7zYV00jgNYjFxWgYkrdVH/w=",
+  "account_id": "94b1569506b04f9f8557af611e8c5e47",
+  "key_guid": "9f3c2a71-5e84-4b0d-a6c9-1d7e2f8b4a30",
+  "kid": "20230621",
+  "expiration": "2026-12-13T16:53:45.412484099Z",
+  "jwt": "<jwt>",
+  "type": "legacy"
 }
 ```
+
+The top-level fields repeat the JWT claims. Clients only need `jwt`.
 
 `jwt` decoded:
 
@@ -63,7 +71,9 @@ _Example Response_
 | `account_id` | owner; verifiers compare it with the sender |
 | `generated` | unix seconds |
 | `key_guid` | id of this registration |
-| `kid` | signing key id, look it up in [Signing Keys](SigningKeys.md) |
+| `kid` | signing key id, look it up in [Signing Keys](SigningKeys.md). It is in the payload, not the header |
 | `key` | the registered public key, base64 |
 | `expiration` | about two months after `generated` |
 | `type` | `legacy` |
+
+The JWT is signed (EdDSA over `header.payload`) by the Epic key with the matching `kid` from [Get Signing Keys](SigningKeys.md#verifying-a-key-jwt); verification confirmed live.

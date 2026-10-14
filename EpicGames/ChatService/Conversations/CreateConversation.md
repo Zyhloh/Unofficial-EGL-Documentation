@@ -33,7 +33,7 @@ _Example Response (shape from client)_
 
 ```json
 {
-  "conversationId": "d3c0f4e2-5b7a-4c1e-9f0a-7e2b6c1d8a90",
+  "conversationId": "GBD2ExampleConversationId00001",
   "isExisting": false,
   "notInvited": []
 }

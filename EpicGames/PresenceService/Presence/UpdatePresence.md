@@ -49,7 +49,7 @@ Overlay body with the manual status picker (from the client code):
 
 ---
 
-_Example Response (not captured; shape from client, only `own` is read)_
+_Example Response_ (to the party body above; only `own` is read)
 
 ```json
 {
@@ -57,10 +57,25 @@ _Example Response (not captured; shape from client, only `own` is read)_
     "accountId": "94b1569506b04f9f8557af611e8c5e47",
     "status": "online",
     "perNs": [
-      { "ns": "_", "status": "online", "party": { "joinable": false, "invitable": true }, "conns": [] }
+      {
+        "status": "online",
+        "party": {
+          "joinable": false,
+          "invitable": true
+        },
+        "ns": "_",
+        "conns": [
+          {
+            "id": "3a9c51fffe7d2e48-00000001-0007c2d4-5b1e9f0a7c3d2b6e-4f8a1c2d",
+            "props": {}
+          }
+        ]
+      }
     ]
   }
 }
 ```
+
+The server reduces `party` to `joinable` / `invitable`; the party `id` and `memberCount` are not echoed. The same response came back for a body without a party (`party { type, timestamp, clientJoinable }` only).
 
 Friends receive the result as `presence.v1.UPDATE` over Epic Connect ([Connect](../../../Launcher/Social/Connect.md#presencev1update-payload)).

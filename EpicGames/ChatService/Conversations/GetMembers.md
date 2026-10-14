@@ -19,4 +19,11 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Response not read by the client beyond being returned to callers (not captured)_
+_Example Response_
+
+```json
+{
+  "conversationId": "GBD2ExampleConversationId00001",
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60", "94b1569506b04f9f8557af611e8c5e47"]
+}
+```

@@ -82,6 +82,148 @@ _Example Response (`chat` / `enhanced-voice-reporting`)_
 }
 ```
 
+_Example Response (general call, `namespace=profile,chat,communications`; translations trimmed to `en`)_
+
+```json
+{
+  "response": {
+    "settings": [
+      {
+        "namespace": "chat",
+        "settingName": "enhanced-voice-reporting",
+        "preferredValue": "prefer-not-recording",
+        "preferredValueFromOrgLevel": true,
+        "effectiveValue": "prefer-not-recording",
+        "effectiveSource": "default",
+        "effectiveValueUpdatedAt": 1755125964457,
+        "isOrgLevel": true,
+        "definition": {
+          "orgId": "00000000-1111-4222-8333-444444444444",
+          "namespace": "chat",
+          "settingName": "enhanced-voice-reporting",
+          "valueType": "option",
+          "allowProductOverrides": "ageBrackets",
+          "translations": {
+            "en": {
+              "label": "Enhanced voice chat recording",
+              "parentNotice": "Determines enhanced voice chat recording setting"
+            }
+          },
+          "options": [
+            { "value": "recording", "translations": { "en": { "label": "Always On" } } },
+            { "value": "prefer-not-recording", "translations": { "en": { "label": "Off When Possible" } } }
+          ],
+          "restrictiveOrder": "firstRestrictive",
+          "userHidden": false,
+          "required": false,
+          "dataStorage": "raw",
+          "maximumScheduleWindowsPerDay": 0,
+          "ageBracket": {
+            "consentTypeRequired": "none",
+            "consentType": "none",
+            "applyConsentToEnforcedUsersOnly": false,
+            "defaultValue": "prefer-not-recording",
+            "defaultPreference": "prefer-not-recording"
+          }
+        }
+      },
+      {
+        "namespace": "chat",
+        "settingName": "voice",
+        "preferredValue": "everybody",
+        "preferredValueFromOrgLevel": true,
+        "parentLimit": "everybody",
+        "parentLimitFromOrgLevel": true,
+        "effectiveValue": "everybody",
+        "effectiveSource": "default",
+        "effectiveValueUpdatedAt": 1790667180977,
+        "isOrgLevel": true,
+        "definition": {
+          "orgId": "00000000-1111-4222-8333-444444444444",
+          "namespace": "chat",
+          "settingName": "voice",
+          "valueType": "option",
+          "allowProductOverrides": "ageBrackets",
+          "translations": {
+            "en": {
+              "label": "Voice chat",
+              "userNotice": "Determines with whom you can use the voice chat feature",
+              "parentNotice": "Who can your child speak with using Epic voice chat?"
+            }
+          },
+          "options": [
+            { "value": "nobody", "translations": { "en": { "label": "Nobody" } } },
+            { "value": "friends", "translations": { "en": { "label": "Friends Only" } } },
+            { "value": "friends-and-teammates", "translations": { "en": { "label": "Friends & Teammates" } } },
+            { "value": "friends-team-connections", "translations": { "en": { "label": "TBD" } } },
+            { "value": "everybody", "translations": { "en": { "label": "Everybody" } } }
+          ],
+          "restrictiveOrder": "firstRestrictive",
+          "userHidden": false,
+          "required": false,
+          "dataStorage": "raw",
+          "maximumScheduleWindowsPerDay": 0,
+          "ageBracket": {
+            "consentTypeRequired": "none",
+            "consentTypeUnderParentalControl": "opt-in-unverified",
+            "consentType": "opt-in-unverified",
+            "applyConsentToEnforcedUsersOnly": true,
+            "defaultValue": "everybody",
+            "defaultPreference": "everybody",
+            "defaultParentLimit": "everybody"
+          }
+        }
+      },
+      {
+        "namespace": "profile",
+        "settingName": "require-pin-to-add-friend",
+        "preferredValue": false,
+        "preferredValueFromOrgLevel": true,
+        "parentLimit": false,
+        "parentLimitFromOrgLevel": true,
+        "effectiveValue": false,
+        "effectiveSource": "default",
+        "effectiveValueUpdatedAt": 1755125964695,
+        "isOrgLevel": true,
+        "definition": {
+          "orgId": "00000000-1111-4222-8333-444444444444",
+          "namespace": "profile",
+          "settingName": "require-pin-to-add-friend",
+          "valueType": "boolean",
+          "allowProductOverrides": "ageBrackets",
+          "translations": {
+            "en": {
+              "label": "Require PIN to add Epic friends"
+            }
+          },
+          "options": [],
+          "restrictiveOrder": "falsePermissive",
+          "userHidden": true,
+          "required": false,
+          "dataStorage": "raw",
+          "maximumScheduleWindowsPerDay": 0,
+          "ageBracket": {
+            "consentTypeRequired": "none",
+            "consentTypeUnderParentalControl": "opt-in-unverified",
+            "consentType": "opt-in-unverified",
+            "applyConsentToEnforcedUsersOnly": true,
+            "defaultValue": false,
+            "defaultPreference": false,
+            "defaultParentLimit": false
+          }
+        }
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "7c4e1a92-3b5d-4f60-8e21-9a0b3c4d5e6f",
+    "timestamp": "2026-10-14T17:57:26.301Z"
+  }
+}
+```
+
+Without `game` the values are org-level (`isOrgLevel: true`, `definition` has no `productId` / `inheritFromOrg`); the same account's `game=fn` call returned its own preference for `enhanced-voice-reporting` (`recording`, `effectiveSource: "preference"`). The live `translations` carry many locales (`ar`, `de`, `es`, `es-ES`, `es-MX`, `fr`, ...); `require-pin-to-add-friend` also has a long `parentNotice`. `communications` / `curtain-tower` was requested but not returned for the test account.
+
 Fields the overlay reads on other settings (shape from client):
 
 ```json

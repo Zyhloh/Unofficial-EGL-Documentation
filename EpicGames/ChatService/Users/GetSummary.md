@@ -18,13 +18,16 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
-  "unreadMessages": 3,
+  "conversationCount": 1,
+  "unreadMessages": 1,
+  "unreadPendingInvites": 0,
   "hasMoreUnreadMessages": false,
-  "unreadPendingInvites": 1,
   "hasMoreUnreadPendingInvites": false
 }
 ```
+
+With no conversations every counter is `0`.

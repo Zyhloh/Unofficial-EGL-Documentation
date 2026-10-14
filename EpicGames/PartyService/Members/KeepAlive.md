@@ -15,4 +15,21 @@ Auth Required: Yes (Bearer EG1 access token, any client; the overlay uses `windo
 `partyId`: The party id <br/>
 `accountId`: The signed-in account id <br/>
 
-No body. The parsed response is not read.
+No body. The parsed response is not read by the overlay. Also accepted while the member is not suspended (captured on a fresh solo party).
+
+---
+
+_Example Response_
+
+```json
+{
+  "account_id": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "meta": {},
+  "revision": 0,
+  "updated_at": "2026-10-14T17:57:26.758Z",
+  "joined_at": "2026-10-14T17:57:26.758Z",
+  "suspended": false
+}
+```
+
+The member object without `connections`.

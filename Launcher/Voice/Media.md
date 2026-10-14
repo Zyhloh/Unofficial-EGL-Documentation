@@ -121,6 +121,8 @@ ServerHello for EGL: cipher `cca8` (ECDHE-RSA-CHACHA20-POLY1305), SRTP profile `
 | Incoming | SSRC = a reserved stream (`20`, `30`, ...), one CSRC = the speaker's `ssrc.audio` from `user_joined` (`ras_csrc` option) |
 | RTCP | sender reports (`200`) and receiver reports (`201`) both ways on the same port |
 
+Rate: about 16-18 Opus packets/s per talking participant (60ms ptime; DTX lowers it during silence). While EGL is mic-muted (`mute_audio` `reason_enum` `1`) it sends no RTP at all: the forwarded stream went to 0 packets/s for the whole 16s mute and resumed on unmute ([RTC Signaling](RTCSignaling.md#mute_audio-1)). A receiver must not treat that gap as a dead connection.
+
 Right after DTLS, EGL sent a burst of padding-only RTP packets (P bit set, same timestamp) on its audio SSRC; inferred to be libwebrtc bandwidth probing, not required.
 
 Incoming packet sizes show the signing trailer is forwarded unchanged: EGL's smallest outgoing and the standalone client's smallest incoming packets were both about 130 bytes, which is header + extensions + SRTP tag + a tiny DTX frame + the 72-byte trailer. Strip it before decoding ([Audio Signing](AudioSigning.md#receiving)).

@@ -80,7 +80,7 @@ One party per account. [Get Parties Summary](../../EpicGames/PartyService/Users/
 }
 ```
 
-Response: party `id` `2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f`, `chat_conversation_id` `ep-<id>`, `is_reportable: false`, own member with `revision: 0` (full body on the endpoint page). To join an existing party instead: [Join Party](../../EpicGames/PartyService/Members/JoinParty.md).
+Response: party `id` `2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f`, `chat_conversation_id` `ep-<id>`, `is_reportable: false`, own member with `revision: 0` (full body on the endpoint page). To join an EGL user's party instead: wait for `party.v2.INVITE_CREATED` (or send a [join request](../../EpicGames/PartyService/JoinRequests/SendJoinRequest.md) and wait for the leader's invite), then [Join Party](../../EpicGames/PartyService/Members/JoinParty.md) `POST /parties/:partyId/members/:me/join` with your `connection` -> `{ "status": "JOINED", "party_id": "..." }`, and skip step 6. Your member starts at `revision: 0`.
 
 ### 5. Publish presence
 
@@ -169,7 +169,7 @@ Generate an Ed25519 key pair and register the public key: [Register Public Key](
 { "algorithm": "ed25519", "key": "KjiNzdIo9qri4fFyUm0u7zYV00jgNYjFxWgYkrdVH/w=" }
 ```
 
-Response `{ "jwt": "<jwt>" }` = `signed_public_key` (claims `account_id`, `generated`, `key_guid`, `kid` `20230621`, `key`, `expiration`, `type: legacy`).
+Response `{ key, account_id, key_guid, kid, expiration, jwt, type }`; `jwt` is the `signed_public_key` (claims `account_id`, `generated`, `key_guid`, `kid` `20230621`, `key`, `expiration`, `type: legacy`).
 
 ### 10. Signaling
 
@@ -198,13 +198,15 @@ Build a remote SDP offer from `join_res` (ice-lite, `a=setup:actpass`, BUNDLE, o
 
 ### 12. Participants
 
-For every `join_res.users[]` entry and every `user_joined`, send:
+`join_res.users` entries are JSON strings: parse each one (`json.loads`) into a `user_joined` message. For every parsed `join_res.users[]` entry and every `user_joined` (de-duplicate by `user_token`), send:
 
 ```json
 { "type": "subscribe", "sender_token": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b", "audio": true, "data": false, "video": false, "message_id": 0 }
 ```
 
-Without it no audio from that participant is forwarded. Incoming audio arrives on the reserved SSRCs with the speaker's SSRC as CSRC. `speaking`, `mute_audio`, `audio_only`, `network_status`, `user_left` update state.
+Without it no audio from that participant is forwarded. Incoming audio arrives on the reserved SSRCs with the speaker's SSRC as CSRC. `speaking`, `mute_audio`, `audio_only`, `network_status`, `user_left` update state. A mic-muted EGL participant sends no RTP at all until unmuted. To check a peer's key, verify their `signed_public_key` against [Get Signing Keys](../../EpicGames/PublicKeyService/PublicKey/SigningKeys.md#verifying-a-key-jwt) (`kid` is in the JWT payload).
+
+`{ "type": "kick_user" }` (after `user_left` of the last other member) means the party was disbanded and the room closed: leave voice.
 
 ### 13. Send audio
 
@@ -230,12 +232,14 @@ Strip the 72-byte trailer from incoming payloads before decoding. Mute / deafen:
 - Always join moderated: `signed_audio` option + `voice_moderation.signed_public_key`. The first joiner fixes the room mode; an unmoderated first joiner breaks EGL with `VoiceModerationModeMismatch`.
 - Register the key with `algorithm: "ed25519"` on `/publickey/v2/publickey/` (not `/publickey/v2/so/`).
 - Signaling keepalive is a `" "` text frame every 5s; disable WebSocket ping frames (server closes with `1002`).
-- `subscribe` every participant (`join_res.users[]` and each `user_joined`); `join_res.users` was always empty in captures.
+- `subscribe` every participant (`join_res.users[]` and each `user_joined`). `join_res.users` entries are JSON-encoded strings; parse them first.
 - Remote SDP: ice-lite, server `actpass`, client answers `active`; client is ICE controlling and nominates.
 - DTLS: offer ECDHE-RSA cipher suites (server cert is RSA). aiortc's default ECDSA-only list is silently ignored.
 - Outgoing RTP SSRC = `join_res.ssrc.audio`, PT `100`, Opus 48kHz stereo, 60ms frames.
 - Sign every outgoing payload; counter from `0`, `+1` per packet, never backwards; context = room name.
 - Strip the 72-byte trailer (or 4 bytes for version `0`) from incoming payloads before Opus decoding.
+- Silence from a muted EGL participant is normal (no RTP while `mute_audio` `reason_enum` `1`).
+- Handle `kick_user` and `party.v2.MEMBER_EXPIRED_PARTY_DISBANDED`: a 2-member party is disbanded when the other member leaves or is kicked ([disband behaviour](../../EpicGames/PartyService/Members/LeaveParty.md#disband-behaviour-observed-2026-10-14)). Leaving it afterwards returns `404 party_not_found`, which is fine.
 - Release voice (`active_in_party_voice_room: false`) and leave the party on exit.
 
 ## How EGL does it
@@ -256,7 +260,7 @@ Strip the 72-byte trailer from incoming payloads before decoding. Mute / deafen:
    2. To the SDK (feature `party`): `set-blocked-participants` `{ participants: [{ id }] }`, then `connect-voice-room` `{ participantToken, roomName, clientBaseUrl, roomSettings: { AudioInputDeviceMode: "AlwaysOn" } }`.
    3. [Update Member Meta](../../EpicGames/PartyService/Members/UpdateMemberMeta.md) claims voice.
 8. SDK registers its moderation key, joins the room (`join` -> `join_res` -> `join_update`), runs ICE / DTLS, signs audio. Status flows back as `voice-room.status` (`connecting` -> `connected`). On `connected` the overlay re-sends per-member volume / mute (`set-participant-audio`) and `update-voice-settings { inputMuted, audioEnabled }`.
-9. In call: SDK publishes `voice-room.participants[] { id, muted, speaking, notListening, voiceChatOff }` and `pttActive`; overlay draws speaking rings and sends `voice-party-state-changed` to the launcher (tray / taskbar). Mute, deafen, PTT, device and volume changes are `update-voice-settings` intents. Deafen also updates `active_in_party_voice_room` (1s debounce).
+9. In call: SDK publishes `voice-room.participants[] { id, muted, speaking, notListening, voiceChatOff }` and `pttActive`; overlay draws speaking rings and sends `voice-party-state-changed` to the launcher (tray / taskbar). Mute, deafen, PTT, device and volume changes are `update-voice-settings` intents. Deafen also updates `active_in_party_voice_room` (1s debounce), which flips the party's server-computed `is_reportable` ([Moderation](../Voice/Moderation.md#is_reportable)); mute / unmute re-sends the member meta unchanged.
 10. Token refresh: SDK state `request-session-info { roomName, requestUniqueIndex }` -> overlay calls Get Voice Room Connection again -> intent `update-session-info { participantToken, roomName, clientBaseUrl, requestUniqueIndex }`.
 11. Membership upkeep: `party.v2.*` events update the roster. If the local member becomes `suspended`, the overlay calls [Keep Alive](../../EpicGames/PartyService/Members/KeepAlive.md). Network loss disconnects voice locally.
 12. Leave voice / party: `disconnect-party-voice-room` -> SDK `disconnect-voice-room` (`user_left`) + Update Member Meta (`active_in_party_voice_room: false`); leaving the party is [Leave Party](../../EpicGames/PartyService/Members/LeaveParty.md). Voice also drops when eligibility turns `no:*`, when another device claims voice, or when the party is left / disbanded.
@@ -278,7 +282,8 @@ Strip the 72-byte trailer from incoming payloads before decoding. Mute / deafen:
 
 ## Not confirmed
 
-- `join_res.users` populated (always `[]`; existing participants came as `user_joined`).
-- Server messages `transfer`, `kick_user`, `remote_mute_audio`, `subscribe_res`, `audio_streams_mapping` (SDK only).
+- Server messages `transfer`, `remote_mute_audio`, `subscribe_res`, `audio_streams_mapping` (SDK only).
+- The exact `is_reportable` rule for parties with Fortnite members ([Moderation](../Voice/Moderation.md#is_reportable)).
+- Per-packet audio signature verification of peers.
 - Wire format of join rejections other than the client-side `VoiceModerationModeMismatch` message.
 - The report upload ([Moderation](../Voice/Moderation.md#report-flow)).

@@ -19,7 +19,7 @@ Auth Required: Yes (Bearer EG1 access token, any client; the overlay uses `windo
 ```json
 {
   "connection": {
-    "id": "3a9c51fffe7d2e48-00000001-0007c2d4-5b1e9f0a7c3d2b6e-4f8a1c2d",
+    "id": "6b4e20fffe8a1d57-00000001-05a3e9c1-7d2f4b6a8c0e1f35-2c9a7e4b",
     "deployment_id": "_",
     "meta": {
       "osName": "Windows",
@@ -30,14 +30,17 @@ Auth Required: Yes (Bearer EG1 access token, any client; the overlay uses `windo
 }
 ```
 
-Body not captured; `connection` is built by the same code as [Create Party](../Parties/CreateParty.md) `join_info.connection`, which EGL was captured sending with `deployment_id: "_"`.
+`connection` is the joiner's Epic Connect connection, same shape as [Create Party](../Parties/CreateParty.md) `join_info.connection`. Accepted live from a standalone client (2026-10-14).
+
+Works for a pending invite ([Send Party Invite](../Invites/SendInvite.md)) and after the leader accepted a [join request](../JoinRequests/SendJoinRequest.md) (which is an invite). Events right after a join: `party.v2.MEMBER_JOINED` (joiner, `revision 0`, empty `member_state_updated`), `party.v2.INVITE_EXPIRED` (the consumed invite, now with `meta: {}`), `social.chat.v1.MEMBERS_JOIN` for `ep-<partyId>`. The joiner's member has `meta: {}` and `active_in_party_voice_room: false` until it [claims voice](UpdateMemberMeta.md).
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
+  "status": "JOINED",
   "party_id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f"
 }
 ```

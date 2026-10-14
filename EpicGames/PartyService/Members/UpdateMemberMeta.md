@@ -52,6 +52,8 @@ Second captured PATCH (same session, 12s later, sent by EGL with the same `updat
 
 `revision` is the member's current revision (`0` right after [Create Party](../Parties/CreateParty.md), then the value from the previous response). `active_voice_connection` and `connection.id` are the Epic Connect connection id; `platform_name` is the client's `osName`. When claiming, `active_in_party_voice_room` is `!deafened`. Release (`intent: "unset"` in the overlay) sends `active_in_party_voice_room: false`; the overlay build sends only `revision` and `connection` there (from the client code), a standalone client that resends `update` with `false` also works. Set `false` when leaving voice.
 
+Observed from EGL in a 2-member party (2026-10-14): mic mute and unmute each produced a PATCH too (member `revision` +1, `active_in_party_voice_room` stays `true`, `party.v2.MEMBER_STATE_UPDATED` with the same `update` keys); deafen sent `active_in_party_voice_room: false`, undeafen `true`. The connection flag drives the party's [`is_reportable`](../../../Launcher/Voice/Moderation.md#is_reportable): deafen flipped it to `false`, undeafen back to `true` (`party.v2.PARTY_UPDATED` within ~25ms of the member event).
+
 Other devices of the same account read `active_voice_connection` to decide who owns voice (`should-claim-active-voice-device`, `current-active-device`). See [Voice Chat](../../../Launcher/Flows/VoiceChat.md). Other members receive `party.v2.MEMBER_STATE_UPDATED` with `member_state_updated` = the changed keys.
 
 ---

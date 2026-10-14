@@ -178,6 +178,9 @@ class VoiceRoom:
             if kind == 'join_res' and not self.join_res.done():
                 self.join_res.set_result(message)
                 for user in message.get('users', []):
+                    if isinstance(user, str):
+                        user = json.loads(user)
+                    print('joined:', user['user_token'])
                     await self.subscribe(user['user_token'])
             elif kind == 'user_joined':
                 print('joined:', message['user_token'])

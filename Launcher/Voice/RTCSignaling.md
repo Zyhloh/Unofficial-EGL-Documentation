@@ -1,6 +1,6 @@
 # Voice - RTC Signaling
 
-The control channel between a party voice participant and the media server: a websocket to `client_base_url` from [Get Voice Room Connection](../../EpicGames/PartyService/Conferences/ConnectVoiceRoom.md). Every message below was captured on 2026-10-14, both from EGL's own EOS SDK (`1.19.4230.0-57929184@LauncherV2`, hooked) and from a standalone client that talked to EGL in both directions. Messages marked "not observed" come only from the SDK binary (`LibRtc::*`).
+The control channel between a party voice participant and the media server: a websocket to `client_base_url` from [Get Voice Room Connection](../../EpicGames/PartyService/Conferences/ConnectVoiceRoom.md). Every message below was captured on 2026-10-14, both from EGL's own EOS SDK (`1.19.4230.0-57929184@LauncherV2`, hooked) and from a standalone client that talked to EGL in both directions. A second live pass the same day added populated `join_res.users`, `kick_user` and mute timing. Messages marked "not observed" come only from the SDK binary (`LibRtc::*`).
 
 Media (SDP / ICE / DTLS / RTP) is on [Media](Media.md), audio packet signing on [Audio Signing](AudioSigning.md), the end-to-end order on [Voice Chat](../Flows/VoiceChat.md).
 
@@ -28,11 +28,12 @@ Captured order (standalone client joining a room where EGL already was):
 2. server `dominant_speaker` (current speaker, can arrive before `join_res`)
 3. server `join_res`
 4. client `join_update` (DTLS fingerprint), then ICE / DTLS / SRTP start ([Media](Media.md))
-5. server `user_joined` for the participant already in the room (about 100ms after `join_res`)
-6. client `subscribe` for that participant
+5. existing participants: either inside `join_res.users` or as separate `user_joined` messages (both seen, see below)
+6. client `subscribe` for each of them
 7. server `mute_audio`, `audio_only`, `network_status`, `speaking` as state changes
+8. server `user_left` for each participant that leaves; `kick_user` when the party is disbanded
 
-`join_res.users` was `[]` in every capture, including joins into a room that already had a participant; existing participants arrived as `user_joined`. Handle both: subscribe to every entry of `join_res.users[]` and to every `user_joined`.
+`join_res.users` is a list of JSON-encoded strings, not objects. Each string is a complete `user_joined` message for a participant already in the room; parse it with a JSON decoder before use. It was `[]` in the first captures (existing participants then arrived as separate `user_joined` messages about 100ms after `join_res`) and populated in the second pass, where the server also sent the same participant as a `user_joined` message right after `join_res`. Handle both and de-duplicate by `user_token`: subscribe to every parsed `join_res.users[]` entry and every `user_joined`.
 
 ## Client -> server
 
@@ -257,8 +258,45 @@ Sent with the own account id before closing. EGL also sent it once right before 
 | `ptime` | `60`; Opus frame duration in ms |
 | `options` | the subset of requested options the server enabled; `signed_audio` echoed only for moderated joins |
 | `stream` | your own initial stream state, mirrors the `join` `status` |
-| `users` | participants already in the room; empty in all captures (see above) |
+| `users` | participants already in the room, each a JSON string holding a full `user_joined` message ([example](#join_res-with-participants)); can also be `[]` (then the participants come as `user_joined`) |
 | `abort_on_inactivity`, `maxaveragebitrate`, `video*`, `crypto` | not needed for audio |
+
+### join_res with participants
+
+Captured joining a room where an EGL user was already talking (only the fields that differ from the example above, plus `users`):
+
+```json
+{
+  "type": "join_res",
+  "status": 0,
+  "user_token": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "ssrc": { "audio": 70, "video": 71, "video_rtx": 75, "video_sim": [ 72, 73, 74 ], "video_sim_rtx": [ 76, 77, 78 ] },
+  "reserved_audio_streams": [
+    { "ssrc": 80 },
+    { "ssrc": 90 },
+    { "ssrc": 100 },
+    { "ssrc": 110 },
+    { "ssrc": 120 }
+  ],
+  "stream": {
+    "audio": { "audio_muted_reason": 0, "is_muted": false, "ssrc": 70 },
+    "status": 0,
+    "stream_id": "default",
+    "video": { "audio_only_reason": 6, "height": 0, "is_audio_only": 1, "is_screencast": 0, "rtx_ssrc": 75, "sim_rtx_ssrc": [ 76, 77, 78 ], "sim_ssrc": [ 72, 73, 74 ], "ssrc": 71, "width": 0 }
+  },
+  "users": [
+    "{\"metadata\":{\"online_platform_type\":\"0\",\"platform\":\"windows\"},\"ssrc\":{\"audio\":10,\"rtx\":15,\"video\":11},\"status\":{\"audio_muted_reason\":0,\"is_audio_only\":1,\"is_muted\":0,\"is_screencast\":0,\"reason\":\"unsupported\"},\"streams\":[{\"audio\":{\"audio_muted_reason\":0,\"is_muted\":false,\"ssrc\":10},\"stream_id\":\"default\",\"video\":{\"audio_only_reason\":6,\"height\":0,\"is_audio_only\":1,\"is_screencast\":0,\"rtx_ssrc\":15,\"sim_rtx_ssrc\":[16,17,18],\"sim_ssrc\":[12,13,14],\"ssrc\":11,\"width\":0}}],\"type\":\"user_joined\",\"user_token\":\"94b1569506b04f9f8557af611e8c5e47\",\"voice_moderation\":{\"signed_public_key\":\"<jwt>\"}}"
+  ]
+}
+```
+
+Parsed, the string is the [user_joined](#user_joined) message of `94b1569506b04f9f8557af611e8c5e47` (audio SSRC `10`). The new participant got audio SSRC `70` and reserved streams `80`-`120`; EGL's audio then arrived on SSRC `80` with CSRC `10`.
+
+```python
+for raw in join_res["users"]:
+    user = json.loads(raw) if isinstance(raw, str) else raw
+    on_user_joined(user)
+```
 
 ### dominant_speaker
 
@@ -345,6 +383,18 @@ Sent for every participant including yourself, `is_speaking` `1` / `0`.
 
 Relayed client `mute_audio`; `is_muted` is a boolean here. Same `reason_enum` table as above.
 
+While EGL is mic-muted (`is_muted: true`, `reason_enum: 1`) it sends no RTP at all: in a 16s mute the forwarded stream dropped from 16-17 Opus packets/s (60ms frames) to 0 from the `mute_audio` until the unmute (`is_muted: false`, `reason_enum: 0`), then resumed at the same rate. Treat a muted participant's silence as normal, not as a media failure.
+
+### kick_user
+
+```json
+{
+  "type": "kick_user"
+}
+```
+
+No other fields (the SDK parser also reads an optional `reason`; none was sent). Captured when the party was disbanded (the other member left a 2-member party): the server sent `user_left` for the departing member, then `kick_user` in the same millisecond, about 1.3s after `party.v2.MEMBER_LEFT` / `MEMBER_EXPIRED_PARTY_DISBANDED` on Epic Connect. The room is closed; leave voice (inferred to surface as the SDK result `KickedFromConference`).
+
 ### audio_only
 
 ```json
@@ -375,7 +425,6 @@ Relayed client `mute_audio`; `is_muted` is a boolean here. Same `reason_enum` ta
 | --- | --- |
 | `remote_mute_audio` | `is_muted` (server-side hard mute of the local user) |
 | `screencast` | `is_screencast`, `user_token` |
-| `kick_user` | `reason` |
 | `transfer` | `url`, `ticket` (media server migration: join `url` with the new `ticket`, then leave the old conference) |
 | `control_secondary` | `enabled`, `audio_sending_enabled` |
 | `subscribe_res` | `status` (`LibRtc::ESubscribeResStatus`), `message_id` |

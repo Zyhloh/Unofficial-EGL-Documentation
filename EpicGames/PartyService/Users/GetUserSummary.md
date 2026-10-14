@@ -26,32 +26,76 @@ _Example Response (not in a party)_
 }
 ```
 
-_Example Response (in a party; `current` is the party object from [Get Party](../Parties/GetParty.md), invite entries as returned by [Send Party Invite](../Invites/SendInvite.md); populated summary not captured)_
+_Example Response (in a party you created)_
 
 ```json
 {
   "current": {
     "id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
-    "party_lead": "94b1569506b04f9f8557af611e8c5e47",
-    "config": { "joinability": "INVITE_ONLY", "max_size": 16 },
-    "meta": { "created_by": "94b1569506b04f9f8557af611e8c5e47" },
+    "party_lead": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+    "created_at": "2026-10-14T17:57:26.752Z",
+    "updated_at": "2026-10-14T17:57:26.752Z",
+    "config": {
+      "joinability": "INVITE_ONLY",
+      "max_size": 16
+    },
+    "meta": {
+      "created_by": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60"
+    },
     "revision": 0,
     "chat_conversation_id": "ep-2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
     "is_reportable": false,
-    "members": []
+    "members": [
+      {
+        "account_id": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+        "meta": {},
+        "revision": 0,
+        "updated_at": "2026-10-14T17:57:26.758Z",
+        "joined_at": "2026-10-14T17:57:26.758Z",
+        "suspended": false,
+        "connections": [
+          {
+            "id": "6b4e20fffe8a1d57-00000001-05a3e9c1-7d2f4b6a8c0e1f35-2c9a7e4b",
+            "deployment_id": "_",
+            "connected_at": "2026-10-14T17:57:26.757Z",
+            "updated_at": "2026-10-14T17:57:26.752Z",
+            "is_first_party": true,
+            "meta": {
+              "osName": "Windows",
+              "platformName": "egs",
+              "productName": "Epic Games Launcher"
+            },
+            "active_in_party_voice_room": false
+          }
+        ]
+      }
+    ]
   },
+  "invites": [],
+  "join_requests": []
+}
+```
+
+`current` is the full [Get Party](../Parties/GetParty.md) object.
+
+_Example Response (not in a party, one pending invite received)_
+
+```json
+{
   "invites": [
     {
       "party_id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
       "sent_by": "94b1569506b04f9f8557af611e8c5e47",
       "auto": false,
       "meta": {},
-      "sent_to": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
-      "sent_at": "2026-10-14T16:53:45.315Z",
-      "updated_at": "2026-10-14T16:53:45.315Z",
-      "expires_at": "2026-10-14T17:53:45.315Z"
+      "sent_to": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+      "sent_at": "2026-10-14T17:58:54.041Z",
+      "updated_at": "2026-10-14T17:58:54.041Z",
+      "expires_at": "2026-10-14T18:58:54.041Z"
     }
   ],
   "join_requests": []
 }
 ```
+
+Pending invites expire after one hour (`expires_at`); accept with [Join Party](../Members/JoinParty.md), reject with [Decline Party Invite](../Invites/DeclineInvite.md). A `join_requests` entry was not captured (inferred: same fields as the [Send Join Request](../JoinRequests/SendJoinRequest.md) response).

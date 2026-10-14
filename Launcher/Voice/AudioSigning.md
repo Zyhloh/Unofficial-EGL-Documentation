@@ -45,7 +45,14 @@ Packets forwarded from moderated participants keep the trailer (incoming sizes i
 - last 4 bytes `00 00 00 01`: drop the last 72 bytes; `opus = payload[:-72]`, `counter = payload[-72:-68]`, `signature = payload[-68:-4]`.
 - last 4 bytes `00 00 00 00`: drop the last 4 bytes.
 
-To verify (`AudioPacker_v1::Verify`), rebuild `message` with the room name and check the signature against the `key` claim of that participant's `signed_public_key` from `user_joined`. The standalone client did not verify.
+To verify (`AudioPacker_v1::Verify`):
+
+1. Take the participant's `signed_public_key` from `user_joined` (or the parsed `join_res.users` string).
+2. Verify that JWT with Epic's signing key: the header has no `kid`, read `kid` from the payload, pick that key from [Get Signing Keys](../../EpicGames/PublicKeyService/PublicKey/SigningKeys.md#verifying-a-key-jwt) and check the EdDSA signature over `header.payload` (confirmed working). Check `account_id` = the participant's `user_token` and `expiration`.
+3. Map the incoming packet to the participant by its CSRC (= their `ssrc.audio`, [Media](Media.md#rtp)).
+4. Rebuild `message` with the room name and check the packet signature against the JWT's `key` claim.
+
+Step 2 was confirmed live; per-packet verification (step 4) was not run by the standalone client.
 
 libopus does not reject a payload with the trailer still attached: the standalone client fed unstripped EGL payloads to aiortc's decoder and the recording was audible. Decoding real EGL Opus frames offline with and without an appended 72-byte trailer gave clearly different PCM (difference RMS larger than the signal RMS), so the trailer corrupts the end of each frame; strip it.
 

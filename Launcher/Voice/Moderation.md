@@ -5,10 +5,10 @@ Party voice rooms are moderated: every participant registers an Ed25519 key, sig
 ## Voice moderation key
 
 1. Generate an Ed25519 key pair (EGL: `Moderation::GenerateKeys`).
-2. Register the raw 32-byte public key with a plain EG1 token: [Register Public Key](../../EpicGames/PublicKeyService/PublicKey/Register.md) `{ "algorithm": "ed25519", "key": "<base64>" }` -> `{ "jwt" }`. JWT (EdDSA, `kid` `20230621`) claims `account_id`, `generated`, `key_guid`, `kid`, `key`, `expiration` (about two months), `type: "legacy"`. `/publickey/v2/so/` rejects EG1.
+2. Register the raw 32-byte public key with a plain EG1 token: [Register Public Key](../../EpicGames/PublicKeyService/PublicKey/Register.md) `{ "algorithm": "ed25519", "key": "<base64>" }` -> `{ key, account_id, key_guid, kid, expiration, jwt, type }`. JWT (EdDSA, `kid` `20230621`) claims `account_id`, `generated`, `key_guid`, `kid`, `key`, `expiration` (about two months), `type: "legacy"`. `/publickey/v2/so/` rejects EG1.
 3. Join with `voice_moderation: { signed_public_key: <jwt> }` and option `signed_audio` ([RTC Signaling](RTCSignaling.md#join)). `join_res.options` echoes `signed_audio`.
 4. Sign every outgoing Opus payload with the private key ([Audio Signing](AudioSigning.md)).
-5. Other participants' JWTs arrive in `user_joined.voice_moderation.signed_public_key`; their `key` claim verifies their audio.
+5. Other participants' JWTs arrive in `user_joined.voice_moderation.signed_public_key` (also inside the `join_res.users` strings). Verify the JWT with Epic's signing key ([Get Signing Keys](../../EpicGames/PublicKeyService/PublicKey/SigningKeys.md#verifying-a-key-jwt): header has no `kid`, take `kid` from the payload, EdDSA over `header.payload`; confirmed working), check `account_id` = the participant's `user_token`, then use the `key` claim to verify their audio ([Audio Signing](AudioSigning.md#receiving)).
 
 ### Room mode
 
@@ -22,7 +22,7 @@ The overlay's "Reporting on / off" label:
 reportingOn = party.is_reportable || kws(chat/enhanced-voice-reporting).effectiveValue == "recording"
 ```
 
-- `is_reportable` is server-set and only read by the client ([Get Party](../../EpicGames/PartyService/Parties/GetParty.md), `party.v2.PARTY_UPDATED`, `social.chat.v1.REPORTABILITY_CHANGE`). New parties start `false`.
+- `is_reportable` is computed by the server and only read by the client ([below](#is_reportable)). New parties start `false`.
 - The personal preference is KWS `chat` / `enhanced-voice-reporting`: [Get Setting Values](../../EpicGames/KWS/Settings/GetValues.md) / [Update Setting Values](../../EpicGames/KWS/Settings/UpdateValues.md).
 
 Toggle (real, response captured):
@@ -43,6 +43,47 @@ PATCH https://api.kws.ol.epicgames.com/v1/epic-settings/public/users/94b1569506b
 `preferredValue`: `recording` ("Always On") or `prefer-not-recording` ("Off When Possible", the age-bracket default). The same PATCH shape sets `text`, `voice`, `enhanced-text-reporting`, `filter-out-mature-language`, `filter-out-pii` and `party` / `party-joinability`.
 
 When the label is on and the room is connected, the overlay tells the SDK to resume recording (`start-voice-recording`); otherwise it suspends it (`pause-voice-recording`). The preference does not change the room's moderation mode or the need to sign audio.
+
+### is_reportable
+
+Party field, computed by the server, pushed in `party.v2.PARTY_UPDATED` and returned by [Get Party](../../EpicGames/PartyService/Parties/GetParty.md). Clients never write it. Observed live (2026-10-14, two EGL members):
+
+| Event | `is_reportable` |
+| --- | --- |
+| party created, one member in voice | `false` |
+| second member claims voice (`active_in_party_voice_room: true`) | `true` |
+| a member deafens (EGL PATCHes its member meta with `active_in_party_voice_room: false`) | `false` |
+| that member undeafens (`true` again) | `true` |
+| mic mute / unmute (meta PATCH, flag stays `true`) | unchanged |
+
+So it is `true` while at least 2 members have a connection with `active_in_party_voice_room: true`. Exception seen: a 3-member party with one EGL member and one Fortnite (Switch) member both flagged active stayed `false`; the rule for cross-product parties is not pinned down. The chat conversation has its own flag (`social.chat.v1.REPORTABILITY_CHANGE`, `isReportable`), which stayed `false` in all captures.
+
+Captured `PARTY_UPDATED` when the second member claimed voice:
+
+```json
+{
+  "correlationId": "92e55a4e-8896-4046-a67a-46bb36b68e17",
+  "timestamp": 1792000734569,
+  "id": "ZDAwYzYyNmRmM2FiMTJmYQ",
+  "connectionId": "6b4e20fffe8a1d57-00000001-05a3e9c1-7d2f4b6a8c0e1f35-2c9a7e4b",
+  "payload": {
+    "sent": "2026-10-14T17:58:54.569Z",
+    "party_id": "2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
+    "party_lead": "94b1569506b04f9f8557af611e8c5e47",
+    "meta": {
+      "created_by": "94b1569506b04f9f8557af611e8c5e47"
+    },
+    "party_privacy_type": "INVITE_ONLY",
+    "max_number_of_members": 16,
+    "chat_conversation_id": "ep-2f1f0a5e3c8b4b6f9d7e1a2b3c4d5e6f",
+    "created_at": "2026-10-14T17:58:53.823Z",
+    "updated_at": "2026-10-14T17:58:54.568Z",
+    "is_reportable": true,
+    "revision": 1
+  },
+  "type": "party.v2.PARTY_UPDATED"
+}
+```
 
 ## Preconditions for voice
 

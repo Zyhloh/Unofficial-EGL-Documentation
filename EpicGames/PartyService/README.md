@@ -38,7 +38,7 @@ Auth is a plain EG1 bearer token from any client (verified with `launcherAppClie
 
 | Error Code | Status | Handling |
 | --- | --- | --- |
-| `errors.com.epicgames.social.party.party_not_found` | 404 | ignored when leaving the old party |
+| `errors.com.epicgames.social.party.party_not_found` | 404 | `numericErrorCode` `51002`, `originatingService` `party-v2`; ignored when leaving the old party. Returned for disbanded parties ([example](Parties/GetParty.md)) |
 | `errors.com.epicgames.social.party.user_has_party` | 409 | create falls back to the existing `current` party |
 | `errors.com.epicgames.social.party.stale_revision` | 409 | member meta PATCH is retried with the fresh revision |
 | `errors.com.epicgames.social.party.client_policy_unknown` | | client-side only, logged when relationship state is unknown |
@@ -50,17 +50,16 @@ Party changes are pushed over Epic Connect ([Connect](../../Launcher/Social/Conn
 | Type | Fields read |
 | --- | --- |
 | `party.v2.MEMBER_JOINED` | `party_id`, `account_id`, `account_dn`, `connection { id, meta, deployment_id, connected_at, updated_at }`, `revision`, `suspended`, `member_state_updated`, `joined_at`, `updated_at`, `sent` |
-| `party.v2.MEMBER_LEFT`, `party.v2.MEMBER_EXPIRED_AFTER_DISCONNECT` | `party_id`, `account_id`, `sent` (`MEMBER_LEFT` also carried the leaver's `member_state_updated`) |
-| `party.v2.MEMBER_EXPIRED_IN_SOLO_PARTY`, `party.v2.MEMBER_EXPIRED_PARTY_DISBANDED` | same, marks the party disbanded |
-| `party.v2.MEMBER_KICKED` | same, raises `current-user-kicked-from-party` for self |
+| `party.v2.MEMBER_LEFT`, `party.v2.MEMBER_EXPIRED_AFTER_DISCONNECT` | `party_id`, `account_id`, `account_dn`, `revision`, `suspended`, `member_state_updated` (leaver's last state), `joined_at`, `updated_at`, `sent` |
+| `party.v2.MEMBER_EXPIRED_IN_SOLO_PARTY`, `party.v2.MEMBER_EXPIRED_PARTY_DISBANDED` | same, marks the party disbanded. `MEMBER_EXPIRED_PARTY_DISBANDED` is sent for the remaining member when a 2-member party drops to 1 ([disband behaviour](Members/LeaveParty.md#disband-behaviour-observed-2026-10-14)) |
+| `party.v2.MEMBER_KICKED` | same, `account_id` = kicked member; raises `current-user-kicked-from-party` for self ([example](Members/LeaveParty.md#events)) |
 | `party.v2.MEMBER_CONNECTED` / `party.v2.MEMBER_DISCONNECTED` | `party_id`, `account_id`, `account_dn`, `connection`, `revision`, `suspended` |
 | `party.v2.MEMBER_STATE_UPDATED` | `party_id`, `account_id`, `account_dn`, `connection`, `revision`, `suspended`, `member_state_updated`, `member_state_removed`, `member_state_overridden` |
-| `party.v2.JOIN_REQUEST_CREATED` | `requester_id`, `expires_at`, `auto` |
-| `party.v2.JOIN_REQUEST_EXPIRED` | `requester_id`, `requestee_id`, `sent_at` |
+| `party.v2.JOIN_REQUEST_CREATED`, `party.v2.JOIN_REQUEST_EXPIRED` | `requester_id`, `requester_dn`, `requestee_id`, `sent_at`, `expires_at`, `auto`, `sent` ([example](JoinRequests/SendJoinRequest.md)). `EXPIRED` also when the leader accepts by inviting |
 | `party.v2.INVITE_CREATED` | `party_id`, `inviter_id`, `inviter_dn`, `invitee_id`, `sent_at`, `updated_at`, `expires_at`, `auto` (+ `group_id`, `inviter_pl_dn` read by the client) |
-| `party.v2.INVITE_CANCELLED`, `party.v2.INVITE_EXPIRED` | `inviter_id`, `invitee_id` (`INVITE_EXPIRED` is also sent when the invitee accepts) |
+| `party.v2.INVITE_CANCELLED`, `party.v2.INVITE_EXPIRED` | `inviter_id`, `invitee_id`. Captured `INVITE_EXPIRED` = the `INVITE_CREATED` payload + `meta: {}`, sent when the invitee joins or [declines](Invites/DeclineInvite.md). `INVITE_CANCELLED` not captured |
 | `party.v2.MEMBER_REFRESH_SUMMARY` | none, triggers Get Parties Summary |
-| `party.v2.PARTY_UPDATED` | `is_reportable`, `party_lead`, `updated_at`, `revision`, `chat_conversation_id`, `source_chat_conversation_id`, `party_privacy_type`, `party_state_updated` (seen when a second member joined; payload not captured) |
+| `party.v2.PARTY_UPDATED` | `party_id`, `party_lead`, `meta`, `party_privacy_type`, `max_number_of_members`, `chat_conversation_id`, `created_at`, `updated_at`, `is_reportable`, `revision`, `sent`; config changes add `author_id`, `party_state_updated`, `party_state_removed`, `party_state_overridden` (client also reads `source_chat_conversation_id`). Sent on `is_reportable` changes, promote, leader leaving, config changes ([example](Members/PromoteMember.md)) |
 
 Captured order when EGL creates a party, invites a Fortnite (Switch) friend who accepts, and both claim voice: `social.chat.v1.CONVERSATION_CREATED`, `social.chat.v1.REPORTABILITY_CHANGE`, `MEMBER_JOINED` (self), `INVITE_CREATED`, `MEMBER_STATE_UPDATED` (self voice claim), `INVITE_EXPIRED`, `MEMBER_JOINED` (friend), `social.chat.v1.MEMBERS_JOIN`, `MEMBER_CONNECTED` (friend), `MEMBER_STATE_UPDATED` (friend `platform_name` / `product_name`), `MEMBER_STATE_UPDATED` (friend `active_voice_connection`).
 
@@ -152,6 +151,8 @@ _Example `party.v2.INVITE_CREATED`_
   "type": "party.v2.INVITE_CREATED"
 }
 ```
+
+`is_reportable` is computed by the server from the members' voice connections and pushed in `PARTY_UPDATED`; clients never write it ([Moderation](../../Launcher/Voice/Moderation.md#is_reportable)).
 
 A Fortnite member has two connections: `<id>#sub-eas-private-<n>` (`meta { platform, game }`, used as `active_voice_connection`) and `<id>#sub-eas-<n>` (`meta {}`, seen in `MEMBER_CONNECTED`).
 
