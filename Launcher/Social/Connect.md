@@ -102,7 +102,7 @@ The connection id format is `<16 hex>-<8 hex>-<8 hex>-<16 hex>-<8 hex>`. Fortnit
 | `social.chat.v1.CONVERSATION_CREATED` | `conversationId`, `type`, `members`, `invited`, `inviter`, `dateCreated`, `isReportable`, `isActive` |
 | `social.chat.v1.CONVERSATION_DELETED` | `conversationId` |
 | `social.chat.v1.NEW_INVITE` | `conversationId`, `type`, `title`, `members`, `invited`, `inviter`, `createdBy`, `conversationCreatedAt`, `inviteTime`, `time`, `msgId`, `isReportable` |
-| `social.chat.v1.REPORTABILITY_CHANGE` | `conversationId`, `type`, `isReportable`, `msgId`, `time` |
+| `social.chat.v1.REPORTABILITY_CHANGE` | `conversationId`, `type`, `isReportable`, `msgId`, `time` (the captured payload carries `conversationType`, not `type`) |
 | `social.chat.v1.TITLE_CHANGE` | `conversationId`, `accountId`, `title`, `time`, `msgId`, `isReportable` |
 | `social.chat.v1.MEMBERS_JOIN` / `MEMBERS_LEFT` | `conversationId`, `type`, `members`, `msgId`, `time`, `isReportable` |
 | `social.chat.v1.INVITE_READ` | `conversationId`, `totalPendingInvites`, `hasMorePendingInvites` |
@@ -114,6 +114,8 @@ The connection id format is `<16 hex>-<8 hex>-<8 hex>-<16 hex>-<8 hex>`. Fortnit
 | `k3s.v1.PARENT_LIMITS_CHANGED` | `productIds` (must contain `prod-fn`), `originalEventSentAt`, `settings[].{namespace,settingName,parentLimit}` |
 | `k3s.v1.EFFECTIVE_VALUES_CHANGED` | `productIds`, `originalEventSentAt`, `settings[].{namespace,settingName,effectiveValue}` |
 | `party.v2.*` | `PARTY_UPDATED`, `MEMBER_JOINED`, `MEMBER_LEFT`, `MEMBER_KICKED`, `MEMBER_STATE_UPDATED`, `MEMBER_CONNECTED`, `MEMBER_DISCONNECTED`, `MEMBER_EXPIRED_AFTER_DISCONNECT`, `MEMBER_EXPIRED_IN_SOLO_PARTY`, `MEMBER_EXPIRED_PARTY_DISBANDED`, `MEMBER_REFRESH_SUMMARY`, `INVITE_CREATED`, `INVITE_CANCELLED`, `INVITE_EXPIRED`, `JOIN_REQUEST_CREATED`, `JOIN_REQUEST_EXPIRED`. Captured live (2026-10-14): `MEMBER_JOINED`, `MEMBER_LEFT`, `MEMBER_KICKED`, `MEMBER_CONNECTED`, `MEMBER_STATE_UPDATED`, `MEMBER_EXPIRED_PARTY_DISBANDED`, `PARTY_UPDATED`, `INVITE_CREATED`, `INVITE_EXPIRED`, `JOIN_REQUEST_CREATED`, `JOIN_REQUEST_EXPIRED` ([Party Service events](../../EpicGames/PartyService/README.md#realtime-events), [disband behaviour](../../EpicGames/PartyService/Members/LeaveParty.md#disband-behaviour-observed-2026-10-14)) |
+
+Chat types captured live (2026-10-14): `CONVERSATION_CREATED`, `NEW_INVITE`, `REPORTABILITY_CHANGE`, `NEW_MESSAGE`, `TITLE_CHANGE`, `MESSAGE_READ`, `MEMBERS_JOIN` ([Chat Service events](../../EpicGames/ChatService/README.md#realtime-events), with payload examples). `NEW_MESSAGE` is nested (`conversation`, `message`), unlike the flat history entries.
 
 The client-only types `social.chat.v1.PENDING_MESSAGE`, `PENDING_MESSAGE_FAILED`, `PENDING_INIT_DM`, `PENDING_INIT_DM_FAILED`, `CONVERSATION_PARTY_STARTED`, `CONVERSATION_PARTY_ENDED`, `CONVERSATION_PARTY_CHAT_ENDED` share the namespace but are used for local message state.
 

@@ -23,10 +23,43 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 ## Body
 ```json
 {
-  "members": ["b9cd1f0b1b1a4fd7a2f1d1e4c3b2a190"]
+  "members": ["5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b"]
 }
 ```
 
 ---
 
-_Response body not read (not captured)_
+_Example Response_
+
+```json
+{
+  "invited": ["5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b"],
+  "notInvited": []
+}
+```
+
+The invited account in this capture was a friend of another group member, not of the inviter; it was invited without error.
+
+Event `social.chat.v1.NEW_INVITE` to the group:
+
+```json
+{
+  "namespace": "_",
+  "msgId": "07c0ExampleMessageId16",
+  "createdAt": "2026-10-14T22:30:18.097Z",
+  "time": 1792017018097,
+  "conversationId": "07c0ExampleGroupId0001",
+  "type": "group",
+  "createdBy": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60", "94b1569506b04f9f8557af611e8c5e47"],
+  "title": "Docs Test Renamed",
+  "isReportable": true,
+  "inviter": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "invited": ["5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b"],
+  "inviteTime": "2026-10-14T22:30:18.05Z",
+  "conversationCreatedAt": "2026-10-14T22:29:51.034Z",
+  "isActive": true
+}
+```
+
+`isReportable` was `false` while the group had one member and `true` in this event (two members).

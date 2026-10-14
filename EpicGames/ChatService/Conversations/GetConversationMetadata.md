@@ -36,4 +36,21 @@ _Example Response (DM)_
 }
 ```
 
-Groups additionally return `title` and `invited`, party conversations `metadata.partyId` (read by the client; not captured).
+_Example Response (group)_
+
+```json
+{
+  "conversationId": "07c0ExampleGroupId0001",
+  "title": "Docs Test",
+  "type": "group",
+  "createdBy": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "dateCreated": "2026-10-14T22:29:51.034Z",
+  "active": true,
+  "isActive": true,
+  "isReportable": false,
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60"],
+  "invited": ["94b1569506b04f9f8557af611e8c5e47"]
+}
+```
+
+An invited account can read the metadata before accepting. A group created from EGL, read by an invitee before accepting, returned neither `title` nor `isReportable`. Party conversations return `metadata.partyId` (read by the client; not captured).

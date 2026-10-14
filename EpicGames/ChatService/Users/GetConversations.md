@@ -63,4 +63,4 @@ _Example Response_
 
 With no conversations: `{"conversations":[]}`.
 
-Group conversations additionally carry the fields the client reads for groups (`title`, `invited`, `isInvited`, `inviter`, `inviteTime`, `lastReadMsgId`); not captured.
+A group entry in this list was not captured; [Get User Conversation](GetConversation.md) has a captured group object (`title`, `invited`, `joinedAt`).

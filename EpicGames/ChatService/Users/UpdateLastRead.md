@@ -20,10 +20,27 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 ## Body
 ```json
 {
-  "msgId": "..."
+  "msgId": "07c0ExampleMessageId11"
 }
 ```
 
 ---
 
-_Response body returned to caller (not captured)_
+_Example Response_
+
+```json
+{}
+```
+
+Event `social.chat.v1.MESSAGE_READ` to your own connections:
+
+```json
+{
+  "namespace": "_",
+  "time": 1792016991662,
+  "conversationId": "07c0ExampleGroupId0001",
+  "lastReadMessageId": "07c0ExampleMessageId11",
+  "totalUnreadMessages": 1,
+  "hasMoreUnreadMessages": false
+}
+```

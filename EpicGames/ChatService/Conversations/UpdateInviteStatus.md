@@ -1,6 +1,6 @@
 ## Chat Service - Conversations: Update Invite Status
 
-Accept / reject / mark-read a group chat invite. Intent `request-update-text-chat-invite-status`. Status values are not enumerated in the client bundle.
+Accept or reject a group chat invite. Intent `request-update-text-chat-invite-status`.
 
 URL: https://api.epicgames.dev/epic/chat/v1/public/:namespace/conversations/:conversationId/invites/:accountId \
 Method: PATCH \
@@ -23,10 +23,37 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 ## Body
 ```json
 {
-  "status": "<invite status>"
+  "status": "accepted"
 }
 ```
 
+| Status | Description |
+| --- | --- |
+| `pending` | Initial state of an invite |
+| `accepted` | Join the group |
+| `rejected` | Decline the invite |
+
 ---
 
-_Response body returned to caller (not captured)_
+_Example Response_
+
+```json
+{}
+```
+
+After accepting, the account moves from `invited` to `members` ([Get Members](GetMembers.md)) and the group receives `social.chat.v1.MEMBERS_JOIN`:
+
+```json
+{
+  "namespace": "_",
+  "msgId": "07c0ExampleMessageId23",
+  "createdAt": "2026-10-14T22:31:27.827Z",
+  "time": 1792017087827,
+  "conversationId": "07c0ExampleGroupId0002",
+  "type": "group",
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60"],
+  "isReportable": true
+}
+```
+
+On a conversation that no longer exists: 404 `errors.com.epicgames.social.chat.conversation_not_found` (see [Leave Conversation](LeaveConversation.md)).

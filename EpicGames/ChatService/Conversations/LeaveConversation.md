@@ -19,4 +19,19 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response_: any 2xx, body ignored
+_Example Response_: 204 No Content
+
+After leaving, requests from that account on the conversation (metadata, messages, invites, leaving again) return 404:
+
+```json
+{
+  "messageVars": [],
+  "errorMessage": "Conversation 07c0ExampleGroupId0001 in namespace _ not found",
+  "errorCode": "errors.com.epicgames.social.chat.conversation_not_found",
+  "correlationId": "8e4c2a1b-3d5f-4a7b-9c0d-2e1f3a4b5c6d",
+  "numericErrorCode": 40401,
+  "responseStatus": 404,
+  "intent": "prod",
+  "originatingService": "chat-service-api-prod"
+}
+```

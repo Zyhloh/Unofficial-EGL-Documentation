@@ -23,20 +23,53 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_ (group with `isReportable: true`)
+
+Only `NEW_MESSAGE` entries, oldest first (the reverse of [Get Messages](GetMessages.md)); system entries are left out.
 
 ```json
 {
   "page": [
     {
-      "msgId": "...",
-      "senderId": "b9cd1f0b1b1a4fd7a2f1d1e4c3b2a190",
-      "createdAt": "2026-10-14T00:00:00.000Z",
-      "system": false,
       "type": "social.chat.v1.NEW_MESSAGE",
-      "message": { "body": "<base64 signed payload>" },
-      "metadata": { "Sig": "...", "Pub": "..." }
+      "metadata": {
+        "Pub": "<jwt>",
+        "Sig": "<base64 ed25519 signature>",
+        "TmV": "2"
+      },
+      "msgId": "07c0ExampleMessageId25",
+      "senderId": "94b1569506b04f9f8557af611e8c5e47",
+      "createdAt": "2026-10-14T22:31:32.281Z",
+      "isReportable": true,
+      "message": {
+        "body": "<base64 payload>"
+      }
+    },
+    {
+      "type": "social.chat.v1.NEW_MESSAGE",
+      "metadata": {
+        "Pub": "<jwt>",
+        "Sig": "<base64 ed25519 signature>",
+        "TmV": "2"
+      },
+      "msgId": "07c0ExampleMessageId26",
+      "senderId": "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b",
+      "createdAt": "2026-10-14T22:31:35.66Z",
+      "isReportable": true,
+      "message": {
+        "body": "<base64 payload>"
+      }
     }
-  ]
+  ],
+  "hasNextPage": false
+}
+```
+
+_Example Response_ (DM with `isReportable: false`)
+
+```json
+{
+  "page": [],
+  "hasNextPage": false
 }
 ```

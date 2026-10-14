@@ -22,37 +22,46 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_ (group, creator's view)
 
 ```json
 {
-  "conversationId": "GBD2ExampleConversationId00001",
+  "conversationId": "07c0ExampleGroupId0001",
+  "title": "Docs Test",
   "type": "group",
-  "title": "Squad",
-  "createdBy": "94b1569506b04f9f8557af611e8c5e47",
-  "dateCreated": "2026-10-14T00:00:00.000Z",
-  "dateEnded": null,
-  "members": ["94b1569506b04f9f8557af611e8c5e47", "b9cd1f0b1b1a4fd7a2f1d1e4c3b2a190"],
-  "membersJoined": [],
-  "invited": [],
-  "inviteTime": null,
-  "joinedAt": "2026-10-14T00:00:00.000Z",
-  "isReportable": true,
+  "createdBy": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "dateCreated": "2026-10-14T22:29:51.034Z",
+  "active": true,
   "isActive": true,
-  "isInvited": false,
-  "inviteReadAt": null,
-  "inviter": null,
-  "lastActivityId": "...",
-  "childConversationId": null,
-  "lastReadMsgId": "...",
+  "isReportable": false,
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60"],
+  "invited": ["94b1569506b04f9f8557af611e8c5e47"],
+  "joinedAt": "2026-10-14T22:29:51.132Z",
   "unreadCount": 0,
+  "hasMoreUnread": false,
   "lastMessage": {
-    "msgId": "...",
     "type": "social.chat.v1.NEW_MESSAGE",
-    "senderId": "b9cd1f0b1b1a4fd7a2f1d1e4c3b2a190",
-    "createdAt": "2026-10-14T00:00:00.000Z",
-    "message": { "body": "<base64 signed payload>" },
-    "metadata": { "Sig": "...", "Pub": "..." }
-  }
+    "metadata": {
+      "Pub": "<jwt>",
+      "Sig": "<base64 ed25519 signature>",
+      "TmV": "2"
+    },
+    "msgId": "07c0ExampleMessageId11",
+    "senderId": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+    "createdAt": "2026-10-14T22:29:51.323Z",
+    "isReportable": false,
+    "message": {
+      "body": "<base64 payload>"
+    }
+  },
+  "lastActivityId": "07c0ExampleMessageId10"
 }
 ```
+
+`message.body` decoded:
+
+```json
+{"mid":"4a7c1e2d-8b3f-4c6a-9d0e-5f1a2b3c4d5e","sid":"c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60","rid":"07c0ExampleGroupId0001","msg":"hello","tst":1792016991646,"seq":1,"rec":false,"mts":[],"cty":"Persistent"}
+```
+
+The client also reads `dateEnded`, `membersJoined`, `inviteTime`, `isInvited`, `inviteReadAt`, `inviter`, `childConversationId` and `lastReadMsgId`; they were absent in this response.
