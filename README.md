@@ -13,17 +13,21 @@ The new launcher is a Rust ([Tauri](https://tauri.app)) application with a React
 All requests that require normal authentication require the `Authorization` header with the access token, like `bearer {accessToken}`. <br/>
 Requests made by the social overlay use the launcher's EG1 access token and additionally send `X-Epic-Agent: epic-social` and a random `X-EPIC-CORRELATION-ID`.
 
+Start with the [sign in flow](./Launcher/Flows/SignIn.md) to see how the launcher gets its tokens, and the [OAuth clients](./Launcher/Auth/Clients.md) it uses.
+
 Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
 
 ## Content
 
 - [Epic Games](./EpicGames)
+  - [Account Service](./EpicGames/AccountService)
   - [Artifact Delivery Service](./EpicGames/ArtifactDeliveryService)
   - [Catalog Service](./EpicGames/CatalogService)
   - [Chat Service](./EpicGames/ChatService)
   - [Compass Service](./EpicGames/CompassService)
   - [Connect Service](./EpicGames/ConnectService)
   - [Emerald Service](./EpicGames/EmeraldService)
+  - [EOS Auth Service](./EpicGames/EOSAuthService)
   - [Entitlement Service](./EpicGames/EntitlementService)
   - [Friends Service](./EpicGames/FriendsService)
   - [KWS](./EpicGames/KWS)
@@ -36,12 +40,25 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
   - [RTC Service](./EpicGames/RTCService)
   - [SOCS Service](./EpicGames/SOCSService)
   - [Social Ban Service](./EpicGames/SocialBanService)
+  - [Web APIs](./EpicGames/Web)
+    - [Id](./EpicGames/Web/Id)
   - [Errors](./EpicGames/Errors.md)
 - [Launcher](./Launcher)
   - [Flows](./Launcher/Flows)
+    - [Sign In](./Launcher/Flows/SignIn.md)
+    - [Game Launch](./Launcher/Flows/GameLaunch.md)
     - [Library](./Launcher/Flows/Library.md)
     - [Install And Update](./Launcher/Flows/InstallAndUpdate.md)
     - [Voice Chat](./Launcher/Flows/VoiceChat.md)
+  - [Auth](./Launcher/Auth)
+    - [Clients](./Launcher/Auth/Clients.md)
+    - [Token Storage](./Launcher/Auth/TokenStorage.md)
+    - [DPoP](./Launcher/Auth/DPoP.md)
+    - [EOS](./Launcher/Auth/EOS.md)
+    - [Cabined Mode](./Launcher/Auth/CabinedMode.md)
+    - [Account Links](./Launcher/Auth/AccountLinks.md)
+    - [V1 Carryover](./Launcher/Auth/V1Carryover.md)
+    - [IPC](./Launcher/Auth/IPC.md)
   - [Library](./Launcher/Library)
     - [Caching](./Launcher/Library/Caching.md)
     - [Artwork](./Launcher/Library/Artwork.md)
