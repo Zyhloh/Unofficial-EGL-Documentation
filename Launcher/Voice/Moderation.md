@@ -18,9 +18,9 @@ When the room connects with voice moderation the SDK keeps a rolling local recor
 2. SDK `HandleQueryRecordedParticipantsIntent` (`QueryRecordInformationPrivate`) publishes `voice-report` `{ recordId, participants: [{ userId, displayName }], status }`. The dialog lists everyone recorded except the reporter, 8 per row. Nobody else recorded -> "no voice data".
 3. User presses Submit -> `submit-voice-report` `{}`.
 4. SDK `HandleSubmitVoiceReportIntent` -> `FRTCAudioLogicRecord::StartRecordUploadToEmerald`:
-   - Emerald init (`EOS_Private_Emerald_InitializeUpload`) returns `Token`, `ChunkUrls` (exactly one URL) and `Files` (names from the SDK log strings).
-   - The archived recording is uploaded to the chunk URL (`UploadReportArchive`).
-   - Emerald complete (`EOS_Private_Emerald_FinalizeUpload`) with the token.
+   - [Emerald SO init](../../EpicGames/EmeraldService/SDK/SOInit.md) (`EOS_Private_Emerald_InitializeUpload`) returns `token` and `files` -> `recording.bin` -> `chunkUrls` (exactly one URL).
+   - The archived recording is `PUT` to that URL ([Upload Recording](../../EpicGames/EmeraldService/SDK/ChunkUpload.md), `UploadReportArchive`).
+   - [Emerald SO complete](../../EpicGames/EmeraldService/SDK/SOComplete.md) (`EOS_Private_Emerald_FinalizeUpload`) with the token.
    - `voice-moderation.reportStatus` goes `uploading` (with `reportUploadProgress`) -> `success` with `emeraldReportToken`, or `failure` / `noVoiceData`.
 5. On `success` the overlay sends `compass-send-report` -> [Compass Send Report](../../EpicGames/CompassService/Reports/SendReport.md) with body:
 
@@ -37,13 +37,4 @@ When the room connects with voice moderation the SDK keeps a rolling local recor
 
 ## Emerald routes in the SDK
 
-Relative to the SDK's `Emerald` service base (host resolved at runtime; the overlay's own Emerald host is in [Emerald Service](../../EpicGames/EmeraldService/README.md)). All `POST`, `Content-Type: application/json`, query parameter `platform`:
-
-| Path | SDK task |
-| --- | --- |
-| `/emerald/v1/init` | `InitUpload` |
-| `/emerald/v1/complete` | `CompleteUpload` |
-| `/emerald/v1/so/init` | `InitUploadSO` (social overlay variant) |
-| `/emerald/v1/so/complete` | `CompleteUploadSO` |
-
-Which pair the party voice report uses, the request bodies and the chunk upload method are not resolved statically (vtable dispatch); a live capture of one report is needed. Recording can also go to a custom URL (`StartRecordUploadToCustomUrl`), not used by the overlay.
+The SDK uses the `/emerald/v1/so/*` pair because the reporter is an Epic account id; `/emerald/v1/init` / `/emerald/v1/complete` are the product-user-id variant. Host and bodies: [Emerald Service](../../EpicGames/EmeraldService/README.md). Recording can also go to a custom URL (`StartRecordUploadToCustomUrl`), not used by the overlay.

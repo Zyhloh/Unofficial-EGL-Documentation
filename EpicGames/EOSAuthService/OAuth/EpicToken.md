@@ -21,3 +21,5 @@ Inferred from the SDK string table (`epicgames_exchange_code`, `GrantType`, `cod
 | `deployment_id` | `83364c64d38841d49c4de2f6f0eb3360` (prod) |
 
 Client id / deployment come from [Clients](../../../Launcher/Auth/Clients.md). Needs a live capture.
+
+Related SDK calls on the same session: [TokenInfo](TokenInfo.md), [Revoke](Revoke.md), [Exchange](Exchange.md), [PublicKeys](PublicKeys.md).

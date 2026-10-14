@@ -30,11 +30,14 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
   - [Connect Service](./EpicGames/ConnectService)
   - [Data Router Service](./EpicGames/DataRouterService)
   - [Data Storage Service](./EpicGames/DataStorageService)
+  - [E3S Service](./EpicGames/E3SService)
   - [Ecommerce Integration Service](./EpicGames/EcommerceIntegrationService)
   - [Emerald Service](./EpicGames/EmeraldService)
   - [EOS Auth Service](./EpicGames/EOSAuthService)
+  - [EOS SDK Config Service](./EpicGames/EOSSDKConfigService)
   - [Entitlement Service](./EpicGames/EntitlementService)
   - [EULA Tracking Service](./EpicGames/EulaTrackingService)
+  - [Feedback Service](./EpicGames/FeedbackService)
   - [Fortnite App Service](./EpicGames/FortniteAppService)
   - [Friends Service](./EpicGames/FriendsService)
   - [Interactions Service](./EpicGames/InteractionsService)
@@ -98,6 +101,7 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
     - [Message Signing](./Launcher/Social/Signing.md)
 - [Third Party](./ThirdParty)
   - [IGDB](./ThirdParty/IGDB)
+  - [LaunchDarkly](./ThirdParty/LaunchDarkly)
   - [Sentry](./ThirdParty/Sentry)
 
 ## Contributions

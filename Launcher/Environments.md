@@ -35,8 +35,8 @@ Keys are the names accepted by `-baseurl.<key>=<url>` (see [Overrides](#override
 | `epic_dev` | https://api.epicgames.dev | https://api-gamedev.ol.epicgames.net | [EOS auth](../EpicGames/EOSAuthService) `/auth/v1/oauth/token`, [telemetry](../EpicGames/DataRouterService/Telemetry/SendEvents.md) `/telemetry/data`, social overlay `/overlay-override/v1/launcher-eglv2.html` |
 | `connect_ws` | wss://connect.epicgames.dev | wss://connect-gamedev.ol.epicgames.net | [Epic Connect](Social/Connect.md) websocket |
 | `presence_service` | https://presence-public-service-prod.ol.epicgames.com | https://presence-public-service-gamedev.ol.epicgames.net | [Presence Service](../EpicGames/PresenceService) |
-| `feedback_ingest` | https://77m13yhhad.execute-api.us-east-1.amazonaws.com/prod | https://qv4w0ux1dl.execute-api.us-east-1.amazonaws.com/ci | Feedback reports, `POST /api/v2/reports` (`submit_feedback`). Also overridable by `EGL_FEEDBACK_INGEST_HOST` and the `feedback-ingest-url` flag |
-| `e3s_service` | https://e3s-prod.social.live.on.epicgames.com | https://e3s-gamedev.social.dev.on.epicgames.com | `/api/v1/coordinates` (game-invite weblink coordinates, `src\api\e3s.rs`) |
+| `feedback_ingest` | https://77m13yhhad.execute-api.us-east-1.amazonaws.com/prod | https://qv4w0ux1dl.execute-api.us-east-1.amazonaws.com/ci | Feedback reports, [Request Slot](../EpicGames/FeedbackService/Reports/RequestSlot.md) `POST /api/v2/reports` (`submit_feedback`). Also overridable by `EGL_FEEDBACK_INGEST_HOST` and the `feedback-ingest-url` flag |
+| `e3s_service` | https://e3s-prod.social.live.on.epicgames.com | https://e3s-gamedev.social.dev.on.epicgames.com | [Resolve Coordinates](../EpicGames/E3SService/Coordinates/Resolve.md) `/api/v1/coordinates`, [Join Session](../EpicGames/E3SService/Session/Join.md) `/api/v1/session/join` (game-invite weblinks, `src\api\e3s.rs`) |
 | `data_storage` | https://datastorage-public-service-liveegs.live.use1a.on.epicgames.com | https://datastorage-public-service-gamedev.ol.epicgames.net | [Data Storage](../EpicGames/DataStorageService): cloud saves |
 | `partner_integration` | https://partnerintegration-public-service-prod.ol.epicgames.com | https://partnerintegration-public-service-gamedev.ol.epicgames.net | [Partner Integration](../EpicGames/PartnerIntegrationService) (base path `/partnerintegration`) |
 | `ecommerce_integration` | https://ecommerceintegration-public-service-ecomprod02.ol.epicgames.com | https://ecommerceintegration-public-service-gamedev.ol.epicgames.net | [Ecommerce Integration](../EpicGames/EcommerceIntegrationService) (base path `/ecommerceintegration`) |
@@ -60,7 +60,7 @@ Hardcoded in the exe, same in every environment:
 | https://quixel-megascans-static.s3.us-west-2.amazonaws.com/fab/manifest/prod/plugins_v1.json | Fab DCC plugin manifest |
 | https://o10593.ingest.us.sentry.io | [Sentry](../ThirdParty/Sentry) |
 | https://api.mixpanel.com | Mixpanel `/track?ip=0` (`telemetry::sinks::mixpanel`) |
-| https://clientsdk.launchdarkly.com, https://clientstream.launchdarkly.com, https://events.launchdarkly.com | LaunchDarkly mobile SDK (feature flags, see [Architecture](Architecture.md#feature-flags)) |
+| https://clientsdk.launchdarkly.com, https://clientstream.launchdarkly.com, https://events.launchdarkly.com | [LaunchDarkly](../ThirdParty/LaunchDarkly) mobile SDK (feature flags, see [Architecture](Architecture.md#feature-flags)) |
 | https://epicgamesinc.cloudflareaccess.com | Staff only: "EGS Zero Trust" store sign-in (`egs_zero_trust`) |
 | https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton10-34/GE-Proton10-34.tar.gz | Linux: Proton runtime (`install_proton_runtime`) |
 | https://media-cdn.epicgames.com | CSP `connect-src` only (store media) |
@@ -114,4 +114,4 @@ Command-line flags (parsed in `eglv2_lib::command_line`): `-debugtools`, `-debug
 | EOS | Launcher was not an EOS client | Full EOS SDK client (`api.epicgames.dev` token, `wss://connect.epicgames.dev`, EOS overlay for social) |
 | Self update | BuildPatch from launcher assets | Tauri updater: `buildinfo.json` + signed NSIS setup on `content-download-egs.distro.on.epicgames.com/Builds/EGLv2`, gated by LaunchDarkly |
 | Telemetry | Data Router | Data Router (`AppID=LauncherV2`), EOS telemetry (`api.epicgames.dev/telemetry/data`), Mixpanel, Sentry |
-| Feedback | - | AWS API Gateway `/api/v2/reports` |
+| Feedback | - | AWS API Gateway [`/api/v2/reports`](../EpicGames/FeedbackService/Reports/RequestSlot.md) |

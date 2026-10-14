@@ -1,6 +1,6 @@
 ## EOS Auth Service - OAuth: Token (v1)
 
-Present in the launcher's environment table as `{epic_dev}/auth/v1/oauth/token` (built in `sub_140E00FD0`, stored at EndpointUrls +0x228). No Rust code path that sends a request to this URL was found; the EOS SDK carries the same path as its Connect `TokenExchange` call. Documented here so the table entry is accounted for.
+Present in the launcher's environment table as `{epic_dev}/auth/v1/oauth/token` (built in `sub_140E00FD0`, stored at EndpointUrls +0x228). No Rust code path that sends a request to this URL was found; the EOS SDK carries the same path as its Connect `TokenGrant` route (`EOSAuth` service; `TokenExchange` is `/auth/v2/oauth/token`). Documented here so the table entry is accounted for.
 
 URL: https://api.epicgames.dev/auth/v1/oauth/token \
 Method: POST \
