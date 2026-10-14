@@ -13,6 +13,8 @@ The new launcher is a Rust ([Tauri](https://tauri.app)) application with a React
 All requests that require normal authentication require the `Authorization` header with the access token, like `bearer {accessToken}`. <br/>
 Requests made by the social overlay use the launcher's EG1 access token and additionally send `X-Epic-Agent: epic-social` and a random `X-EPIC-CORRELATION-ID`.
 
+See [Architecture](./Launcher/Architecture.md) for how the launcher is put together and [Environments](./Launcher/Environments.md) for every base URL it uses.
+
 Start with the [sign in flow](./Launcher/Flows/SignIn.md) to see how the launcher gets its tokens, and the [OAuth clients](./Launcher/Auth/Clients.md) it uses.
 
 Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
@@ -26,29 +28,49 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
   - [Chat Service](./EpicGames/ChatService)
   - [Compass Service](./EpicGames/CompassService)
   - [Connect Service](./EpicGames/ConnectService)
+  - [Data Router Service](./EpicGames/DataRouterService)
+  - [Data Storage Service](./EpicGames/DataStorageService)
+  - [Ecommerce Integration Service](./EpicGames/EcommerceIntegrationService)
   - [Emerald Service](./EpicGames/EmeraldService)
   - [EOS Auth Service](./EpicGames/EOSAuthService)
   - [Entitlement Service](./EpicGames/EntitlementService)
+  - [EULA Tracking Service](./EpicGames/EulaTrackingService)
+  - [Fortnite App Service](./EpicGames/FortniteAppService)
   - [Friends Service](./EpicGames/FriendsService)
+  - [Interactions Service](./EpicGames/InteractionsService)
   - [KWS](./EpicGames/KWS)
   - [Launcher Service](./EpicGames/LauncherService)
   - [Library Service](./EpicGames/LibraryService)
   - [Moderation Service](./EpicGames/ModerationService)
+  - [Order Processor Service](./EpicGames/OrderProcessorService)
+  - [Overlay Feature Flags Service](./EpicGames/OverlayFeatureFlagsService)
+  - [Partner Integration Service](./EpicGames/PartnerIntegrationService)
   - [Party Service](./EpicGames/PartyService)
   - [Presence Service](./EpicGames/PresenceService)
   - [Public Key Service](./EpicGames/PublicKeyService)
   - [RTC Service](./EpicGames/RTCService)
   - [SOCS Service](./EpicGames/SOCSService)
   - [Social Ban Service](./EpicGames/SocialBanService)
+  - [Store Content Service](./EpicGames/StoreContentService)
   - [Web APIs](./EpicGames/Web)
     - [Id](./EpicGames/Web/Id)
+    - [Fab](./EpicGames/Web/Fab)
   - [Errors](./EpicGames/Errors.md)
+- [Epic Games Store](./EpicGamesStore)
 - [Launcher](./Launcher)
+  - [Architecture](./Launcher/Architecture.md)
+  - [Environments](./Launcher/Environments.md)
+  - [Local Data](./Launcher/LocalData.md)
+  - [Deep Links](./Launcher/DeepLinks.md)
+  - [Self Update](./Launcher/SelfUpdate.md)
+  - [IPC Commands](./Launcher/IPC)
   - [Flows](./Launcher/Flows)
     - [Sign In](./Launcher/Flows/SignIn.md)
     - [Game Launch](./Launcher/Flows/GameLaunch.md)
     - [Library](./Launcher/Flows/Library.md)
     - [Install And Update](./Launcher/Flows/InstallAndUpdate.md)
+    - [Cloud Saves](./Launcher/Flows/CloudSaves.md)
+    - [Purchase](./Launcher/Flows/Purchase.md)
     - [Voice Chat](./Launcher/Flows/VoiceChat.md)
   - [Auth](./Launcher/Auth)
     - [Clients](./Launcher/Auth/Clients.md)
@@ -74,6 +96,9 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
     - [Connect (WebSocket)](./Launcher/Social/Connect.md)
     - [GraphQL](./Launcher/Social/GraphQL.md)
     - [Message Signing](./Launcher/Social/Signing.md)
+- [Third Party](./ThirdParty)
+  - [IGDB](./ThirdParty/IGDB)
+  - [Sentry](./ThirdParty/Sentry)
 
 ## Contributions
 
