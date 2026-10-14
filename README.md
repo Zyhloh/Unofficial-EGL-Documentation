@@ -2,7 +2,7 @@
 
 Unofficial documentation of the services, endpoints and internal flows used by the new Epic Games Launcher.
 
-Documented build: `0.95.1+ge288862` <br/>
+Documented build: `0.95.1+ge288862` (no API changes in `0.95.2+gfa9ad49`) <br/>
 Social overlay build: `48a8a998c785c6c7358b56ddc82474ca23ae565f` (`social-overlay@2.9.2`) <br/>
 EOS SDK: `1.19.4230.0-57929184@LauncherV2`
 
