@@ -82,9 +82,11 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
 - Include an example response (shortened), never real tokens or personal data
 - Note the launcher build your changes are based on
 
-## Authors
+## Honorable Mention
 
-- [Zyhloh](https://github.com/Zyhloh)
+Huge thanks to [Lele](https://github.com/LeleDerGrasshalmi) and everyone who contributed to the [Epic Games / Fortnite Endpoints Documentation](https://github.com/LeleDerGrasshalmi/FortniteEndpointsDocumentation). It has documented the core Epic Games and Fortnite APIs for years and remains the go-to reference for anything outside the launcher. If a service you need is not covered here, check there first.
+
+The structure and page formatting of this repository are taken directly from that project, so the two can be read side by side. All credit for the format goes to Lele.
 
 ## Disclaimer
 
