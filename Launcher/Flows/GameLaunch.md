@@ -48,6 +48,18 @@ Before merging, user / catalog args whose name matches a launcher-owned argument
 
 A cabined account must acknowledge the restriction notice first; see [Cabined Mode](../Auth/CabinedMode.md). The refused launch is replayed after `cabined_gate_acknowledge`.
 
+## Ownership token
+
+Titles whose catalog custom attribute `OwnershipToken` is `"true"` (Hogwarts Legacy, Just Cause 4, Football Manager 2020) get a token from [Ownership Token](../../EpicGames/EcommerceIntegrationService/OwnershipToken/Create.md) before the launch. It is written to `<installDir>\.egstore\<accountId>\<namespace><catalogItemId>.ovt` (the three parts are checked to be file-name safe) and passed as `-epicovt=<path>`. Token files are deleted on uninstall.
+
+## Deployment id
+
+`-epicdeploymentid` comes from the artifact sidecar ([Bulk Sidecars](../../EpicGames/LauncherService/Assets/BulkSidecars.md), `config.deploymentId`). Titles without a sidecar launch without it ("launching without -epicdeploymentid").
+
+## Extra launch options
+
+Catalog custom attributes `extraLaunchOption_NNN_Name` / `extraLaunchOption_NNN_Args` (e.g. ARK: `Launch ARK (Extremely Low Memory)`, Rocket League `-noeac`) are offered as alternative launch modes (`get_extra_launch_options`); the chosen option's args are appended. `defaultLaunchOption_Args` is used when none is chosen. Argument sources in precedence order: manifest `LaunchCommand`, catalog `AdditionalCommandLine`, per-game user launch args, catalog extra launch option args; a later duplicate of the same argument wins within a source, a higher-precedence source wins across sources.
+
 ## Partner titles
 
-EA app / Ubisoft Connect titles are handed off instead of spawned. The launcher mints an exchange code the same way and passes `AUTH_PASSWORD`, `AUTH_TYPE=exchangecode`, `epicusername`, `epicuserid`, `epiclocale` to the partner client through its `://launchgame/` URI (EA: `exchangecode`, `source`, `epicuid` keys). Refused when the account is not linked (`REQ-PARTNER-130`, `REQ-PARTNER-133`). Partner details belong to the partner docs.
+EA app and Ubisoft Connect titles are handed off by URI instead of spawned, with a fresh exchange code per hand-off. See [Third-party Titles](../Library/ThirdPartyTitles.md) for the URIs and checks.

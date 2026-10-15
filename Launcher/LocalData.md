@@ -27,10 +27,11 @@ Tauri app identifier `com.epicgames.eglv2`. Data dir `%LOCALAPPDATA%\com.epicgam
     queue.json
     activity.json
   feedback\history-<env>.json
-  heroes\_index.json, <md5>.jpg      detail page heroes
+  heroes\_index.json, <sha1>.jpg     detail page heroes
   images\_index.json, <md5>.jpg      cover cache (served as http://img.localhost/<md5>)
   images\heroes\_index.json, _meta.json
   installations.jsonl                append-only installation records
+  installations.jsonl.prev           previous copy
   last-version.txt                   last launched version, e.g. 0.95.1+ge288862
   logs\EpicGamesLauncher_<YYYY-MM-DD_HH-MM-SS>.log
   settings\
@@ -47,7 +48,7 @@ Tauri app identifier `com.epicgames.eglv2`. Data dir `%LOCALAPPDATA%\com.epicgam
   update-splash\EpicGamesLauncherUpdate-<version>.exe, close
 ```
 
-Other names in the exe that live under the data dir (exact folder not confirmed): `pending-uninstalls.json`, `recently-played.json`, `last-played.json`, `playtime-cache.json`, `project-state.json`, `in-place-update.json`, `self-update-applied.json`, `stable-target.json`, `fab-settings.json`, `ld-overrides.json` / `ld-overrides.jsonc`, `api.json` (install API record), `cloud-saves\state\...`, `listings_v1.db` (Fab vault index), `fab.jsonl`, `ue-gates-cache.json`, `platform-availability-cache.json`, `voice-settings.json`, per-account `app-settings.json`.
+Other names in the exe that live under the data dir (exact folder not confirmed): `pending-uninstalls.json`, `recently-played.json`, `last-played.json`, `playtime-cache.json`, `project-state.json`, `in-place-update.json`, `self-update-applied.json`, `stable-target.json`, `fab-settings.json`, `ld-overrides.json` / `ld-overrides.jsonc`, `api.json` (see [Install API](InstallApi.md)), `cloud-saves\state\...`, `listings_v1.db` (Fab vault index), `fab.jsonl`, `ue-gates-cache.json`, `platform-availability-cache.json`, `voice-settings.json`, per-account `app-settings.json`.
 
 Refresh tokens are not on disk; see [Token Storage](Auth/TokenStorage.md) (Credential Manager service `com.epicgames.eglv2.<env>`).
 
@@ -75,6 +76,38 @@ Keys of a live file:
 | `idleTimeoutMinutes` | Presence idle |
 | `topBar`, `topBarHintSeen`, `topBarHintRippleCount` | Top bar layout |
 | `cloudSavesEnabled` | |
+
+## installations.jsonl
+
+First line is a header, then one JSON object per write. The newest line for an `installationId` wins; an install in progress is written with `complete: false` and `pendingVersion` / `pendingTags`, then again with `complete: true` and `version` / `tags`. Deleted installs are tombstones `{installationId, writtenAt, deleted}`. The file is compacted from time to time (`installations.jsonl.prev` is the previous copy).
+
+```json
+{"version":1,"writtenAt":"2026-10-14T22:52:11Z","entries":7}
+{"installationId":"7C7D6290F7A428E71E3826B60AEEE13D","complete":true,"dir":"D:\\Fortnite","platform":"Windows","namespace":"fn","itemId":"d75daf91c89b49ecb110b69a7bd68996","artifactId":"afdb5a85efcc45d8ae8e406e2121d81c","version":"1.1","tags":[""],"parentInstallationId":"1061D9CB32B3BAC1ACADBB5DD155FFB3","launchCommand":"","launchExecutable":"","writtenAt":"2026-10-14T15:22:55Z"}
+```
+
+Base game entries also carry `componentSelection` (`sdMetaHash`, `selected` and `known` component ids, `governedTags`), `dependencyConfig`, `sidecar` (`revision`), and `launchCommand` / `launchExecutable` from the manifest. Other fields of the record: `mainArtifactId`, `isFab`, `prereqSha1Hash`, `lastPrereqSucceededSha1Hash`. The manifest of each installation is `<dir>\.egstore\<installationId>.manifest`. Installs imported from the old launcher keep its installation GUID as `installationId`.
+
+## Download state
+
+`download\queue.json`: `{ "version": 1, "operations": [] }`, see [Install and Update](Flows/InstallAndUpdate.md#queue-and-resume). `download\activity.json`: per account a list of `{ key: "<namespace>:<itemId>:<appName>", kind: "installed", at: <ms> }`. `cache\disk-size-cache.json`: `{ entries: [{ app_id: { namespaceId, itemId, appName }, bytes, measured_at_ms }] }`.
+
+## game-settings.json
+
+```json
+{
+  "games": {},
+  "addons": {
+    "fn:4fe75bbc5a674f4f9b356b5c90567da5:Fortnite": {
+      "fn:1e8bda5cfbb641b9a9aea8bd62285f73:Fortnite_Studio": false,
+      "fn:d75daf91c89b49ecb110b69a7bd68996:afdb5a85efcc45d8ae8e406e2121d81c": true
+    }
+  },
+  "cloudSaves": {}
+}
+```
+
+`games` holds per-game settings (`autoUpdate`, `priorityDownload`, `additionalCommandsEnabled`, launch args, `cloudSaves`, `showNotifications`); `addons` is the [Manage add-ons](Library/Addons.md#add-on-toggles) opt-in map.
 
 ## Other locations
 

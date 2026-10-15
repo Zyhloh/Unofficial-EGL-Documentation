@@ -1,0 +1,18 @@
+{
+  "installRoot": "~/Games/Epic",
+  "stateFile": "~/.egl-download-client/installs.json",
+  "tokenFile": "~/.egl-download-client/tokens.json",
+  "platform": "Windows",
+  "label": "Live",
+  "workers": 24,
+  "retries": 4,
+  "memoryLimitMB": 1024,
+  "speedLimitBytesPerSecond": 0,
+  "updateCheck": "size",
+  "runPrereqs": false,
+  "locale": "en-US",
+  "client": {
+    "id": "34a02cf8f4414e29b15921876da36f9a",
+    "secret": "daafbccc737745039dffe53d94fc76cf"
+  }
+}

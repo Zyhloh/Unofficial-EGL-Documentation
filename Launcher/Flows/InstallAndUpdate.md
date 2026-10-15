@@ -1,6 +1,23 @@
 # Install and Update
 
-How the launcher turns a library item into files on disk: which metadata it requests, how manifest and chunk URLs are built, and how updates, selective downloads, DLC sizes and verification reuse the same pieces. The manifest parser itself (`eglv2-manifest` crate) is not described; see [Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Manifest.md) for the format notes.
+How a library item becomes files on disk, and how the launcher keeps it updated, verified and repaired. Every step was reproduced with a standalone client ([Download Client](../../Examples/DownloadClient)), which installs, updates, verifies, repairs and uninstalls games, apps, add-ons and engines without the launcher.
+
+## Overview
+
+| Step | Request |
+| ---- | ------- |
+| Owned items | [Library Items](../../EpicGames/LibraryService/Library/Items.md) |
+| Titles, categories, add-ons, custom attributes, art | [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) |
+| Build of an item | [Get Asset (v2)](../../EpicGames/LauncherService/Assets/GetAssetV2.md) |
+| Dependencies (Fortnite) | [Artifact Dependency Config](../../EpicGames/LauncherService/ArtifactDependencies/GetConfig.md) |
+| Optional components | [Selective Download Metadata](../../EpicGames/ArtifactDeliveryService/Builds/SdMeta.md) |
+| File and chunk list | [Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Manifest.md) |
+| File data | [Chunk](../../EpicGames/ArtifactDeliveryService/Builds/Chunk.md) |
+| Update check | [Batch App Info](../../EpicGames/LauncherService/Assets/AppInfo.md) |
+| Smaller updates | [Delta Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Delta.md) |
+| Deployment id for launch | [Bulk Sidecars](../../EpicGames/LauncherService/Assets/BulkSidecars.md) |
+
+Manifests, chunks and `.sdmeta` files need no Epic token; their URLs carry a short-lived signed query token instead (chunks also download without it).
 
 ## IPC
 
@@ -21,41 +38,61 @@ Progress is pushed with `download-progress-event`, `download-queue-state-event` 
 
 ## Install
 
-1. **Catalog** — the item must be in the catalog cache, otherwise it is fetched with [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) ("Fetched the uncached catalog entry of ..."). `releaseInfo` decides platform availability; `mainGameItem` decides whether an add-on installs into its parent's directory; `eulaIds` drive the library EULA gate (`eula-prompt-event`) before the install proceeds.
-2. **Build info** — [Get Asset (v2)](../../EpicGames/LauncherService/Assets/GetAssetV2.md) for `platform / namespace / catalogItem / app / label`. Transient errors and timeouts are retried with backoff ("Retrying manifest metadata fetch after backoff"). The element gives `buildVersion`, manifest mirrors, manifest SHA-1 (`hash`), `selectiveDownload`, `sdMetaHash`, `cdnBaseUrls` and `sidecar`.
-3. **Dependencies** — [Artifact Dependency Config](../../EpicGames/LauncherService/ArtifactDependencies/GetConfig.md) for `namespace / item / app / buildVersion`, stored on the install record (`dependencyConfig`). Only exists when the asset element has `metadata.hasDependencyConfig: true` (e.g. Fortnite); other builds return 404 `artifact_dependency_config_not_found`.
-4. **Manifest** — [Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Manifest.md) from the first mirror whose bytes parse and match `hash` (SHA-1).
-5. **Components** — the selected install tags (`selectedTags`) filter the manifest's file list. Component definitions come from [`.sdmeta`](../../EpicGames/ArtifactDeliveryService/Builds/SdMeta.md) or, without one, from the manifest install tags.
-6. **Chunks** — for each needed chunk, [Chunk](../../EpicGames/ArtifactDeliveryService/Builds/Chunk.md) `{cdnBaseUrl}/{ChunksDir}/{group:02}/{hash:016X}_{guid}.chunk`, trying every `cdnBaseUrls` entry on failure; decompressed, SHA-1 checked, cached in `.egstore/chunk_cache`.
-7. **Assembly** — files are written from chunk parts and hashed while streaming; a mismatch leaves the file for a later verify instead of failing the install.
-8. **Prerequisites** — the manifest's prerequisite (`PrereqPath`, `PrereqArgs`, `PrereqIds`) is run; a failure raises `prereq-failed-event`. `prereqSha1Hash` / `lastPrereqSucceededSha1Hash` on the record avoid re-running it.
-9. **Record** — the manifest is saved as `.egstore/<id>.manifest` and the install is appended to `installations.jsonl` (`version` = `buildVersion`, `tags`, `componentSelection`, `sidecar`, `launchCommand`, `launchExecutable`, ...).
+1. **Catalog**: `releaseInfo[]` gives the app name per platform; `mainGameItem` marks an add-on, which installs into its base game's folder (see [Add-ons](../Library/Addons.md)); `customAttributes.FolderName` is the default folder name; `ThirdPartyManagedApp` / `ThirdPartyManagedProvider` route the title to a partner client instead (see [Third-party Titles](../Library/ThirdPartyTitles.md)); `eulaIds` trigger the EULA prompt first.
+2. **Build info**: Get Asset (v2) for `platform / namespace / catalogItem / app / label` (10 s timeout, up to 3 retries from 250 ms). It returns `buildVersion`, the manifest `hash` (SHA-1), the manifest mirrors, and optionally `selectiveDownload` + `sdMetaHash`, `metadata.hasDependencyConfig`, `sidecar`. An add-on the account does not own returns `403 not_entitled`; a title with no Epic build returns `404 download_info_not_found`.
+3. **Dependencies**: only when `metadata.hasDependencyConfig` is true. Stored on the install record (`dependencyConfig`).
+4. **Manifest**: the mirrors are tried in the order given; a copy is accepted when its SHA-1 equals `hash`. Signed tokens expire about 5 minutes after step 2.
+5. **Components**: the selected components' install tags filter the file list. A file with no tags is always installed; a tagged file when any of its tags is selected. Without a `.sdmeta`, the tags themselves are the options (Unreal Engine: `templates`, `engine_source`, `platform_*`, ...).
+6. **Chunks**: every chunk referenced by a selected file is downloaded once, from the healthiest CDN, decompressed and SHA-1 checked (24 to 64 in parallel, retries, failover and stall timeout in [Chunk](../../EpicGames/ArtifactDeliveryService/Builds/Chunk.md)). Chunks are held in RAM and spill to `<install>\.egstore\chunk_cache` when the budget is full, on pause or on exit.
+7. **Assembly**: each file is its chunk parts concatenated in order, written in place (very large files go through `.egl-part` temps) and SHA-1 hashed while streaming. A mismatch flags the file for repair instead of failing the install.
+8. **Verify**: with `verifyFilesOnInstall` (on by default) the files are read back after a drive cache flush and hashed again; corruption is repaired.
+9. **Prerequisites**: the manifest's `prereqPath` / `prereqArgs` run elevated (UAC). See [Third-party Titles](../Library/ThirdPartyTitles.md#prerequisites-seen).
+10. **Record**: the manifest is saved as `<install>\.egstore\<installationId>.manifest`, and the install is appended to `installations.jsonl` (`version` = `buildVersion`, `tags`, `componentSelection`, `dependencyConfig`, `sidecar`, `launchCommand`, `launchExecutable`, `parentInstallationId` for add-ons). An uninstall entry is written under `HKCU\...\Uninstall`.
+
+Live example, Crosshair V2: 626 files, 203 chunks, 101.5 MB download, 201.5 MB on disk, about 1.5 s on a fast connection.
 
 ## Sizes without installing
 
-- `get_manifest_info`: steps 2 and 4, then sums file / chunk sizes for the selected tags.
-- `prefetch_manifest { hold: true }`: runs steps 2 and 4 ahead of the click and holds the parsed manifest for a while (`ManifestHold`, expires; `ManifestHoldFailedInstall` when the held copy cannot be used).
-- `get_dlc_manifest_sizes`: for each add-on, either a cached `ManifestSummary` (`formatVersion`, `buildVersion`, `manifestBytes`, `manifestSha1`, `fileCount`, `installSize`, `downloadSize`, `tags`, `ownershipToken`) or the local manifest in `.egstore`, else steps 2 and 4 (`DlcSizeFromManifestSummary`, `DlcSizeFromLocalManifest`, `DlcSizeLookupFailed`).
-- `get_selective_download_info`: served from `sd-cache.json`, revalidated in the background against `buildVersion` + `sdMetaHash` (`selective-download-info-updated-event`).
+- `get_manifest_info`: steps 2 and 4, then sums file sizes (install) and chunk file sizes (download) for the selected tags.
+- `prefetch_manifest { hold: true }`: runs steps 2 and 4 ahead of the click and holds the parsed manifest for a while.
+- `get_dlc_manifest_sizes`: a cached `ManifestSummary` (`cache/manifest-summaries/<installationId>.json`: `formatVersion` 3, `buildVersion`, `manifestBytes`, `manifestSha1`, `fileCount`, `installSize`, `downloadSize`, `tags`, `ownershipToken`), the local manifest in `.egstore`, else steps 2 and 4.
+- `get_selective_download_info`: served from `sd-cache.json`, revalidated in the background against `buildVersion` + `sdMetaHash`.
+
+## Background update check
+
+1. The first check runs 5 s plus up to 3 s after start, once signed in. After that the interval comes from the LaunchDarkly flags `game-update-check-interval` (default `20`) and `game-update-check-jitter` (default `1.5`), most likely minutes. A deep link or `trigger_update_check` runs a check early.
+2. Installed apps are sent to Batch App Info in groups of 50: `{"appKeys":[{"artifactId","catalogId","sandboxId"}]}`. The response is a bare array of `{appName, labelName, buildVersion, catalogItemId, namespace, assetId}`.
+3. An update exists when `buildVersion` differs from the install record's `version`. The same pass refreshes sidecars and notices `sdMetaHash` changes.
+4. Automatic download: only with `automaticDownloadsEnabled`, the game's `autoUpdate` setting, and inside the download window (`downloadScheduleEnabled`, `downloadScheduleStartMinute`, `downloadScheduleEndMinute`). Add-ons wait for their parent's update. Otherwise the update is offered manually. The new manifest and delta can be fetched ahead of the click.
 
 ## Update
 
-1. A background check (interval from the `game-update-check-interval` / `game-update-check-jitter` flags) sends installed games in chunks to [Batch App Info](../../EpicGames/LauncherService/Assets/AppInfo.md) (`{"appKeys":[{artifactId, catalogId, sandboxId}]}`, response is a bare array) and compares each `buildVersion` with the record's `version`.
-2. The new manifest (and a delta, if any) can be downloaded ahead of the click ("update manifest and delta stored ahead of the click").
-3. The old manifest is read from `.egstore` ("No old manifest found in .egstore, treating all files as new"). If no installed file changed since install, the delta fetch is skipped.
-4. [Delta Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Delta.md) `{cdnBaseUrl}/Deltas/{a}/{b}.delta` is merged into the new manifest when it fits; otherwise the client diffs old vs new manifest.
-5. Only changed chunks are downloaded; chunks that can be rebuilt from local data are reused ("Download.ChunkReuseChecked"). New files are written as `.new` temps and swapped in at the end, so an interrupted update resumes from them.
+1. The old manifest is read from `.egstore` ("No old manifest found in .egstore, treating all files as new").
+2. A [delta manifest](../../EpicGames/ArtifactDeliveryService/Builds/Delta.md) is merged into the new manifest when available; otherwise old and new manifests are diffed.
+3. Files whose SHA-1 is unchanged are kept. Changed files are built as `<file>.new` temps and swapped in at the end, so an interrupted update resumes from them. Chunk data that already exists in installed files is read from disk ("Chunk-level dedup: reusing existing chunks from installation"); only the rest is downloaded. An in-place mode with a journal also exists (`EGL_DESTRUCTIVE_UPDATES`).
+4. Files the new build no longer has are deleted after the swap, except files that another installation in the same folder still lists (add-ons and their parent share a folder). If a sibling's manifest cannot be read, nothing is deleted.
+5. With `verifyAllFilesOnUpdate` the untouched files are verified while the download runs.
 
-`modify_install` uses the same path with the installed build: if the installed manifest is the latest (SHA-1 match) it is not downloaded again.
+Live example, Quixel Bridge 5.7 build updated in place to the 5.8 build: 231 files, 198 kept, 33 rewritten, 2 deleted, 32 MB downloaded instead of 80 MB.
+
+`modify_install` (changing components) goes through the same path with the installed build: newly selected tags are downloaded, deselected files are deleted.
 
 ## Verify and repair
 
 1. The latest manifest is fetched (steps 2 and 4). If it cannot be downloaded the verify fails (`FNO-P-11`).
-2. Every file is hashed against the manifest; `verify-repair-started-event` reports how many files are corrupt or missing.
-3. Repair rebuilds what it can from local data, downloads the remaining chunks and retries a bounded number of times ("Repair: files still damaged, retrying", "Repair: exhausted retries, leaving the installation incomplete").
+2. Every selected file is hashed (SHA-1) against the manifest; `verify-repair-started-event` reports how many are corrupt or missing.
+3. Repair rebuilds what it can from local data, downloads the chunks of the remaining bad files and retries a bounded number of times ("Repair: exhausted retries, leaving the installation incomplete").
 
-Settings `verifyFilesOnInstall` and `verifyAllFilesOnUpdate` add a verify pass after installs / updates.
+Live example: one corrupted and one deleted file in Crosshair V2 were found and repaired by downloading 2 chunks.
 
-## Uninstall of an add-on
+## Uninstall
 
-DLC files are located from the add-on's manifest in `.egstore`; if it is missing the manifest is fetched again (needs a signed-in session: "Cannot uninstall DLC: no local manifest and not authenticated").
+The files listed by the installation's manifest are deleted, except files another installation in the same folder still lists. Uninstalling a base game uninstalls its add-ons first. Ownership token files and the uninstall registry entry are removed. Manifest uninstall actions (`uninstallActionPath`) are not run.
+
+## Queue and resume
+
+One operation runs at a time; others wait in `download\queue.json` (`{version, operations[]}`, each with `op_id`, `app_id`, `kind`, `priority`, `volume`, `state` `Queued` / `Active` / `Paused`, install parameters). On resume the launcher re-reads the cached manifest (`.resume_manifest.bin`), counts chunks already in `chunk_cache` and reuses `.new` / `.egl-part` temps. Speed limits: `downloadSpeedLimit`, `downloadSpeedLimitGameplay` (while a game runs).
+
+## Install API for games
+
+Games can ask the launcher to install, update, change tags, repair or uninstall through a loopback HTTP API; see [Install API](../InstallApi.md).
