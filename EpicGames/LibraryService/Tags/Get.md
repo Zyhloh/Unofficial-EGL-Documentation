@@ -18,7 +18,7 @@ Auth Required: Yes (`library:public:tags READ`)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
@@ -26,23 +26,26 @@ _Example Response (shape from client)_
     {
       "id": "1216",
       "name": "Action",
-      "groupName": "genre",
-      "namespace": "epic",
-      "status": "ACTIVE",
-      "referenceCount": 100,
-      "aliases": []
+      "groupName": "genre"
+    },
+    {
+      "id": "1117",
+      "name": "Adventure",
+      "groupName": "genre"
+    },
+    {
+      "id": "1367",
+      "name": "RPG",
+      "groupName": "genre"
     }
   ],
-  "paging": {
-    "count": 1,
-    "total": 1
-  }
+  "total": 38
 }
 ```
 
-Values are placeholders. Field names from `RawStoreTagsResponse`, `RawStoreTag` (7 fields) and `RawPagination`; the success body was not captured live.
+Shortened. `total` is the number of tags in the group (live: `genre` 38, `feature` 11, `epicfeature` 2). `epicfeature` holds `Achievements` (`19847`) and `Cloud Saves` (`21894`).
 
-A plain user token (tested with `launcherAppClient2`) is rejected:
+A token without that permission (tested with a `launcherAppClient2` user token) is rejected:
 
 _Example Response (403)_
 
