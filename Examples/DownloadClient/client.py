@@ -7,7 +7,7 @@ import uuid
 from urllib.parse import quote
 
 import manifest as mf
-from engine import Engine, fetch_manifest, select_files, verify
+from engine import Engine, fetch_delta, fetch_manifest, merge_delta, select_files, verify
 from epic import Epic, EpicError
 
 
@@ -204,7 +204,13 @@ class Client:
                 tags = existing.get('tags')
         selected = self.resolve_tags(info, tags, components)
         protected = self.owned_by_others(target, existing['installationId'] if existing else None)
-        plan = self.engine.plan(info['manifest'], target, old, selected, existing.get('tags') if existing else None, protected, self.config['updateCheck'])
+        source = info['manifest']
+        delta = None
+        if old:
+            delta = fetch_delta(info['element'], old['meta'].get('buildId'), info['manifest']['meta'].get('buildId'))
+            if delta:
+                source = merge_delta(info['manifest'], mf.parse(delta))
+        plan = self.engine.plan(source, target, old, selected, existing.get('tags') if existing else None, protected, self.config['updateCheck'])
         summary = {
             'title': info['title'],
             'kind': info['kind'],
@@ -220,13 +226,14 @@ class Client:
             'reuseSize': plan['reuseSize'],
             'installSize': plan['installSize'],
             'tags': selected,
+            'delta': bool(delta),
         }
-        return {'record': record, 'info': info, 'plan': plan, 'dir': target, 'parent': parent, 'existing': existing, 'tags': selected, 'summary': summary}
+        return {'record': record, 'info': info, 'source': source, 'plan': plan, 'dir': target, 'parent': parent, 'existing': existing, 'tags': selected, 'summary': summary}
 
     async def commit(self, job, run_prereqs=False):
         record, info, plan, target, parent, existing, selected = job['record'], job['info'], job['plan'], job['dir'], job['parent'], job['existing'], job['tags']
         os.makedirs(os.path.join(target, '.egstore'), exist_ok=True)
-        await self.engine.apply(info['element'], info['manifest'], plan, target)
+        await self.engine.apply(info['element'], job['source'], plan, target)
         installation_id = existing['installationId'] if existing else uuid.uuid4().hex.upper()
         with open(os.path.join(target, '.egstore', installation_id + '.manifest'), 'wb') as f:
             f.write(info['raw'])

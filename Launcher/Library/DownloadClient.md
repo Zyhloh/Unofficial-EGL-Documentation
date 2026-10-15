@@ -7,7 +7,7 @@ Standalone install / update / launch client in [`Examples/DownloadClient`](../..
 - Lists the library with catalog data and a kind per title: `game`, `app`, `addon`, `engine`, `plugin`, `thirdparty:<provider>`, `external:<app>`
 - Installs any owned build: fetches build info and manifest, picks components (`.sdmeta` or install tags), downloads chunks with EGL's CDN failover / retry / stall rules, assembles and SHA-1 checks every file
 - Installs add-ons into the base game's folder and keeps files shared with other installations in that folder
-- Updates in place: keeps unchanged files, rebuilds changed ones from local data where possible, downloads the rest, deletes removed files after the swap
+- Updates in place: fetches the [delta manifest](../../EpicGames/ArtifactDeliveryService/Builds/Delta.md) when one exists, keeps unchanged files, rebuilds changed ones from local data, downloads the rest, deletes removed files after the swap. Fortnite 42.30 -> 42.40 downloaded 3.01 GB (same 3,408 chunks as the launcher) and the result was byte-identical to the launcher's update
 - Checks for updates with batched app info, like the launcher's background check
 - Verifies and repairs (only the chunks of bad files are downloaded)
 - Uninstalls (add-ons first, shared files kept)

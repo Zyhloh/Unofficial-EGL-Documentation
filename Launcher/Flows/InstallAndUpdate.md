@@ -73,7 +73,20 @@ Live example, Crosshair V2: 626 files, 203 chunks, 101.5 MB download, 201.5 MB o
 4. Files the new build no longer has are deleted after the swap, except files that another installation in the same folder still lists (add-ons and their parent share a folder). If a sibling's manifest cannot be read, nothing is deleted.
 5. With `verifyAllFilesOnUpdate` the untouched files are verified while the download runs.
 
-Live example, Quixel Bridge 5.7 build updated in place to the 5.8 build: 231 files, 198 kept, 33 rewritten, 2 deleted, 32 MB downloaded instead of 80 MB.
+Live example, Fortnite 42.30 -> 42.40 (launcher log and our client agree on every number):
+
+| Step | Result |
+| ---- | ------ |
+| Batch App Info | `buildVersion` `++Fortnite+Release-42.40-CL-59086525-Windows` differs from the record |
+| Delta | `Deltas/Ui2VxPBjUkymuiCJyoZ-FA/vtuT6fElREubMbN1CCx_7g.delta`, 11 MB, merged (449 files, 149,599 chunks) |
+| Diff | 694 selected files: 324 unchanged, 370 changed, 44 removed |
+| Chunks | 63,642 needed, 60,234 read from installed files, 3,408 downloaded (3.01 GB, shown as "2.8 GB"); "Written 3.3 GB" in the UI is the uncompressed chunk data |
+| Assembly | 370 files rebuilt into temps (29 files over 256 MiB streamed), 59.9 GB read from the old files, then renamed over the originals; 44 obsolete files deleted |
+| Time | 33 s on a fast NVMe drive and connection |
+
+Without the delta the same update would download 13,286 chunks (12.3 GB).
+
+Smaller example, Quixel Bridge 5.7 build updated in place to the 5.8 build (no delta, different apps): 231 files, 198 kept, 33 rewritten, 2 deleted, 32 MB downloaded instead of 80 MB.
 
 `modify_install` (changing components) goes through the same path with the installed build: newly selected tags are downloaded, deselected files are deleted.
 

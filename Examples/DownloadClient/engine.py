@@ -33,6 +33,33 @@ def fetch_manifest(element):
     raise RuntimeError('manifest unavailable: ' + ', '.join(errors))
 
 
+def fetch_delta(element, old_build_id, new_build_id):
+    if not old_build_id or not new_build_id or old_build_id == new_build_id:
+        return None
+    for mirror in element['manifests']:
+        url = mirror['uri'].rsplit('/', 1)[0] + f'/Deltas/{new_build_id}/{old_build_id}.delta'
+        try:
+            r = httpx.get(url, timeout=120)
+        except httpx.HTTPError:
+            continue
+        if r.status_code == 200:
+            return r.content
+    return None
+
+
+def merge_delta(new, delta):
+    files = {f['filename']: f for f in delta['files']['list']}
+    merged = dict(new)
+    merged['files'] = dict(new['files'])
+    merged['files']['list'] = [files[f['filename']] if f['filename'] in files and files[f['filename']]['sha1'] == f['sha1'] else f for f in new['files']['list']]
+    chunks = {c['guid']: c for c in new['chunks']['list']}
+    for c in delta['chunks']['list']:
+        chunks.setdefault(c['guid'], c)
+    merged['chunks'] = dict(new['chunks'])
+    merged['chunks']['list'] = list(chunks.values())
+    return merged
+
+
 def select_files(manifest, tags=None):
     files = manifest['files']['list']
     if tags is None:
@@ -233,6 +260,7 @@ class Engine:
         sem = asyncio.Semaphore(self.workers)
         lead = asyncio.Semaphore(self.workers * 8)
         first_use = set()
+        handles = {}
         bad = []
         cdn = CdnSelector(element['manifests'])
         stall = StallTimer()
@@ -271,15 +299,19 @@ class Engine:
                                 store.drop(p['guid'])
                         else:
                             path, position = self.local_source(plan['sources'], p, install_dir)
-                            with open(path, 'rb') as src:
-                                src.seek(position)
-                                piece = src.read(p['size'])
+                            if path not in handles:
+                                handles[path] = open(path, 'rb')
+                            src = handles[path]
+                            src.seek(position)
+                            piece = src.read(p['size'])
                         out.write(piece)
                         h.update(piece)
                 if h.hexdigest() != f['sha1']:
                     bad.append(f['filename'])
                 self.progress({'type': 'file', 'name': f['filename'], 'size': f['size']})
             await scheduler
+        for handle in handles.values():
+            handle.close()
         if bad:
             raise RuntimeError(f'{len(bad)} files failed hash check: {bad[:5]}')
         for f in plan['todo']:

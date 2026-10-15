@@ -91,7 +91,7 @@ async def cmd_install(client, args):
     print(f"{summary['title']} {summary['from'] or '-'} -> {summary['to']}  ({summary['kind']})")
     print(f"  {summary['dir']}")
     print(f"  {summary['files']} files, {summary['unchanged']} unchanged, {summary['write']} to write, {summary['remove']} to remove")
-    print(f"  download {size(summary['downloadSize'])} in {summary['chunks']} chunks, reuse {size(summary['reuseSize'])}, installed {size(summary['installSize'])}")
+    print(f"  download {size(summary['downloadSize'])} in {summary['chunks']} chunks, reuse {size(summary['reuseSize'])}, installed {size(summary['installSize'])}{', delta manifest' if summary['delta'] else ''}")
     if args.dry_run or (summary['write'] == 0 and summary['remove'] == 0):
         if summary['write'] == 0 and summary['remove'] == 0:
             print('  up to date')
