@@ -48,7 +48,7 @@ Tauri app identifier `com.epicgames.eglv2`. Data dir `%LOCALAPPDATA%\com.epicgam
   update-splash\EpicGamesLauncherUpdate-<version>.exe, close
 ```
 
-Other names in the exe that live under the data dir (exact folder not confirmed): `pending-uninstalls.json`, `recently-played.json`, `last-played.json`, `playtime-cache.json`, `project-state.json`, `in-place-update.json`, `self-update-applied.json`, `stable-target.json`, `fab-settings.json`, `ld-overrides.json` / `ld-overrides.jsonc`, `api.json` (see [Install API](InstallApi.md)), `cloud-saves\state\...`, `listings_v1.db` (Fab vault index), `fab.jsonl`, `ue-gates-cache.json`, `platform-availability-cache.json`, `voice-settings.json`, per-account `app-settings.json`.
+Other names in the exe that live under the data dir (exact folder not confirmed): `pending-uninstalls.json`, `recently-played.json`, `last-played.json`, `playtime-cache.json`, `project-state.json`, `in-place-update.json`, `self-update-applied.json`, `stable-target.json`, `fab-settings.json`, `ld-overrides.json` / `ld-overrides.jsonc`, `api.json` (see [Install API](InstallApi.md)), `cloud-saves\` (confirmed directly under the data dir, see [Cloud Saves](Flows/CloudSaves.md#local-state)), `listings_v1.db` (Fab vault index), `fab.jsonl`, `ue-gates-cache.json`, `platform-availability-cache.json`, `voice-settings.json`, per-account `app-settings.json`.
 
 Refresh tokens are not on disk; see [Token Storage](Auth/TokenStorage.md) (Credential Manager service `com.epicgames.eglv2.<env>`).
 

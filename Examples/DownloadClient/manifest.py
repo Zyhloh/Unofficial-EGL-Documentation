@@ -273,3 +273,110 @@ def parse_chunk(data):
     if h['storedAs'] & 1:
         payload = zlib.decompress(payload)
     return h, payload
+
+
+ROLLING_POLY = 0xC96C5795D7870F42
+WINDOW = 1048576
+
+
+def _rolling_table():
+    table = []
+    for i in range(256):
+        for _ in range(8):
+            i = (i >> 1) ^ ROLLING_POLY if i & 1 else i >> 1
+        table.append(i)
+    return table
+
+
+ROLLING_TABLE = _rolling_table()
+
+
+def rolling_hash(data):
+    h = 0
+    table = ROLLING_TABLE
+    for b in data:
+        h = (((h << 1) | (h >> 63)) & 0xFFFFFFFFFFFFFFFF) ^ table[b]
+    return h
+
+
+def _fstring(s):
+    if not s:
+        return struct.pack('<i', 0)
+    raw = s.encode('utf-8') + b'\x00'
+    return struct.pack('<i', len(raw)) + raw
+
+
+def _section(payload):
+    return struct.pack('<IB', len(payload) + 5, 0) + payload
+
+
+def _guid_bytes(guid):
+    return struct.pack('<4I', *[int(guid[i:i + 8], 16) for i in range(0, 32, 8)])
+
+
+def build_chunk(guid, data):
+    padded = data + bytes(WINDOW - len(data))
+    stored = zlib.compress(padded)
+    header = struct.pack('<IIII', CHUNK_MAGIC, 3, 66, len(stored)) + _guid_bytes(guid)
+    header += struct.pack('<QB', rolling_hash(padded), 1) + hashlib.sha1(padded).digest() + struct.pack('<BI', 3, WINDOW)
+    return header + stored, padded
+
+
+def build(app_name, build_version, files, custom_fields=None, new_guid=None):
+    import uuid
+    new_guid = new_guid or (lambda: uuid.uuid4().hex.upper())
+    chunks = []
+    current = bytearray()
+    guid = new_guid()
+    entries = []
+    for name, data in files:
+        parts = []
+        pos = 0
+        while pos < len(data) or (not data and not parts):
+            room = WINDOW - len(current)
+            take = min(room, len(data) - pos)
+            if take:
+                parts.append((guid, len(current), take))
+                current += data[pos:pos + take]
+                pos += take
+            if len(current) == WINDOW:
+                chunks.append((guid, bytes(current)))
+                current = bytearray()
+                guid = new_guid()
+            if not data:
+                break
+        entries.append((name, hashlib.sha1(data).digest(), parts))
+    if current:
+        chunks.append((guid, bytes(current)))
+    chunk_files = {}
+    chunk_rows = []
+    for g, data in chunks:
+        blob, padded = build_chunk(g, data)
+        chunk_files[g] = blob
+        group = (zlib.crc32(_guid_bytes(g)) & 0xFFFFFFFF) % 100
+        chunk_rows.append((g, rolling_hash(padded), hashlib.sha1(padded).digest(), group, len(blob)))
+    meta = struct.pack('<IBI', 17, 0, 0) + _fstring(app_name) + _fstring(build_version) + _fstring('') + _fstring('')
+    meta += struct.pack('<I', 0) + _fstring('') + _fstring('') + _fstring('')
+    chunk_list = struct.pack('<I', len(chunk_rows))
+    chunk_list += b''.join(_guid_bytes(r[0]) for r in chunk_rows)
+    chunk_list += b''.join(struct.pack('<Q', r[1]) for r in chunk_rows)
+    chunk_list += b''.join(r[2] for r in chunk_rows)
+    chunk_list += b''.join(struct.pack('<B', r[3]) for r in chunk_rows)
+    chunk_list += b''.join(struct.pack('<I', WINDOW) for _ in chunk_rows)
+    chunk_list += b''.join(struct.pack('<q', r[4]) for r in chunk_rows)
+    file_list = struct.pack('<I', len(entries))
+    file_list += b''.join(_fstring(e[0]) for e in entries)
+    file_list += b''.join(_fstring('') for _ in entries)
+    file_list += b''.join(e[1] for e in entries)
+    file_list += bytes(len(entries))
+    file_list += b''.join(struct.pack('<I', 0) for _ in entries)
+    for e in entries:
+        file_list += struct.pack('<I', len(e[2]))
+        for g, offset, size in e[2]:
+            file_list += struct.pack('<I', 28) + _guid_bytes(g) + struct.pack('<II', offset, size)
+    custom = custom_fields or {}
+    custom_list = struct.pack('<I', len(custom)) + b''.join(_fstring(k) for k in custom) + b''.join(_fstring(v) for v in custom.values())
+    body = _section(meta) + _section(chunk_list) + _section(file_list) + _section(custom_list)
+    stored = zlib.compress(body)
+    header = struct.pack('<IIII', MANIFEST_MAGIC, 41, len(body), len(stored)) + hashlib.sha1(body).digest() + struct.pack('<BI', 1, 17)
+    return header + stored, chunk_files

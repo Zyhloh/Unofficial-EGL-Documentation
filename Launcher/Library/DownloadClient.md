@@ -13,6 +13,7 @@ Standalone install / update / launch client in [`Examples/DownloadClient`](../..
 - Uninstalls (add-ons first, shared files kept)
 - Imports existing launcher installs from `installations.jsonl`
 - Launches with the exact launcher arguments, ownership token (`.ovt`) and sidecar deployment id, or hands EA / Ubisoft titles to their client by URI
+- Syncs cloud saves in the launcher's format: pulls the newest cloud version (local saves backed up first), uploads a new version when local files changed, stops on conflicts unless told which side wins, keeps the newest 3 versions and deletes unused chunks. Tested both ways with the launcher on TerraTech
 - Prints a title's art (catalog key images + store hero art)
 
 ## Files
@@ -22,9 +23,10 @@ Standalone install / update / launch client in [`Examples/DownloadClient`](../..
 | `config.json` | Settings (no environment variables) |
 | `auth.py` | Authorization code / refresh token grant, token cache |
 | `epic.py` | Library, catalog, assets, app info, sidecars, dependency config, exchange code, ownership token, store content |
-| `manifest.py` | Manifest (binary + JSON) and chunk parser |
+| `manifest.py` | Manifest (binary + JSON) and chunk parser, manifest and chunk writer |
 | `engine.py` | Download planner, CDN selector, chunk store, assembly, verify |
 | `client.py` | Install records, install / update / repair / uninstall / launch, add-ons, art |
+| `cloudsaves.py` | Save folder variables, include / exclude rules, cloud save status / pull / push / sync |
 | `main.py` | Command line |
 
 ## Config
@@ -59,6 +61,9 @@ python main.py repair "Crosshair V2"
 python main.py launch "Crosshair V2"
 python main.py launch "Battlefield 6" --dry-run
 python main.py import
+python main.py saves TerraTech
+python main.py sync-saves TerraTech
+python main.py sync-saves TerraTech --prefer cloud
 python main.py art Fortnite
 python main.py uninstall "Crosshair V2"
 ```

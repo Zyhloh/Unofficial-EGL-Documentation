@@ -1,13 +1,20 @@
 ## Data Storage Service - Save Sync: Delete File
 
-Removes an old manifest or an unused chunk after a successful upload (`CloudSaves.OldManifestDeleteFailed`, `CloudSaves.UnusedChunkDeleteFailed`, `CloudSaves.CleanedUp`).
+Deletes one cloud save file: an old manifest, or a chunk no remaining manifest uses.
 
-URL: https://datastorage-public-service-liveegs.live.use1a.on.epicgames.com/api/v1/data/egstore/savesync/:accountId/:path \
+URL: https://datastorage-public-service-liveegs.live.use1a.on.epicgames.com/api/v1/data/egstore/savesync/:accountId/:appName/:path \
 Method: DELETE \
-Auth Required: Yes (Bearer access token)
+Auth Required: Yes (Bearer access token, own account)
+
+Note the `data` segment (listing and link requests use `access`).
 
 ## Path Parameters
 `accountId`: The account id <br/>
-`path`: File path under the account, e.g. `{appName}/manifests/<name>.manifest`
+`appName`: App name of the game <br/>
+`path`: File path inside the game folder, e.g. `manifests/2024.12.30-10.25.20.manifest` or `ChunksV4/00/9EF6137997193143_EB4C91A544215B392DFB44A3DE672520.chunk`
 
-The `data` variant of the path is in the binary next to `access`; that it is used for deletes is inferred from the cleanup log events.
+---
+
+_Example Response_
+
+Success, no body. The file is gone from the next [List Files](ListFiles.md).

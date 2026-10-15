@@ -7,6 +7,7 @@ CATALOG = 'https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/sh
 LAUNCHER = 'https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public'
 ACCOUNT = 'https://account-public-service-prod.ol.epicgames.com/account/api'
 ECOMMERCE = 'https://ecommerceintegration-public-service-ecomprod02.ol.epicgames.com/ecommerceintegration/api/public'
+DATASTORAGE = 'https://datastorage-public-service-liveegs.live.use1a.on.epicgames.com/api/v1'
 STORE_CONTENT = 'https://store-content.ak.epicgames.com/api'
 USER_AGENT = 'EpicGamesLauncher/0.95.2+gfa9ad49 (windows)'
 
@@ -76,6 +77,23 @@ class Epic:
 
     def external_auths(self):
         return self.request('GET', f'{ACCOUNT}/public/account/{self.token["account_id"]}/externalAuths')
+
+    def savesync_list(self, app_name=''):
+        url = f'{DATASTORAGE}/access/egstore/savesync/{self.token["account_id"]}/' + (f'{app_name}/' if app_name else '')
+        try:
+            return self.request('GET', url)
+        except EpicError as e:
+            if e.status == 404:
+                return {'files': {}}
+            raise
+
+    def savesync_links(self, app_name, files):
+        url = f'{DATASTORAGE}/access/egstore/savesync/{self.token["account_id"]}/{app_name}/'
+        return self.request('POST', url, json={'files': files})
+
+    def savesync_delete(self, app_name, path):
+        url = f'{DATASTORAGE}/data/egstore/savesync/{self.token["account_id"]}/{app_name}/{path}'
+        return self.request('DELETE', url, ok=(200, 204))
 
     def account(self):
         return self.request('GET', f'{ACCOUNT}/public/account/{self.token["account_id"]}')

@@ -7,6 +7,7 @@ import time
 
 from auth import Auth
 from client import Client, kind
+from cloudsaves import CloudSaves
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -136,6 +137,18 @@ def cmd_launch(client, args):
     print_json(result)
 
 
+def cmd_saves(client, args):
+    st = CloudSaves(client).status(client.find(args.app))
+    if st is None:
+        print('this title has no cloud saves')
+        return
+    print_json({k: v for k, v in st.items() if k not in ('cfg', 'remote', 'local')})
+
+
+def cmd_sync_saves(client, args):
+    print_json(CloudSaves(client).sync(client.find(args.app), args.prefer, args.force))
+
+
 def cmd_import(client, args):
     for name in client.import_egl(args.path):
         print('imported', name)
@@ -159,6 +172,11 @@ def main():
     p.add_argument('--prereqs', action='store_true')
     p.add_argument('--dry-run', action='store_true')
     sub.add_parser('check')
+    sub.add_parser('saves').add_argument('app')
+    p = sub.add_parser('sync-saves')
+    p.add_argument('app')
+    p.add_argument('--prefer', choices=('cloud', 'local'))
+    p.add_argument('--force', choices=('push', 'pull'))
     p = sub.add_parser('launch')
     p.add_argument('app')
     p.add_argument('args', nargs='*')
@@ -171,7 +189,7 @@ def main():
 
     config = load_config()
     client = Client(config, Auth(config).token())
-    handler = globals()['cmd_' + args.command]
+    handler = globals()['cmd_' + args.command.replace('-', '_')]
     result = handler(client, args)
     if asyncio.iscoroutine(result):
         asyncio.run(result)
