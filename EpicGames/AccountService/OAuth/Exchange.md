@@ -14,7 +14,7 @@ Mints a one-time exchange code from the caller's access token. eglv2 calls it fr
 When `consumingClientId` is requested and the response omits it or returns a different value, the launcher logs `Exchange code consumingClientId mismatch` / `cannot verify pin` and rejects the code.
 
 URL: https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/exchange \
-Method: GET (inferred; no method string is built, reqwest default) \
+Method: GET \
 Auth Required: Yes (Bearer access token)
 
 ## Headers
@@ -25,13 +25,25 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client, `struct ExchangeResponse with 2 elements`)_
+_Example Response_
 
 ```json
 {
+  "expiresInSeconds": 299,
   "code": "94b1569506b04f9f8557af611e8c5e47",
+  "creatingClientId": "34a02cf8f4414e29b15921876da36f9a"
+}
+```
+
+_Example Response (with `consumingClientId`)_
+
+```json
+{
+  "expiresInSeconds": 299,
+  "code": "94b1569506b04f9f8557af611e8c5e47",
+  "creatingClientId": "34a02cf8f4414e29b15921876da36f9a",
   "consumingClientId": "34a02cf8f4414e29b15921876da36f9a"
 }
 ```
 
-Only `code` and `consumingClientId` are deserialized. 429 is logged as `Exchange code request rate-limited (429)`; an unparseable body maps to `EXCHANGE_CODE_RESPONSE_UNPARSEABLE`.
+The code is valid for 5 minutes and single use. `POST` answers 405 `errors.com.epicgames.common.method_not_allowed`. The launcher deserializes only `code` and `consumingClientId`; 429 is logged as `Exchange code request rate-limited (429)`, an unparseable body maps to `EXCHANGE_CODE_RESPONSE_UNPARSEABLE`.
