@@ -100,7 +100,15 @@ Live example: one corrupted and one deleted file in Crosshair V2 were found and 
 
 ## Uninstall
 
-The files listed by the installation's manifest are deleted, except files another installation in the same folder still lists. Uninstalling a base game uninstalls its add-ons first. Ownership token files and the uninstall registry entry are removed. Manifest uninstall actions (`uninstallActionPath`) are not run.
+Seen live on Crosshair V2 (`uninstall_game`, `trigger=user`):
+
+1. Any live download of the app is cancelled (bytes kept for a later resume).
+2. The record is rewritten with `complete: false`.
+3. The install folder is renamed to `<dir>.egl-uninstalling-<timestamp>` and deleted in the background, so the whole folder goes, including files the manifest does not list (saves or configs a game wrote there).
+4. The `EpicGames-<appName>` Add/Remove Programs entry and `cache\manifest-summaries\<installationId>.json` are removed.
+5. A tombstone `{"installationId":"8CE0EF97CDEE4101095806EB75F3D336","deleted":true,"writtenAt":"..."}` is appended to `installations.jsonl`, and the title goes back to `CanInstall`.
+
+Add-ons share their parent's folder, so they are removed file by file instead: the files listed by the add-on's manifest are deleted, except files another installation in the same folder still lists. Uninstalling a base game uninstalls its add-ons first. Ownership token files are removed. Manifest uninstall actions (`uninstallActionPath`) are not run.
 
 ## Queue and resume
 
