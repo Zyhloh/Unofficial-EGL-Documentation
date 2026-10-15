@@ -4,7 +4,7 @@ Localized store tag dictionary for one tag group. Library records carry tag ids 
 
 URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/tags \
 Method: GET \
-Auth Required: Yes (`library:public:tags READ`)
+Auth Required: Yes (`library:public:tags READ`; a user token of the `egs-desktop` client `c85f4c6238b04d3399bc0080e83b83fc` has it, a `launcherAppClient2` token does not)
 
 ## Query Parameters
 `groupName`: Tag group, see table <br/>
@@ -45,7 +45,7 @@ _Example Response_
 
 Shortened. `total` is the number of tags in the group (live: `genre` 38, `feature` 11, `epicfeature` 2). `epicfeature` holds `Achievements` (`19847`) and `Cloud Saves` (`21894`).
 
-A token without that permission (tested with a `launcherAppClient2` user token) is rejected:
+A token without that permission (tested with a `launcherAppClient2` user token) is rejected. An `egs-desktop` user token (from an exchange code) is accepted. Rejected:
 
 _Example Response (403)_
 
