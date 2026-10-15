@@ -27,7 +27,7 @@ Triggers (`trigger` values found next to the refresh code: `periodic`, `automati
 
 | Trigger | Source |
 | ------- | ------ |
-| periodic | `auto_refresh.rs` timer, starts after authentication |
+| periodic | `auto_refresh.rs` timer, starts after authentication. Delay = `interval + random(0, interval * jitter / 1000)` with the LaunchDarkly flags `game-update-check-interval` (default 20 min, clamped to 1 min - 24 h) and `game-update-check-jitter` (default 1500), so every 20 to 50 minutes |
 | automatic | Background (e.g. late purchase grant, "Library reflected a change after store") |
 | focus | Window focus |
 | systray_restore | Restoring from the tray |
@@ -40,10 +40,10 @@ Steps:
 
 1. No cached `stateToken` → full refresh.
 2. Otherwise [State Token Status](../../EpicGames/LibraryService/StateToken/Status.md):
-   - `valid: true` → extend the library cache TTL and stop; no frontend events ("Refresh skipped (state token valid)"). If the catalog cache is unusable, the catalog is re-fetched for the cached library without walking it ("enriching from cached library (no walk)").
+   - `valid: true` → extend the library cache by 1 hour and stop; no frontend events ("Refresh skipped (state token valid)"). If the catalog cache is unusable, the catalog is re-fetched for the cached library without walking it ("enriching from cached library (no walk)").
    - `valid: false` → full refresh.
 3. Full refresh: walk [Library Items](../../EpicGames/LibraryService/Library/Items.md) (requests `count=500`, the server returns at most 100 per page; `cursor` = base64 `{"offset":N}`, max 50 pages, dedupe), save `library-cache.json` with the new `stateToken`.
-4. Group records by namespace and call [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) for each (`fetch_catalog_batch`), with the UI locale. Progressive snapshots are pushed as `catalog-updated-event { partial: true }` (merged, never dropping entries); the final one has `partial: false` and replaces the frontend catalog. Saved to `catalog-cache.json`.
+4. Group records by namespace and call [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) for each (`fetch_catalog_batch`): 50 item ids per request, up to 10 requests at once, `includeDLCDetails=true`, `includeMainGameDetails=true`, `country=US` and the UI locale. The namespace-less `/catalog/api/shared/bulk/items` is never called. Progressive snapshots are pushed as `catalog-updated-event { partial: true }` (merged, never dropping entries); the final one has `partial: false` and replaces the frontend catalog. Saved to `catalog-cache.json`.
 5. Seed product states (`Library.ProductStatesSeeded`) and emit `library-updated-event { items, fromCache, cachedAt, refreshFailed }`. On failure `refreshFailed: true` is sent with empty `items` and the caches stay untouched.
 
 A catalog item the library does not list (first seen by an install) is fetched on demand and pushed as `catalog-item-cached-event`.
