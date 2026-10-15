@@ -11,7 +11,7 @@ Standalone install / update / launch client in [`Examples/DownloadClient`](../..
 - Checks for updates with batched app info, like the launcher's background check
 - Verifies and repairs (only the chunks of bad files are downloaded)
 - Uninstalls (add-ons first, shared files kept)
-- Imports existing launcher installs from `installations.jsonl`
+- Imports existing launcher installs from `installations.jsonl`, and exports its own installs to the launcher (record line, `.egstore` manifest, uninstall registry entry). Tested: with the launcher closed, a Crosshair V2 install made by this client was exported; on the next start the launcher listed it as installed (Play), kept the record when it compacted the file, and included it in its update check
 - Launches with the exact launcher arguments, ownership token (`.ovt`) and sidecar deployment id, or hands EA / Ubisoft titles to their client by URI
 - Syncs cloud saves in the launcher's format: pulls the newest cloud version (local saves backed up first), uploads a new version when local files changed, stops on conflicts unless told which side wins, keeps the newest 3 versions and deletes unused chunks. Tested both ways with the launcher on TerraTech
 - Prints a title's art (catalog key images + store hero art)
@@ -61,6 +61,7 @@ python main.py repair "Crosshair V2"
 python main.py launch "Crosshair V2"
 python main.py launch "Battlefield 6" --dry-run
 python main.py import
+python main.py export "Crosshair V2"
 python main.py saves TerraTech
 python main.py sync-saves TerraTech
 python main.py sync-saves TerraTech --prefer cloud

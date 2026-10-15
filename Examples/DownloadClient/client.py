@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import shlex
@@ -298,6 +299,62 @@ class Client:
             })
             imported.append(e['artifactId'])
         return imported
+
+    def export_egl(self, query, path=None):
+        record = self.find(query)
+        entry = self.state.get(record['appName'])
+        if not entry:
+            raise SystemExit('not installed')
+        path = path or os.path.join(os.environ.get('LOCALAPPDATA', ''), 'com.epicgames.eglv2', 'installations.jsonl')
+        manifest_path = os.path.join(entry['dir'], '.egstore', entry['installationId'] + '.manifest')
+        if not os.path.exists(manifest_path):
+            raise SystemExit(f'missing {manifest_path}')
+        line = {
+            'installationId': entry['installationId'],
+            'complete': True,
+            'dir': os.path.normpath(entry['dir']),
+            'platform': self.config['platform'],
+            'namespace': entry['namespace'],
+            'itemId': entry['catalogItemId'],
+            'artifactId': entry['appName'],
+            'version': entry['version'],
+            'tags': entry['tags'] if entry['tags'] is not None else [''],
+        }
+        if entry.get('parentInstallationId'):
+            line['parentInstallationId'] = entry['parentInstallationId']
+        line['sidecar'] = {'revision': 0}
+        line['launchCommand'] = entry['launchCommand']
+        line['launchExecutable'] = entry['launchExecutable']
+        line['writtenAt'] = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        with open(path, 'a', encoding='utf-8', newline='\n') as f:
+            f.write(json.dumps(line, separators=(',', ':'), ensure_ascii=False) + '\n')
+        if not entry.get('parentInstallationId'):
+            self.write_uninstall_entry(record, entry)
+        return line
+
+    def write_uninstall_entry(self, record, entry):
+        if sys.platform != 'win32':
+            return
+        import winreg
+        app_id = f"{entry['namespace']}:{entry['catalogItemId']}:{entry['appName']}"
+        launcher = os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Epic Games', 'Launcher', 'EpicGamesLauncher.exe')
+        total = 0
+        for root, _, names in os.walk(entry['dir']):
+            total += sum(os.path.getsize(os.path.join(root, n)) for n in names)
+        key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\EpicGames-' + entry['appName'])
+        strings = {
+            'DisplayName': record['item'].get('title', entry['appName']),
+            'InstallLocation': os.path.normpath(entry['dir']),
+            'Publisher': record['item'].get('developer') or '',
+            'UninstallString': f'"{launcher}" "com.epicgames.launcher://apps/{app_id}?action=uninstall"',
+            'DisplayIcon': os.path.normpath(os.path.join(entry['dir'], entry['launchExecutable'])) + ',0',
+            'EpicAppId': app_id,
+        }
+        for name, value in strings.items():
+            winreg.SetValueEx(key, name, 0, winreg.REG_SZ, value)
+        for name, value in (('NoModify', 1), ('NoRepair', 1), ('EstimatedSize', total // 1024)):
+            winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, value)
+        winreg.CloseKey(key)
 
     def run_prereqs(self, entry):
         p = entry['prereq']

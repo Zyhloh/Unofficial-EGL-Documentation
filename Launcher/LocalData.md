@@ -79,7 +79,7 @@ Keys of a live file:
 
 ## installations.jsonl
 
-First line is a header, then one JSON object per write. The newest line for an `installationId` wins; an install in progress is written with `complete: false` and `pendingVersion` / `pendingTags`, then again with `complete: true` and `version` / `tags`. Deleted installs are tombstones `{installationId, writtenAt, deleted}`. The file is compacted from time to time (`installations.jsonl.prev` is the previous copy).
+First line is a header, then one JSON object per write. The newest line for an `installationId` wins; an install in progress is written with `complete: false` and `pendingVersion` / `pendingTags`, then again with `complete: true` and `version` / `tags`. Deleted installs are tombstones `{installationId, writtenAt, deleted}`. The file is compacted at startup and from time to time (`installations.jsonl.prev` is the previous copy); the header's `entries` is the count at the last compaction, appends do not update it. A completed line appended by another program while the launcher is closed is adopted on the next start like the launcher's own: the game shows as installed, launches from that folder and is included in update checks.
 
 ```json
 {"version":1,"writtenAt":"2026-10-14T22:52:11Z","entries":7}

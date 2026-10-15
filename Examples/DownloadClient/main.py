@@ -154,6 +154,11 @@ def cmd_import(client, args):
         print('imported', name)
 
 
+def cmd_export(client, args):
+    print_json(client.export_egl(args.app))
+    print('restart the Epic Games Launcher to see it')
+
+
 def cmd_art(client, args):
     print_json(client.art(client.find(args.app), client.config['locale']))
 
@@ -182,6 +187,7 @@ def main():
     p.add_argument('args', nargs='*')
     p.add_argument('--dry-run', action='store_true')
     sub.add_parser('import').add_argument('path', nargs='?')
+    sub.add_parser('export').add_argument('app')
     p = sub.add_parser('uninstall')
     p.add_argument('app')
     p.add_argument('--run-uninstall-action', action='store_true')
