@@ -4,7 +4,7 @@ Registry of Fortnite-backed apps (`fetch_registry`). `get_fn_deployment_info` (`
 
 URL: https://fortnite-app-service.eeef.live.use1a.on.epicgames.com/api/v1/apps \
 Method: GET \
-Auth Required: Unknown (host did not answer from a public network)
+Auth Required: Unknown (the host does not answer from a public network: connection times out, also with the launcher's bearer token; likely internal only)
 
 ---
 

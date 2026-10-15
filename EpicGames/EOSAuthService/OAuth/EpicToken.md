@@ -1,6 +1,6 @@
 ## EOS Auth Service - OAuth: Epic Account Token (v2)
 
-Called by the EOS SDK, not by eglv2's Rust code, when the launcher runs `EOS_Auth_Login` with `EOS_LCT_ExchangeCode` after sign-in (`eos:auth_login_dispatch`, `credential=exchange_code`). The exchange code is minted with `consumingClientId` = the EOS client id `34a02cf8f4414e29b15921876da36f9a`, see [OAuth/Exchange](../../AccountService/OAuth/Exchange.md). The SDK is configured with a DPoP signer first (`EOS_Auth_ConfigureDpop`, ES256), so requests may carry a `DPoP` proof.
+Signs an Epic account in to EOS. The launcher's EOS SDK calls it after sign-in (`EOS_Auth_Login` with an exchange code minted for the EOS client), see [OAuth/Exchange](../../AccountService/OAuth/Exchange.md). The SDK may add a `DPoP` proof (it is configured with an ES256 signer).
 
 URL: https://api.epicgames.dev/epic/oauth/v2/token \
 Method: POST \
@@ -8,18 +8,39 @@ Auth Required: Yes (Basic Authentication where the username is the Client Id and
 
 ## Headers
 `Content-Type`: application/x-www-form-urlencoded <br/>
-`DPoP`: ES256 proof, when configured <br/>
 
 ## Body
 
-Inferred from the SDK string table (`epicgames_exchange_code`, `GrantType`, `code_verifier`), not from a trace:
+`grant_type`: `exchange_code` (also `refresh_token`) <br/>
+`exchange_code`: Exchange code from an Epic account session <br/>
+`deployment_id`: EOS deployment, `83364c64d38841d49c4de2f6f0eb3360` for the launcher <br/>
+`scope`: Space separated scopes, e.g. `basic_profile friends_list presence`
 
-| Field | Value |
-|---|---|
-| `grant_type` | `exchange_code` |
-| `exchange_code` | Minted exchange code |
-| `deployment_id` | `83364c64d38841d49c4de2f6f0eb3360` (prod) |
+Client: the launcher's `34a02cf8f4414e29b15921876da36f9a` / `daafbccc737745039dffe53d94fc76cf` (see [Clients](../../../Launcher/Auth/Clients.md)).
 
-Client id / deployment come from [Clients](../../../Launcher/Auth/Clients.md). Needs a live capture.
+---
 
-Related SDK calls on the same session: [TokenInfo](TokenInfo.md), [Revoke](Revoke.md), [Exchange](Exchange.md), [PublicKeys](PublicKeys.md).
+_Example Response_
+
+```json
+{
+  "scope": "basic_profile friends_list country presence",
+  "token_type": "bearer",
+  "access_token": "eyJ0IjoiZXBpY19pZCIs...",
+  "refresh_token": "eyJ0IjoiZXBpY19pZF9y...",
+  "expires_in": 129600,
+  "expires_at": "2026-10-17T00:33:23.211Z",
+  "refresh_expires_in": 31540000,
+  "refresh_expires_at": "2027-10-15T13:40:03.212Z",
+  "account_id": "94b1569506b04f9f8557af611e8c5e47",
+  "client_id": "34a02cf8f4414e29b15921876da36f9a",
+  "application_id": "fghi4567KEIkE93BQjKGjnyql0oI6X1a",
+  "merged_accounts": [],
+  "acr": "AAL1",
+  "auth_time": "2026-10-15T12:33:23.205Z"
+}
+```
+
+The access token is a JWT valid for 36 hours, the refresh token for a year. `country` is granted without being requested. This user token is accepted by the `api.epicgames.dev/epic/...` services (party, presence, chat); the [Product Config](../../EOSSDKConfigService/Config/ProductConfig.md) refuses it.
+
+Related: [Token Info](TokenInfo.md), [Revoke](Revoke.md), client token [Token (v1)](Token.md).
