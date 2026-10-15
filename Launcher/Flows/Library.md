@@ -42,7 +42,7 @@ Steps:
 2. Otherwise [State Token Status](../../EpicGames/LibraryService/StateToken/Status.md):
    - `valid: true` → extend the library cache TTL and stop; no frontend events ("Refresh skipped (state token valid)"). If the catalog cache is unusable, the catalog is re-fetched for the cached library without walking it ("enriching from cached library (no walk)").
    - `valid: false` → full refresh.
-3. Full refresh: walk [Library Items](../../EpicGames/LibraryService/Library/Items.md) (500 per page, `cursor`, max 50 pages, dedupe), save `library-cache.json` with the new `stateToken`.
+3. Full refresh: walk [Library Items](../../EpicGames/LibraryService/Library/Items.md) (requests `count=500`, the server returns at most 100 per page; `cursor` = base64 `{"offset":N}`, max 50 pages, dedupe), save `library-cache.json` with the new `stateToken`.
 4. Group records by namespace and call [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) for each (`fetch_catalog_batch`), with the UI locale. Progressive snapshots are pushed as `catalog-updated-event { partial: true }` (merged, never dropping entries); the final one has `partial: false` and replaces the frontend catalog. Saved to `catalog-cache.json`.
 5. Seed product states (`Library.ProductStatesSeeded`) and emit `library-updated-event { items, fromCache, cachedAt, refreshFailed }`. On failure `refreshFailed: true` is sent with empty `items` and the caches stay untouched.
 
@@ -57,7 +57,7 @@ A catalog item the library does not list (first seen by an install) is fetched o
 
 ## Tags
 
-Library records list tag ids. The genre / feature filters resolve them with [Tags](../../EpicGames/LibraryService/Tags/Get.md) (`get_store_tags { groupName, locale }`, groups `genre`, `feature`, `epicfeature`), cached in `store-tags-cache.json`.
+Library records carry tags as `{id, name, groupName}`. The genre / feature tag dictionaries come from [Tags](../../EpicGames/LibraryService/Tags/Get.md) (`get_store_tags { groupName, locale }`, groups `genre`, `feature`, `epicfeature`), cached in `store-tags-cache.json`. That endpoint needs `library:public:tags READ`; a `launcherAppClient2` user token gets 403 `missing_permission`.
 
 ## Playtime and recency
 

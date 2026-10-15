@@ -11,7 +11,7 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {

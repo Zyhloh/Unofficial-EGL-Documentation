@@ -23,7 +23,7 @@ Progress is pushed with `download-progress-event`, `download-queue-state-event` 
 
 1. **Catalog** — the item must be in the catalog cache, otherwise it is fetched with [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) ("Fetched the uncached catalog entry of ..."). `releaseInfo` decides platform availability; `mainGameItem` decides whether an add-on installs into its parent's directory; `eulaIds` drive the library EULA gate (`eula-prompt-event`) before the install proceeds.
 2. **Build info** — [Get Asset (v2)](../../EpicGames/LauncherService/Assets/GetAssetV2.md) for `platform / namespace / catalogItem / app / label`. Transient errors and timeouts are retried with backoff ("Retrying manifest metadata fetch after backoff"). The element gives `buildVersion`, manifest mirrors, manifest SHA-1 (`hash`), `selectiveDownload`, `sdMetaHash`, `cdnBaseUrls` and `sidecar`.
-3. **Dependencies** — [Artifact Dependency Config](../../EpicGames/LauncherService/ArtifactDependencies/GetConfig.md) for `namespace / item / app / buildVersion`, stored on the install record (`dependencyConfig`).
+3. **Dependencies** — [Artifact Dependency Config](../../EpicGames/LauncherService/ArtifactDependencies/GetConfig.md) for `namespace / item / app / buildVersion`, stored on the install record (`dependencyConfig`). Only exists when the asset element has `metadata.hasDependencyConfig: true` (e.g. Fortnite); other builds return 404 `artifact_dependency_config_not_found`.
 4. **Manifest** — [Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Manifest.md) from the first mirror whose bytes parse and match `hash` (SHA-1).
 5. **Components** — the selected install tags (`selectedTags`) filter the manifest's file list. Component definitions come from [`.sdmeta`](../../EpicGames/ArtifactDeliveryService/Builds/SdMeta.md) or, without one, from the manifest install tags.
 6. **Chunks** — for each needed chunk, [Chunk](../../EpicGames/ArtifactDeliveryService/Builds/Chunk.md) `{cdnBaseUrl}/{ChunksDir}/{group:02}/{hash:016X}_{guid}.chunk`, trying every `cdnBaseUrls` entry on failure; decompressed, SHA-1 checked, cached in `.egstore/chunk_cache`.
@@ -40,7 +40,7 @@ Progress is pushed with `download-progress-event`, `download-queue-state-event` 
 
 ## Update
 
-1. A background check (interval from the `game-update-check-interval` / `game-update-check-jitter` flags) runs [Get Asset (v2)](../../EpicGames/LauncherService/Assets/GetAssetV2.md) for installed games and compares `buildVersion` with the record's `version` (inferred: the check's request path was not traced, but `AssetElement.buildVersion` is the only build version source in the client).
+1. A background check (interval from the `game-update-check-interval` / `game-update-check-jitter` flags) sends installed games in chunks to [Batch App Info](../../EpicGames/LauncherService/Assets/AppInfo.md) (`{"appKeys":[{artifactId, catalogId, sandboxId}]}`, response is a bare array) and compares each `buildVersion` with the record's `version`.
 2. The new manifest (and a delta, if any) can be downloaded ahead of the click ("update manifest and delta stored ahead of the click").
 3. The old manifest is read from `.egstore` ("No old manifest found in .egstore, treating all files as new"). If no installed file changed since install, the delta fetch is skipped.
 4. [Delta Manifest](../../EpicGames/ArtifactDeliveryService/Builds/Delta.md) `{cdnBaseUrl}/Deltas/{a}/{b}.delta` is merged into the new manifest when it fits; otherwise the client diffs old vs new manifest.

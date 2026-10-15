@@ -4,7 +4,7 @@ Localized store tag dictionary for one tag group. Library records carry tag ids 
 
 URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/tags \
 Method: GET \
-Auth Required: Yes (Bearer access token)
+Auth Required: Yes (`library:public:tags READ`)
 
 ## Query Parameters
 `groupName`: Tag group, see table <br/>
@@ -40,4 +40,24 @@ _Example Response (shape from client)_
 }
 ```
 
-Values are placeholders. Field names from `RawStoreTagsResponse`, `RawStoreTag` (7 fields) and `RawPagination`.
+Values are placeholders. Field names from `RawStoreTagsResponse`, `RawStoreTag` (7 fields) and `RawPagination`; the success body was not captured live.
+
+A plain user token (tested with `launcherAppClient2`) is rejected:
+
+_Example Response (403)_
+
+```json
+{
+  "errorCode": "errors.com.epicgames.common.missing_permission",
+  "errorMessage": "Sorry your login does not posses the permissions 'library:public:tags READ' needed to perform the requested operation",
+  "messageVars": [
+    "library:public:tags",
+    "READ"
+  ],
+  "numericErrorCode": 1023,
+  "originatingService": "library-service",
+  "intent": "prod"
+}
+```
+
+Library records already include tag `name` / `groupName` (see [Library Items](../Library/Items.md)).

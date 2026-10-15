@@ -26,4 +26,6 @@ _Example Response (shape from client, `EngineAgreement`)_
 }
 ```
 
-`body` is Unreal Slate rich text (`<EULA.Header>`, `</>`, `<a href="...">`, `\n`). The launcher converts it to a small HTML subset and runs it through DOMPurify before showing it. What the service returns once the account is up to date was not captured.
+`body` is Unreal Slate rich text (`<EULA.Header>`, `</>`, `<a href="...">`, `\n`). The launcher converts it to a small HTML subset and runs it through DOMPurify before showing it.
+
+When nothing is pending for the key the service returns `204 No Content` with an empty body (live for `epicgames_tos` and `egstore`).

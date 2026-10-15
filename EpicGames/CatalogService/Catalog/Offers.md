@@ -13,32 +13,62 @@ Auth Required: Yes (Bearer access token)
 `country`: Always `US` <br/>
 `locale`: UI locale <br/>
 `returnItemDetails`: Always `false` <br/>
-`count`: Page size (value set at runtime, not a constant in the binary) <br/>
+`count`: Page size, e.g. `10` <br/>
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
+
+Shortened to one offer; long text, key images and most store / pricing fields removed.
 
 ```json
 {
+  "metadata": {},
   "elements": [
     {
-      "id": "94b1569506b04f9f8557af611e8c5e47",
-      "title": "Fortnite",
-      "offerType": "BASE_GAME",
-      "releaseDate": "2017-07-25T13:00:00.000Z",
-      "pcReleaseDate": "2017-07-25T13:00:00.000Z",
+      "id": "8b620ab6eaad4c6182d44f07830fd8f6",
+      "title": "Aztez",
+      "description": "Aztez is a unique hybrid of beat 'em up and turn-based strategy, set in the world of the Aztec Empire. ...",
       "keyImages": [],
+      "categories": [
+        { "path": "games" },
+        { "path": "games/edition/base" },
+        { "path": "games/edition" },
+        { "path": "applications" }
+      ],
+      "namespace": "5b325322a4c04b9e9e780b9a1e9b2d70",
+      "status": "ACTIVE",
+      "internalName": "Aztez",
       "items": [
-        { "id": "4fe75bbc5a674f4f9b356b5c90567da5" }
-      ]
+        {
+          "id": "fc5c077c77604e96ab1704acec3d542a",
+          "keyImages": [],
+          "categories": [],
+          "namespace": "5b325322a4c04b9e9e780b9a1e9b2d70",
+          "unsearchable": false
+        }
+      ],
+      "currencyCode": "USD",
+      "currentPrice": 1999,
+      "seller": {
+        "id": "o-ndzqj36dmhqmfklcq44yywpgfnbmbd",
+        "name": "Team Colorblind"
+      },
+      "tags": [1216, 1344, 1370, 9549, 1263],
+      "offerType": "BASE_GAME",
+      "releaseDate": "2020-02-06T16:00:00.000Z",
+      "urlSlug": "gruntgeneralaudience",
+      "publisherDisplayName": "Team Colorblind",
+      "developerDisplayName": "Team Colorblind",
+      "supportedPlatforms": ["Windows", "macOS"]
     }
   ],
   "paging": {
-    "count": 1,
-    "total": 1
+    "count": 10,
+    "start": 0,
+    "total": 2
   }
 }
 ```
 
-Values are placeholders. Field names from `RawOfferSearchResponse`, `RawSearchOffer` (`offerType`, `releaseDate`, `pcReleaseDate`), `RawOffer` (`title`, `keyImages`, `items`), `RawOfferItem` and `RawPagination`; the envelope names (`elements`, `paging`) are inferred from the shared `RawPagination` type.
+The client reads `RawOfferSearchResponse`, `RawSearchOffer` (`offerType`, `releaseDate`, `pcReleaseDate`), `RawOffer` (`title`, `keyImages`, `items`), `RawOfferItem` and `RawPagination`. Non-base offers come back in the same list (e.g. `offerType` `OTHERS`); the client looks for the base game. `pcReleaseDate` was absent on the offers captured.

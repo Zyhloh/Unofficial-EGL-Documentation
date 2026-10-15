@@ -32,25 +32,52 @@ The URL is the assets base (`.../launcher/api/public/assets/v2`) with its traili
 }
 ```
 
-Field names from `AppInfoRequest` (`appKeys`) and its element (`artifactId`, `catalogId`, `sandboxId`). Values are placeholders.
+`artifactId` = app name, `catalogId` = catalog item id, `sandboxId` = namespace. The `appKeys` wrapper is required; a bare array or any other wrapper key is rejected (see below).
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
+
+Bare array, one entry per resolved app key.
+
+```json
+[
+  {
+    "appName": "Grunt",
+    "labelName": "Live-Windows",
+    "buildVersion": "1.2-aeeb6200374fc01a6a51c3006846a350febeb243.21-Win",
+    "catalogItemId": "9d60f0d4300a407e817ce5548f12f12d",
+    "namespace": "5b325322a4c04b9e9e780b9a1e9b2d70",
+    "assetId": "Grunt"
+  }
+]
+```
+
+The client's `AppInfoElement` reads `appName`, `buildVersion`, `sdMetaHash`, `sidecarRvn`; `sdMetaHash` / `sidecarRvn` were absent for the app captured (no selective download, no sidecar).
+
+_Example Response (400, object without `appKeys`, e.g. `{"elements":[...]}`)_
 
 ```json
 {
-  "elements": [
-    {
-      "appName": "Fortnite",
-      "buildVersion": "++Fortnite+Release-32.00-CL-12345678-Windows",
-      "sdMetaHash": "94b1569506b04f9f8557af611e8c5e4794b15695",
-      "sidecarRvn": 3
-    }
-  ]
+  "errorCode": "errors.com.epicgames.launcher.bad_argument",
+  "errorMessage": "Please check the request. Required request.appKeys are missed.",
+  "messageVars": [],
+  "numericErrorCode": 30016,
+  "originatingService": "launcher-service",
+  "intent": "prod"
 }
 ```
 
-Field names from `AppInfoElement` (4 fields: `appName`, `buildVersion`, `sdMetaHash`, `sidecarRvn`). The `elements` wrapper is inferred: `AppInfoElement` is deserialized next to `AssetsResponse` (`elements`), the wrapper used by [Get Asset (v2)](GetAssetV2.md). Values are placeholders.
+_Example Response (400, bare array body)_
+
+```json
+{
+  "errorCode": "errors.com.epicgames.common.json_mapping_error",
+  "errorMessage": "Json mapping failed.",
+  "numericErrorCode": 1019,
+  "originatingService": "launcher-service",
+  "intent": "prod"
+}
+```
 
 Errors are logged as `Batch app info fetch failed: HTTP ..` / `Failed to parse batch app info` (`Download.BatchAppInfoFetch`). For availability, 401 / 403 / 429 / unreachable / unreadable responses become separate `NotEstablished` reasons; a 429 stops the sweep (`Availability probe rate-limited; stopping sweep`).

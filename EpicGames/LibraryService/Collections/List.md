@@ -11,7 +11,7 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
@@ -19,15 +19,10 @@ _Example Response (shape from client)_
     {
       "collectionId": "EGS_STATIC_FAV_COLLECTION",
       "name": "Favorites",
-      "libraryItemContentVersion": 3
-    },
-    {
-      "collectionId": "94b1569506b04f9f8557af611e8c5e47",
-      "name": "Shooters",
-      "libraryItemContentVersion": 1
+      "libraryItemContentVersion": 5
     }
   ]
 }
 ```
 
-Values are placeholders. The URL is shared with [Create](Create.md) (same builder). GET is inferred: the list call goes through the client's GET helper and has no body type.
+An account with no custom collections returns only the favorites collection. Custom collections use the same fields. The URL is shared with [Create](Create.md) (same builder).

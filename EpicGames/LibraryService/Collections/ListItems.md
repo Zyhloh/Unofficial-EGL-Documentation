@@ -15,20 +15,22 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
-  "items": [
+  "responseMetadata": {},
+  "records": [
+    {
+      "sandbox": "5b325322a4c04b9e9e780b9a1e9b2d70",
+      "catalogId": "9d60f0d4300a407e817ce5548f12f12d"
+    },
     {
       "sandbox": "fn",
       "catalogId": "4fe75bbc5a674f4f9b356b5c90567da5"
     }
-  ],
-  "responseMetadata": {
-    "nextCursor": "eyJ..."
-  }
+  ]
 }
 ```
 
-Each item is a `RawCollectionItem` (`sandbox` = namespace, `catalogId` = catalog item id). The envelope (`RawCollectionItemsPage`) field names were not separated in the binary; `items` / `responseMetadata.nextCursor` are inferred from the cursor handling and the library response shape.
+Each record is a `RawCollectionItem` (`sandbox` = namespace, `catalogId` = catalog item id). `responseMetadata` is empty when there is no further page; the client follows `responseMetadata.nextCursor` when present.

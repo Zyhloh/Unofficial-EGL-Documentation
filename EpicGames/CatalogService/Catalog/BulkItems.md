@@ -20,58 +20,64 @@ The URL is built by pushing `:namespace`, `bulk`, `items` as path segments onto 
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
-Object keyed by catalog item id (inferred: no wrapper struct exists for this response in the client; the items are stored keyed by id). Values are placeholders.
+Object keyed by catalog item id. Shortened to one key image and three custom attributes.
 
 ```json
 {
-  "4fe75bbc5a674f4f9b356b5c90567da5": {
-    "id": "4fe75bbc5a674f4f9b356b5c90567da5",
-    "namespace": "fn",
-    "title": "Fortnite",
-    "description": "",
-    "longDescription": "",
-    "technicalDetails": "",
+  "9d60f0d4300a407e817ce5548f12f12d": {
+    "id": "9d60f0d4300a407e817ce5548f12f12d",
+    "title": "Aztez",
+    "description": "Aztez",
     "keyImages": [
       {
         "type": "DieselGameBoxTall",
-        "url": "https://cdn1.epicgames.com/offer/fn/Fortnite_GameBoxTall.jpg",
-        "width": 1200,
-        "height": 1600,
-        "size": 123456,
-        "md5": "94b1569506b04f9f8557af611e8c5e47"
+        "url": "https://cdn1.epicgames.com/5b325322a4c04b9e9e780b9a1e9b2d70/item/EGS_TeamColorblind_Aztez_S2-860x1148-0d2b32f59c7ce18bdb7f2c538c4cb3fa.jpg",
+        "md5": "0d2b32f59c7ce18bdb7f2c538c4cb3fa",
+        "width": 860,
+        "height": 1148,
+        "size": 192699,
+        "uploadedDate": "2020-02-05T17:35:34.847Z"
       }
     ],
     "categories": [
+      { "path": "public" },
       { "path": "games" },
       { "path": "applications" }
     ],
-    "releaseInfo": [
-      {
-        "appId": "Fortnite",
-        "platform": ["Windows", "Mac"],
-        "compatibleApps": []
-      }
-    ],
-    "mainGameItem": null,
+    "namespace": "5b325322a4c04b9e9e780b9a1e9b2d70",
+    "status": "ACTIVE",
+    "creationDate": "2019-12-05T20:51:43.793Z",
+    "lastModifiedDate": "2020-02-06T15:11:50.571Z",
     "customAttributes": {
-      "CanRunOffline": { "type": "STRING", "value": "false" }
+      "CanRunOffline": { "type": "STRING", "value": "true" },
+      "PresenceId": { "type": "STRING", "value": "5b325322a4c04b9e9e780b9a1e9b2d70" },
+      "FolderName": { "type": "STRING", "value": "Aztez" }
     },
-    "dlcItemList": [
-      { "id": "94b1569506b04f9f8557af611e8c5e47" }
-    ],
-    "developer": "Epic Games",
-    "developerId": "94b1569506b04f9f8557af611e8c5e47",
-    "eulaIds": [],
-    "entitlementName": "Fortnite_Free",
+    "entitlementName": "9d60f0d4300a407e817ce5548f12f12d",
     "entitlementType": "EXECUTABLE",
     "itemType": "DURABLE",
-    "status": "ACTIVE"
+    "releaseInfo": [
+      {
+        "id": "f729c3179f6743c4b1924c46bad6e050",
+        "appId": "Grunt",
+        "platform": ["Windows", "Mac"],
+        "dateAdded": "2020-02-05T17:36:36.008Z"
+      }
+    ],
+    "developer": "Team Colorblind",
+    "developerId": "o-ndzqj36dmhqmfklcq44yywpgfnbmbd",
+    "eulaIds": ["egstore"],
+    "endOfSupport": false,
+    "mainGameItemList": [],
+    "ageGatings": {},
+    "selfRefundable": true,
+    "unsearchable": false
   }
 }
 ```
 
-Field names from `RawCatalogItem` (19 fields), `RawKeyImage` (`type`, `url`, `width`, `height`, `size`, `md5`), `RawCategory` (`path`), `RawReleaseInfo` (`appId`, `platform`, `compatibleApps`), `RawMainGameRef`, `RawDlcRef` (`id`), `RawCustomAttribute` (`type`, `value`). The client only reads `customAttributes` by key (e.g. `AdditionalCommandLine`, matched case-insensitively). `mainGameItem` is non-null for DLC / add-ons and is how an add-on is linked to its parent game.
+The client deserializes `RawCatalogItem` (19 fields), `RawKeyImage` (`type`, `url`, `width`, `height`, `size`, `md5`), `RawCategory` (`path`), `RawReleaseInfo` (`appId`, `platform`, `compatibleApps`), `RawMainGameRef`, `RawDlcRef` (`id`) and `RawCustomAttribute` (`type`, `value`); extra server fields (`uploadedDate`, `creationDate`, `endOfSupport`, `ageGatings`, ...) are ignored. The client only reads `customAttributes` by key (e.g. `AdditionalCommandLine`, matched case-insensitively). Other keys seen live: `MonitorPresence`, `UseAccessControl`, `RequirementsJson`, `CanSkipKoreanIdVerification`, `CloudSaveFolder`, `CloudSaveFolder_MAC`. Base games return `mainGameItemList: []`; the client's `mainGameItem` (DLC / add-on parent link) and `dlcItemList` were absent for the base games captured.
 
 Key image `type` values the frontend looks for: `DieselGameBoxTall`, `DieselGameBox`, `DieselGameBoxWide`, `Thumbnail`, `OfferImageWide`, `DieselStoreFront`. See [Artwork](../../../Launcher/Library/Artwork.md).

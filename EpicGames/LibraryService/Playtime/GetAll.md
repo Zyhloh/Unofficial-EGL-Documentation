@@ -11,16 +11,23 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
+
+Shortened to two entries.
 
 ```json
 [
   {
-    "accountId": "94b1569506b04f9f8557af611e8c5e47",
-    "artifactId": "Fortnite",
-    "totalTime": 123456
+    "accountId": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+    "artifactId": "Grunt",
+    "totalTime": 1378
+  },
+  {
+    "accountId": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+    "artifactId": "Daisy",
+    "totalTime": 2786
   }
 ]
 ```
 
-`artifactId` is the app name (`AppId.appName`). `totalTime` unit is not visible in the client (seconds in the legacy launcher).
+Bare array, one entry per artifact ever played. `artifactId` is the app name (`appName` of the library record; some app names are 32-hex ids). `totalTime` is in seconds.
