@@ -62,4 +62,4 @@ Event `social.chat.v1.NEW_INVITE` to the group:
 }
 ```
 
-`isReportable` was `false` while the group had one member and `true` in this event (two members).
+`isReportable` was `false` while the group had one member and `true` in this event (two members). How the initial value is set: [Create Conversation](CreateConversation.md#isreportable).

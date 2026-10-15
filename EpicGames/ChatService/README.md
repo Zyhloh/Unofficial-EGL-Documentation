@@ -25,6 +25,10 @@ Pushed over [Epic Connect](../../Launcher/Social/Connect.md) inside the standard
 | `social.chat.v1.TITLE_CHANGE` | [Update Title](Conversations/UpdateTitle.md) | `msgId`, `createdAt`, `time`, `conversationId`, `accountId`, `title`, `previousTitle`, `isReportable` |
 | `social.chat.v1.MESSAGE_READ` | [Update Last Read](Users/UpdateLastRead.md) | `time`, `conversationId`, `lastReadMessageId`, `totalUnreadMessages`, `hasMoreUnreadMessages` |
 | `social.chat.v1.MEMBERS_JOIN` | [Update Invite Status](Conversations/UpdateInviteStatus.md) `accepted` | `msgId`, `createdAt`, `time`, `conversationId`, `type`, `members` (the joining accounts), `isReportable` |
+| `social.chat.v1.INVITE_REJECTED` | [Update Invite Status](Conversations/UpdateInviteStatus.md#rejecting) `rejected`, sent to the remaining members | `conversationId`, `type`, `rejectedBy`, `isReportable`, `isActive` |
+| `social.chat.v1.MEMBERS_LEFT` | [Leave Conversation](Conversations/LeaveConversation.md#events) | `msgId`, `createdAt`, `time`, `conversationId`, `type`, `members` (the leaver), `isReportable` |
+| `social.chat.v1.CONVERSATION_DEACTIVATED` | Group drops to 1 member with no pending invite | `conversationId`, `isReportable`, `inactiveReason` (`insufficient_members`) |
+| `social.chat.v1.CONVERSATION_DELETED` | Last member leaves (also with invites pending) | `conversationId` |
 
 The realtime `NEW_MESSAGE` is nested, unlike the flat history entries of [Get Messages](Messages/GetMessages.md):
 
@@ -82,4 +86,4 @@ The realtime `NEW_MESSAGE` is nested, unlike the flat history entries of [Get Me
 }
 ```
 
-Examples of the others: `NEW_INVITE` in [Add Members](Conversations/AddMembers.md), `TITLE_CHANGE` in [Update Title](Conversations/UpdateTitle.md), `MESSAGE_READ` in [Update Last Read](Users/UpdateLastRead.md), `MEMBERS_JOIN` in [Update Invite Status](Conversations/UpdateInviteStatus.md). The full list of types the overlay handles is in [Epic Connect](../../Launcher/Social/Connect.md#message-types-handled).
+Examples of the others: `NEW_INVITE` in [Add Members](Conversations/AddMembers.md), `TITLE_CHANGE` in [Update Title](Conversations/UpdateTitle.md), `MESSAGE_READ` in [Update Last Read](Users/UpdateLastRead.md), `MEMBERS_JOIN` and `INVITE_REJECTED` in [Update Invite Status](Conversations/UpdateInviteStatus.md), `MEMBERS_LEFT`, `CONVERSATION_DEACTIVATED` and `CONVERSATION_DELETED` in [Leave Conversation](Conversations/LeaveConversation.md#events). The full list of types the overlay handles is in [Epic Connect](../../Launcher/Social/Connect.md#message-types-handled).

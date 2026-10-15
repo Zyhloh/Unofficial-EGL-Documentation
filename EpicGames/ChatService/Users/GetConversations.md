@@ -63,4 +63,40 @@ _Example Response_
 
 With no conversations: `{"conversations":[]}`.
 
-A group entry in this list was not captured; [Get User Conversation](GetConversation.md) has a captured group object (`title`, `invited`, `joinedAt`).
+Group entry (creator view, invite still pending):
+
+```json
+{
+  "conversationId": "07c0ExampleGroupId0006",
+  "title": "Docs Report Test",
+  "type": "group",
+  "createdBy": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+  "dateCreated": "2026-10-14T22:54:22.612Z",
+  "active": true,
+  "isActive": true,
+  "isReportable": true,
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60"],
+  "invited": ["94b1569506b04f9f8557af611e8c5e47"],
+  "joinedAt": "2026-10-14T22:54:22.679Z",
+  "unreadCount": 0,
+  "hasMoreUnread": false,
+  "lastMessage": {
+    "type": "social.chat.v1.NEW_MESSAGE",
+    "metadata": {
+      "Pub": "<jwt>",
+      "Sig": "<base64 ed25519 signature>",
+      "TmV": "2"
+    },
+    "msgId": "07c0ExampleMessageId29",
+    "senderId": "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60",
+    "createdAt": "2026-10-14T22:54:22.844Z",
+    "isReportable": true,
+    "message": {
+      "body": "<base64 payload>"
+    }
+  },
+  "lastActivityId": "07c0ExampleMessageId29"
+}
+```
+
+Group entries carry `title` (when set), `invited` and `joinedAt`; DM entries do not. In the same list the DM above was returned with `isReportable: true` after its creator switched `enhanced-text-reporting` to `recording` ([Create Conversation](../Conversations/CreateConversation.md#isreportable)); its last message kept `isReportable: false`.

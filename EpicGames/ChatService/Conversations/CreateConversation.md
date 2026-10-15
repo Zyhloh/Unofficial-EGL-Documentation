@@ -61,6 +61,53 @@ _Example Error Response_ (400, requesting account missing from `members`)
 }
 ```
 
-Events: the creator and every invited account receive `social.chat.v1.CONVERSATION_CREATED` and `NEW_INVITE`, followed by `REPORTABILITY_CHANGE` ([events](../README.md#realtime-events)). The history starts with `NEW_INVITE` and `REPORTABILITY_CHANGE` system entries.
+Events (new group): the creator and every invited account receive `social.chat.v1.CONVERSATION_CREATED` and `NEW_INVITE`, followed by `REPORTABILITY_CHANGE` ([events](../README.md#realtime-events)). The history starts with `NEW_INVITE` and `REPORTABILITY_CHANGE` system entries.
 
-`isReportable` observed: `false` for a group created with one member and one invite, `true` once a second member had joined; `true` from creation for a group created by another account with two invites.
+### Existing group (dedup)
+
+Creating a group whose account set (members + invited) equals an existing active group returns that group instead of a new one, with `isExisting: true`. The original title is kept; the new `title` is ignored. Any different account set creates a new group.
+
+Request with title `Docs Report Test` and the same three accounts as an existing `Docs Reject Test` group:
+
+```json
+{
+  "conversationId": "07c0ExampleGroupId0005",
+  "dateCreated": "2026-10-14T22:54:12.127Z",
+  "isActive": true,
+  "isReportable": true,
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60"],
+  "invited": ["94b1569506b04f9f8557af611e8c5e47", "5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b"],
+  "isExisting": true
+}
+```
+
+Same request after `94b1569506b04f9f8557af611e8c5e47` accepted:
+
+```json
+{
+  "conversationId": "07c0ExampleGroupId0005",
+  "dateCreated": "2026-10-14T22:54:12.127Z",
+  "isActive": true,
+  "isReportable": true,
+  "members": ["c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60", "94b1569506b04f9f8557af611e8c5e47"],
+  "invited": ["5e2d8c1b9a7f4e3d8c6b2a1f0e9d7c3b"],
+  "isExisting": true
+}
+```
+
+No events are sent for a dedup hit.
+
+### Group size
+
+The API accepts 2-account groups (creator + one invite). The EGL UI only offers group creation from 3 accounts, but lists and opens 2-account groups created through the API.
+
+### isReportable
+
+Follows the creator's KWS `chat` / `enhanced-text-reporting` value (game `fn`), changed with [KWS Update Setting Values](../../KWS/Settings/UpdateValues.md#text-reporting):
+
+| Creator setting | Group `isReportable` | EGL label |
+| --- | --- | --- |
+| `prefer-not-recording` | `false` | "Text reporting is off" |
+| `recording` | `true` | |
+
+Observed: a group created with `prefer-not-recording` stayed `isReportable: false` after the invitee joined (on `MEMBERS_JOIN`, `NEW_MESSAGE`, `MEMBERS_LEFT`); after switching the creator's setting to `recording`, every new group was created `true`. In an earlier group (`07c0ExampleGroupId0001`, [Add Members](AddMembers.md)) `isReportable` went from `false` to `true` after a second member joined; what triggered that change was not isolated.

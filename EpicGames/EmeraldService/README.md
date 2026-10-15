@@ -18,7 +18,7 @@ Two clients use Emerald in eglv2:
 
 Endpoints used by eglv2:
 
-- [Text/Upload](Text/Upload.md) - `POST /emerald/v1/text/upload` (overlay, chat reports)
+- [Text/Upload](Text/Upload.md) - `POST /emerald/v1/text/upload` (overlay, chat reports, captured live on `emerald-service-live.ecosec.on.epicgames.com`)
 - [SDK/SOInit](SDK/SOInit.md) - `POST /emerald/v1/so/init` (SDK, voice reports)
 - [SDK/ChunkUpload](SDK/ChunkUpload.md) - `PUT` to the returned chunk URL
 - [SDK/SOComplete](SDK/SOComplete.md) - `POST /emerald/v1/so/complete`

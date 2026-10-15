@@ -57,8 +57,43 @@ _Example Response_
     ]
   },
   "meta": {
-    "requestId": "d33bd07d-d135-498b-9d84-5e4ea7f6df5d",
+    "requestId": "7a1c3e5b-2d4f-4b6a-8c9e-1f3a5b7d9e2c",
     "timestamp": "2026-10-14T17:37:33.294Z"
+  }
+}
+```
+
+### Text reporting
+
+`chat` / `enhanced-text-reporting` sets whether group chats you create are reportable ([Create Conversation](../../ChatService/Conversations/CreateConversation.md#isreportable)): `prefer-not-recording` -> new groups `isReportable: false` (EGL shows "Text reporting is off"), `recording` -> `true`.
+
+```json
+{
+  "game": "fn",
+  "settings": [
+    { "namespace": "chat", "settingName": "enhanced-text-reporting", "preferredValue": "recording" }
+  ]
+}
+```
+
+_Example Response_
+
+```json
+{
+  "response": {
+    "settings": [
+      {
+        "namespace": "chat",
+        "settingName": "enhanced-text-reporting",
+        "effectiveValue": "recording",
+        "effectiveSource": "preference",
+        "pendingConsent": false
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "4f2b8d6a-9c1e-4a3b-8e7d-0c5f1a2b3d4e",
+    "timestamp": "2026-10-14T22:53:54.696Z"
   }
 }
 ```
