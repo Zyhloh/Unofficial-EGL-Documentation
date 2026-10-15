@@ -86,7 +86,7 @@ First line is a header, then one JSON object per write. The newest line for an `
 {"installationId":"7C7D6290F7A428E71E3826B60AEEE13D","complete":true,"dir":"D:\\Fortnite","platform":"Windows","namespace":"fn","itemId":"d75daf91c89b49ecb110b69a7bd68996","artifactId":"afdb5a85efcc45d8ae8e406e2121d81c","version":"1.1","tags":[""],"parentInstallationId":"1061D9CB32B3BAC1ACADBB5DD155FFB3","launchCommand":"","launchExecutable":"","writtenAt":"2026-10-14T15:22:55Z"}
 ```
 
-Base game entries also carry `componentSelection` (`sdMetaHash`, `selected` and `known` component ids, `governedTags`), `dependencyConfig`, `sidecar` (`revision`), and `launchCommand` / `launchExecutable` from the manifest. Other fields of the record: `mainArtifactId`, `isFab`, `prereqSha1Hash`, `lastPrereqSucceededSha1Hash`. The manifest of each installation is `<dir>\.egstore\<installationId>.manifest`. Installs imported from the old launcher keep its installation GUID as `installationId`.
+Base game entries also carry `componentSelection` (`sdMetaHash`, `selected` and `known` component ids, `governedTags`), `dependencyConfig`, `sidecar` (`revision`), and `launchCommand` / `launchExecutable` from the manifest. Other fields of the record: `mainArtifactId`, `isFab`, `prereqSha1Hash`, `lastPrereqSucceededSha1Hash`. The manifest of each installation is `<dir>\.egstore\<installationId>.manifest`. New installs get a random 128-bit id (32 upper-case hex characters, not a UUID: `8CE0EF97CDEE4101095806EB75F3D336` for a fresh Crosshair V2 install); the same item installed again gets a new one. Installs imported from the old launcher keep its installation GUID.
 
 ## Download state
 
@@ -118,6 +118,7 @@ Base game entries also carry `componentSelection` (`sdMetaHash`, `selected` and 
 | `%LOCALAPPDATA%\EpicGamesLauncher\Saved\...` | v1 data, read by the v1 migration (settings, cloud save baseline) |
 | `SOFTWARE\Classes\com.epicgames.launcher` (hive not resolved) | URL protocol registration, see [Deep Links](DeepLinks.md) |
 | `SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{D0769F44-D459-450F-B084-CAE38062C75B}` | Uninstall entry the launcher checks for "installed copy" |
+| `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\EpicGames-<appName>` | Written for every installed game: `DisplayName`, `InstallLocation`, `Publisher` (catalog developer), `DisplayIcon` (`<launchExe>,0`), `EpicAppId` (`<namespace>:<itemId>:<appName>`), `EstimatedSize` (KB), `NoModify` and `NoRepair` `1`, `UninstallString` = `"<launcher exe>" "com.epicgames.launcher://apps/<namespace>:<itemId>:<appName>?action=uninstall"` |
 | Mutex `Global\EpicLauncherV2InstallerMutex` | Held by the NSIS installer during a self update |
 | Mutex `Local\com.epicgames.eglv2-v1-removal` | v1 removal in flight |
 

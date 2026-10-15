@@ -92,6 +92,11 @@ The dialog's switches are saved in `settings/game-settings.json` under `addons`,
 }
 ```
 
+Applying the dialog calls the IPC command `set_app_configuration { parentAppId, configs: [{ appId, shouldBeInstalled }], allowUninstall }`. Seen live on Fortnite:
+
+- **Turning an add-on off** saves `false` in the map and uninstalls it right away (not through the download queue): its manifest is loaded from `.egstore`, its files are deleted from the parent folder (`zbbrtest.txt` for Fortnite OG), and a tombstone `{"installationId":"5AF4B638FAEB9CF47D46642B635F017C","deleted":true}` is appended to `installations.jsonl`.
+- **Turning add-ons on** saves `true` and queues one install per add-on, linked to the parent's installation id. A re-enabled add-on gets a new installation id (OG came back as `BFD921F1FA9DDF221DC144E43D5D0E17`). The queue runs one operation at a time, so OG waited behind the 20 GB UEFN download.
+
 ## Unreal Editor for Fortnite
 
 UEFN (`Fortnite_Studio`, categories `addons/launchable`, `software`) is a Fortnite add-on with the same `buildVersion` as Fortnite, Get Asset v2 `metadata.installationPoolId: "FortniteInstallationPool"`, and custom attributes `AdditionalCommandLine: -epicapp=Fortnite`, `IgnoreMainGameGateKeeper: true`, `DlcProcessNames: UnrealEditorFortnite-Win64-Shipping.exe,CrashReportClientEditor.exe,urc.exe`. Its launch executable is `FortniteGame/Binaries/Win64/UnrealEditorFortnite-Win64-Shipping.exe` inside the Fortnite folder.

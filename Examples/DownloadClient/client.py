@@ -317,7 +317,11 @@ class Client:
         additional = shlex.split(a.get('AdditionalCommandLine') or a.get('AdditionalCommandline') or '', posix=False)
         epicapp = next((x.split('=', 1)[1] for x in additional if x.lower().startswith('-epicapp=')), record['appName'])
         additional = [x for x in additional if not x.lower().startswith('-epicapp=')]
-        args = [
+        args = []
+        api = os.path.expandvars(os.path.expanduser(self.config.get('installApiPath') or ''))
+        if api and os.path.exists(api) and record['namespace'] not in ('ue', 'poodle'):
+            args += ['-eglv2', f'-eglv2apipath="{api}"']
+        args += [
             '-AUTH_LOGIN=unused',
             '-AUTH_PASSWORD=' + self.epic.exchange_code(),
             '-AUTH_TYPE=exchangecode',

@@ -40,6 +40,7 @@ Standalone install / update / launch client in [`Examples/DownloadClient`](../..
 `updateCheck`: `size` (trust unchanged files by size) or `hash` (rehash them) when updating <br/>
 `runPrereqs`: Run prerequisites (elevated) after install <br/>
 `locale`: For `-epiclocale`, the EA hand-off and store content <br/>
+`installApiPath`: Path of a launcher `api.json` to pass as `-eglv2 -eglv2apipath` (for example `%LOCALAPPDATA%\com.epicgames.eglv2\api.json` when the Epic Games Launcher is running); empty = not passed, games run fine without it <br/>
 `client`: OAuth client used for the token grant
 
 ## Usage

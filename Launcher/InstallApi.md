@@ -30,11 +30,12 @@ Base URL: `http://127.0.0.1:<port>/api/v1/installation`
 | GET | `/installations` | Installations known to the launcher |
 | POST | `/queryManifestInfo` | Sizes of tag sets for an app, against the latest build |
 | GET | `/operations` | Running, queued, suspended and completed operations |
-| POST | `/operations` or `/operations/install` | Start an operation; returns `{ "operationId" }` |
-| GET | `/operations/{id}` | One operation |
-| PATCH | `/operations/{id}` | `{ "downloadRateLimitBps": <n> }`: speed ceiling for that operation |
+| POST | `/operations/install` | Start an operation: `202 { "operationId" }` |
+| PATCH | `/operations/{id}` | `{ "downloadRateLimitBps": <n> }`: speed ceiling for that operation, `202 { "operationId", "status": "accepted" }` |
 | DELETE | `/operations/{id}` | Cancel (progress preserved) |
-| POST | `/operations/{id}/move-to-running` | Run a queued operation now (`moved-to-running` / `already-running`) |
+| POST | `/operations/{id}/move-to-running` | Run a queued operation now: `200 { "operationId", "status": "moved-to-running" }` (or `already-running`) |
+
+`POST /operations` and `GET /operations/{id}` answer `405`; read an operation's state from the list.
 
 ## GET /installations
 
@@ -119,4 +120,33 @@ Base URL: `http://127.0.0.1:<port>/api/v1/installation`
 }
 ```
 
-Operations started by the launcher itself are listed too (the Fortnite update showed up as `InstallOrUpdate`). Action `type` values: `InstallOrUpdate`, `Repair`, `TagChange`, `Uninstall`. Operation `status` values: `Running`, `Queued`, `Suspended`, `Success`, `Error`, `Cancelled`. The request body to start one is the same `{ "actions": [ ... ] }` object.
+Operations started by the launcher itself are listed too (the Fortnite update showed up as `InstallOrUpdate`). Action `type` values: `InstallOrUpdate`, `Repair`, `TagChange`, `Uninstall`. Operation `status` values: `Running`, `Queued`, `Suspended`, `Success`, `Error`, `Cancelled`. A running download reports progress in `bpsOngoingStats` (`state` `Downloading`, `updateProgress` 0..1, `downloadSize`, `downloadedBytes`).
+
+## POST /operations/install
+
+```json
+{
+  "actions": [
+    {
+      "type": "Repair",
+      "sandboxId": "4de5e06a60314c12ada34d918e65cfda",
+      "itemId": "cb96824949054b56b029fd64588e5868",
+      "artifactId": "8d3fd7a1c6034e799f04a2c8cce520a3",
+      "dir": "C:\\Users\\<user>\\Epic Games\\CrosshairV2QGIkt",
+      "tags": [""]
+    }
+  ]
+}
+```
+
+`type`: `InstallOrUpdate`, `TagChange`, `Repair` or `Uninstall`. `sandboxId`, `itemId`, `artifactId` are required (`400`, logged as "action is missing itemId").
+
+_Example Response_
+
+```json
+{
+  "operationId": "DCB65ECAA05E3B7B"
+}
+```
+
+The operation joins the launcher's normal queue (`/operations` lists it with the launcher's own operations). The repair above verified the install (0 damaged files) in 302 ms.

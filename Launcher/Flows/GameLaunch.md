@@ -34,11 +34,19 @@ Built in this order:
 | 16 | remaining manifest / user args | |
 | 17 | `-epicsandboxid=<namespace>` | Always |
 
-Example (placeholders; Fortnite-only `-named_pipe` / `-src` / `-pl` left out):
+Example (Crosshair V2, captured from the launcher log, `Launch.GameSpawning`, 12 arguments):
 
 ```
-FortniteLauncher.exe -eglv2 -eglv2apipath="<path>" -AUTH_LOGIN=unused -AUTH_PASSWORD=94b1569506b04f9f8557af611e8c5e47 -AUTH_TYPE=exchangecode -epicapp=Fortnite -epicenv=Prod -EpicPortal -epicusername=Player -epicuserid=94b1569506b04f9f8557af611e8c5e47 -epiclocale=en -epicsandboxid=fn
+"C:\Users\<user>\Epic Games\CrosshairV2QGIkt\Crosshair.exe" -eglv2 -eglv2apipath="C:\Users\<user>\AppData\Local\com.epicgames.eglv2\api.json" -AUTH_LOGIN=unused -AUTH_PASSWORD=<exchange code> -AUTH_TYPE=exchangecode -epicapp=8d3fd7a1c6034e799f04a2c8cce520a3 -epicenv=Prod -EpicPortal -epicusername=<displayName> -epicuserid=<accountId> -epiclocale=en -epicsandboxid=4de5e06a60314c12ada34d918e65cfda
 ```
+
+`-eglv2apipath` points at the [Install API](../InstallApi.md) record. Before spawning, the launcher logs the ownership token gate (`Launch.OwnershipTokenSkipped reason=not_required`), the deployment id (`No artifact sidecar deployment id to pass`), the running-state process rules and a cloud save pull; a launch takes about 8 ms once the exchange code is prefetched.
+
+## Fortnite
+
+Fortnite's `launchExecutable` is `FortniteGame/Binaries/Win64/FortniteBootstrapper.exe` with the manifest launch command `-obfuscationid=<id>`. The bootstrapper starts `FortniteLauncher.exe` with the same arguments, which fetches the anti-cheat deployment (`deployment_id=62a9473a2dca46b29ccf17577fcf42d7 sandbox_id=fn`), writes `EasyAntiCheat/Settings.json`, and starts `FortniteClient-Win64-Shipping_EAC_EOS.exe` with the launcher's arguments plus `-fromfl=eaceos -caldera=<token> -startup=<guid>`. The game then logs in with the exchange code (`FOnlineIdentityMcp::Login Type=exchangecode`, `EOS_Auth_Login succeeded`, `EOS_Connect_Login succeeded`).
+
+A launch built by the [Download Client](../Library/DownloadClient.md) without `-eglv2`, `-named_pipe`, `-src` / `-pl` (auth args, `-obfuscationid`, Epic args, from a copy installed by that client) logged in and played a full match. Within a minute of starting, Fortnite queued a `Repair` of its Battle Royale add-on through the Install API.
 
 ## Launcher-reserved arguments
 
