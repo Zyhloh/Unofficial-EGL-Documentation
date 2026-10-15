@@ -14,13 +14,14 @@ The first path element (host) is matched case-insensitively.
 
 | URI | Result |
 | --- | --- |
-| `com.epicgames.launcher://apps/<appRef>` | Launch (default action). `<appRef>` is the URL-encoded app id; the launcher itself builds `apps/<namespace>:<catalogItemId>:<appName>` (`com.epicgames.launcher://apps/` + `:` separators) and also accepts a bare app name (`DeepLink.AppNameUnresolved` when it cannot be resolved) |
+| `com.epicgames.launcher://apps/<appRef>` | Launch (default action). `<appRef>` is the URL-encoded app id; the launcher itself builds `apps/<namespace>:<catalogItemId>:<appName>` (`com.epicgames.launcher://apps/` + `:` separators) and also accepts a bare app name (`DeepLink.AppNameUnresolved` when it cannot be resolved) or a URL-encoded install directory (Fortnite sends `apps/<install dir>?action=verify&runningapptimeout=60&silent=true`) |
 | `...apps/<appRef>?action=launch` | Launch. Not installed -> deferred install (`DeepLink.LaunchDeferredInstall`); update pending -> deferred update; already running -> focus it; partner-managed -> partner hand-off |
-| `...apps/<appRef>?action=install` (also `installer`, `update`) | `deep-link-install-event`; resumes a paused download, no-op if already installed |
+| `...apps/<appRef>?action=install` (also `installer...` as a prefix match, `update`) | `deep-link-install-event`; resumes a paused download, no-op if already installed |
 | `...apps/<appRef>?action=verify` | Verify files |
 | `...apps/<appRef>?action=uninstall` | Opens the uninstall confirmation (`DeepLink.UninstallDialogOpened`) |
 | `...apps/<appRef>?action=updatecheck` | Update check for the app (`DeepLink.UpdateCheckRequested`) |
-| `com.epicgames.launcher://store` / `store/<path>` | Store webview at `/store/<path>` |
+| `com.epicgames.launcher://store/p/<slug>` | Store webview at `/store/<slug>`. `<slug>` may only hold `[A-Za-z0-9]` and `-_.!~*'()`; `.`, `..` or empty fall back to `/store` |
+| `com.epicgames.launcher://store` / any other `store/<path>` | Store webview at `/store` (path dropped, e.g. `store/product/<slug>`); `store/library...` goes to the library |
 | `com.epicgames.launcher://library` | `/library` |
 | `com.epicgames.launcher://library?...` | Library with `collectionId`, `/library?acquired=1`, `/library?open=<catalogItemId>` variants |
 | `com.epicgames.launcher://ue` / `unreal-engine[/...]` | `/engines` or `/engines/<sub>` (e.g. `engines/unreal-engine`) |
@@ -34,7 +35,16 @@ The first path element (host) is matched case-insensitively.
 | `com.epicgames.launcher://epics/<rest>` | Parsed and ignored (`DeepLink.EpicsInert`) |
 | anything else | `/library` |
 
-Launch query keys recognized by the parser (names from the binary, semantics inferred): `action`, `silent` (launch without surfacing the launcher, `DeepLink.LaunchSilentWhileRunning`), `arg` (extra launch argument), `env`, `tag`, `install`, `running`, `app`, `timeout`.
+Launch query keys (matched case-insensitively):
+
+| Key | Meaning |
+| --- | --- |
+| `action` | `launch` (default), `install` / `installer...` / `update`, `verify`, `uninstall`, `updatecheck` |
+| `silent` | Presence flag, value ignored (`silent=false` still sets it). Launch without surfacing the launcher (`DeepLink.LaunchSilentWhileRunning`). An `arg=-silent` (case-insensitive) also counts |
+| `arg` | Repeatable; each value is added as an extra launch argument |
+| `env.<NAME>` | Environment variable `<NAME>` (original case) for the game, filtered by `AllowedUriEnvVars` |
+| `runningapptimeout` | Float, seconds to wait for the running app; kept only if finite |
+| `install`, `installtag` | Repeatable; values collected as install tags |
 
 Game invite weblinks resolve their target through `e3s_service` `/api/v1/coordinates` (`game-invite: weblink dropped (coordinates resolve failed)`), gated by the `game-invites-weblink` flag.
 

@@ -60,7 +60,7 @@ Hardcoded in the exe, same in every environment:
 | https://quixel-megascans-static.s3.us-west-2.amazonaws.com/fab/manifest/prod/plugins_v1.json | Fab DCC plugin manifest |
 | https://o10593.ingest.us.sentry.io | [Sentry](../ThirdParty/Sentry) |
 | https://api.mixpanel.com | Mixpanel `/track?ip=0` (`telemetry::sinks::mixpanel`) |
-| https://clientsdk.launchdarkly.com, https://clientstream.launchdarkly.com, https://events.launchdarkly.com | [LaunchDarkly](../ThirdParty/LaunchDarkly) mobile SDK (feature flags, see [Architecture](Architecture.md#feature-flags)) |
+| https://clientsdk.launchdarkly.com, https://clientstream.launchdarkly.com, https://mobile.launchdarkly.com, https://events.launchdarkly.com | [LaunchDarkly](../ThirdParty/LaunchDarkly) mobile SDK (feature flags, see [Architecture](Architecture.md#feature-flags)). Mobile key per environment: prod `mob-756bbe9a...`, gamedev `mob-a3ca5f1c...`, ci `mob-a2836a0b...` |
 | https://epicgamesinc.cloudflareaccess.com | Staff only: "EGS Zero Trust" store sign-in (`egs_zero_trust`) |
 | https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton10-34/GE-Proton10-34.tar.gz | Linux: Proton runtime (`install_proton_runtime`) |
 | https://media-cdn.epicgames.com | CSP `connect-src` only (store media) |
@@ -75,7 +75,7 @@ The social overlay web app has its own host list, see [Social Overview](Social/O
 | Store GraphQL / store content | `EpicGamesLauncher/2 (+https://store.epicgames.com)` |
 | `social` webview | `EpicGamesLauncher/0.95.1+ge288862 (windows)` |
 | Other webviews (`store-webview`, `fab-webview`, `checkout-overlay`, ...) | `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/<N>.0.0.0 Safari/537.36 Edg/<N>.0.0.0 EpicGamesLauncher/0.95.1+ge288862` where `<N>` is the WebView2 major version (fallback `130` when unknown or below 67) |
-| Data Router sink | `<AppID>/<AppVersion> <...>` (template `{}/{} {}`, third value not resolved) |
+| Data Router sink | `<AppID>/<AppVersion> Windows/10.0.<build>` (e.g. `LauncherV2/0.95.1+ge288862 Windows/10.0.<build>`, `Windows/unknown` when the OS version cannot be read) |
 
 The `EpicGamesLauncher/<ver>` token is how Store / Fab pages detect "launcher mode". The store bridge advertises `clientversion` `19.0.0` to the store (`bridge_get_client_version`), not the real version.
 

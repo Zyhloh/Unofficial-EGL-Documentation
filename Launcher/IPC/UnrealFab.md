@@ -25,7 +25,7 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `launch_ue_engine` | `path` | Start an editor |
 | `reveal_ue_engine` | `version` | Reveal engine folder |
 | `open_ue_engine_dir` | `path` | Open engine folder |
-| `get_ue_news_feed` | `query` | Unreal news feed page (`query`: `limit` 1..N, `skip`) |
+| `get_ue_news_feed` | `query` | Unreal news feed page (`query`: `{ limit 1..=100, skip <= 10000, preserveSticky }`). Returns a fixed empty page `{items:[],total:0,source:"live",unavailable:true}` and makes no request. News is hidden on release builds unless `develop-news-enabled` is on |
 
 ## Projects
 

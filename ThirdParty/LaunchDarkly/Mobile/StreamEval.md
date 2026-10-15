@@ -6,10 +6,12 @@ URL: https://clientstream.launchdarkly.com/meval/:context \
 Method: GET \
 Auth Required: Yes (mobile key)
 
-Request shape (path, header) is the SDK's standard streaming request; only the host, `/meval` and the inputs below come from the exe.
+Request shape (path, header) is the SDK's standard streaming request; only the host, `/meval` and the inputs below come from the exe. No `?withReasons=true` (`DataSource_WithReasons(false)`).
 
 ## Headers
-`Authorization`: mobile key, e.g. `mob-756bbe9a-3c91-4615-afeb-068c12fa9394` <br/>
+`Authorization`: raw mobile key, no prefix, e.g. `mob-756bbe9a...` <br/>
+`User-Agent`: `CPPClient/3.11.1` <br/>
+`X-LaunchDarkly-Tags`: `application-version/<launcher version>` <br/>
 
 ## Path Parameters
 `context`: base64url of the context JSON below <br/>
@@ -23,7 +25,7 @@ Built in `src\launchdarkly\context.rs`, always a multi-context:
   "kind": "multi",
   "machine": {
     "kind": "machine",
-    "key": "<machine id>",
+    "key": "<device_id>",
     "currentVersion": "0.95.1+ge288862",
     "os": "windows",
     "arch": "x86_64",
@@ -31,8 +33,8 @@ Built in `src\launchdarkly\context.rs`, always a multi-context:
   },
   "user": {
     "kind": "user",
-    "key": "94b1569506b04f9f8557af611e8c5e47",
-    "email": "user@example.com",
+    "key": "<accountId>",
+    "email": "<email>",
     "_meta": {
       "privateAttributes": ["email"]
     }
@@ -40,7 +42,7 @@ Built in `src\launchdarkly\context.rs`, always a multi-context:
 }
 ```
 
-Signed out, `user` is `{ "kind": "user", "key": "<anonymous key>", "anonymous": true }`. The machine key source and the user keys are inferred (first field of the machine / account structs).
+`machine.key` is `device_id` from `device.json` (uuid v4 created on first run). Signed in, `user.key` is the account id. Signed out, `user` is `{ "kind": "user", "key": "<device_id>", "anonymous": true }` with the same `device_id`.
 
 | `releaseChannel` | |
 | --- | --- |
@@ -53,13 +55,17 @@ Signed out, `user` is `{ "kind": "user", "key": "<anonymous key>", "anonymous": 
 
 Calls made on `LDClientConfigBuilder_New(mobileKey)`: `Offline` (on with `-disable-ld` / `EGL_DISABLE_LD`), `Events_Enabled(true)`, `DataSource_WithReasons(false)`, `AppInfo_Version`, `HttpProperties_Tls` (CA bundle path), `Logging_Custom`, `Persistence_Custom` (cache in `cache\<env>\launchdarkly\flags.json`). No `ServiceEndpoints_*` setter is called, so the default hosts are used.
 
-Mobile keys compiled into the exe (stored back to back; no code reference to them was found, so which key belongs to prod / gamedev / ci is not resolved):
+Mobile key per environment (`ld_start_client` reads it from a relative lookup table indexed by the environment, so the keys have no direct xrefs):
 
-- `mob-756bbe9a-3c91-4615-afeb-068c12fa9394`
-- `mob-a3ca5f1c-8096-4f42-b82a-4fcc182bee42`
-- `mob-a2836a0b-e080-4cb1-aa10-dfed41e26ce4`
+| `-epicenv` | Key |
+| --- | --- |
+| prod | `mob-756bbe9a...` |
+| gamedev | `mob-a3ca5f1c...` |
+| ci | `mob-a2836a0b...` |
 
 An empty key for the active environment fails closed (`LaunchDarkly mobile key is empty for this environment; failing closed (every flag at its safe default)`, `Flags.MobileKeyMissing`). `ld-overrides.json(c)` (`-ld-overrides`, `EGL_LD_OVERRIDES`) overrides values locally.
+
+Persistence: the `flags.json` namespace is `LaunchDarkly_` + base64(sha256(mobile key)); cached contexts are keyed by base64(sha256(canonical key)), e.g. `machine:<device_id>:user:<accountId>`.
 
 ---
 

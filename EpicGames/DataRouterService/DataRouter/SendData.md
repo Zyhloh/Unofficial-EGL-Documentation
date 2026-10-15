@@ -8,14 +8,14 @@ Auth Required: No
 
 ## Headers
 `Content-Type`: application/json <br/>
-`User-Agent`: `<AppID>/<AppVersion> ...` <br/>
+`User-Agent`: `<AppID>/<AppVersion> Windows/10.0.<build>`, e.g. `LauncherV2/0.95.1+ge288862 Windows/10.0.<build>` (`Windows/unknown` when the OS version cannot be read) <br/>
 
 ## Query Parameters
 `SessionID`: Launcher session id (uuid) <br/>
 `AppID`: `LauncherV2` (release builds), `LauncherV2.Dev` (others) <br/>
 `AppVersion`: `0.95.1+ge288862` <br/>
 `UserID`: Account id, empty when signed out <br/>
-`AppEnvironment`: Environment string; the exe also holds the template `UnrealEngineLauncher{env}.{kind}` (`{env}` empty for prod, `_GD` otherwise; `{kind}` `Release` / `Dev`) next to this code, its use as `AppEnvironment` is inferred <br/>
+`AppEnvironment`: Lowercased environment: `prod`, `gamedev` or `ci` <br/>
 `UploadType`: `eteventstream` <br/>
 
 ## Body
@@ -25,18 +25,22 @@ Auth Required: No
     {
       "EventName": "Launcher.Log",
       "DateOffset": "+00:00:00.000",
-      "event_id": "94b1569506b04f9f8557af611e8c5e47",
+      "event_id": "<eventId>",
       "level": "...",
       "origin": "...",
       "session_time_ms": 1234,
       "sample_rate": 1,
-      "schema_version": 1
+      "schema_version": 4
     }
   ]
 }
 ```
 
-`Events`, `EventName`, `DateOffset` and the snake_case keys are from the binary; values are placeholders. Other events (`Settings.Snapshot`, `Store.PurchaseCompleted`, ...) carry their own props next to the common ones (`wall_ms`, `account_id`, `device_id`, `session_id`, `release_type`, `release_channel`, `launcher_version`).
+`Events`, `EventName`, `DateOffset` and the snake_case keys are from the binary; values are placeholders. Other events (`Settings.Snapshot`, `Store.PurchaseCompleted`, ...) carry their own props next to the common ones (`wall_ms`, `account_id`, `device_id`, `session_id`, `release_type`, `release_channel`, `launcher_version`). `schema_version` is 4 in 0.95.2.
+
+The `UnrealEngineLauncher{_GD|}.{Release|Dev}` template next to this code is the `AppID` of the EOS sink ([Send Events](../Telemetry/SendEvents.md)), not a Data Router value.
+
+Each spool record has a `dests.dataRouter` entry; a subset of events (`App.Opened`, `Auth.*`, `Tab.Visited`, `UpdateCheck.Completed`, `Library.Refreshed`) also gets a `dests.mixpanel` copy sent to Mixpanel (`distinctId` = device id, `accountId` null).
 
 ---
 

@@ -31,4 +31,11 @@ Auth Required: Yes (Bearer EOS client token; the overlay gets it from `window.ue
 }
 ```
 
-The overlay sends `{ Events: [...] }` with `referrerPolicy: no-referrer` (and `keepalive` on unload). The exe's EOS sink is keyed by `app_id` and logs `EOS Data Router batch sent` / `batch rejected`; its exact query set was not recovered.
+The overlay sends `{ Events: [...] }` with `referrerPolicy: no-referrer` (and `keepalive` on unload). The exe's EOS sink logs `EOS Data Router batch sent` / `batch rejected` and uses this query set:
+
+`SessionID`: Launcher session id <br/>
+`AppID`: `UnrealEngineLauncher.Release` (prod), `UnrealEngineLauncher_GD.Release` (gamedev / ci), `.Dev` instead of `.Release` on non-release builds <br/>
+`AppVersion`: Launcher version, e.g. `0.95.1+ge288862` <br/>
+`UserID`: Account id <br/>
+`AppEnvironment`: `datacollector-binary` (fixed) <br/>
+`UploadType`: `eteventstream` <br/>
