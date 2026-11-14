@@ -7,7 +7,9 @@ Method: GET (browser navigation) \
 Auth Required: No (browser session)
 
 ## Path Parameters
-`provider`: Partner slug, value not resolved from the binary
+`provider`: Partner slug. Only `ubisoft` (for provider `ubisoftConnect`) in 0.115. For `eaApp` the launcher has no linking flow and refuses (`No account-linking flow is known for this partner (REQ-PARTNER-135)`)
+
+Example: `https://www.epicgames.com/id/link/ubisoft?redirect_uri=http://127.0.0.1:<port>/launcher/account-linked&state=<state>`
 
 ## Query Parameters
 `redirect_uri`: `http://127.0.0.1:<port>/launcher/account-linked` <br/>
