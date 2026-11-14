@@ -47,4 +47,4 @@ _Example Response (shortened)_
 }
 ```
 
-`happenedAt` is epoch milliseconds. `interactionType` values seen live: `PartyJoined` (with an `app` tag) and `FriendshipDelete`. Accounts you removed as friends stay in the list, some with a zero score. The entries are not sorted.
+`happenedAt` is epoch milliseconds. `interactionType` values seen live: `PartyJoined` (with an `app` tag) and `FriendshipDelete`; Fortnite play shows up as `GamePlayed` with the season as `app` (e.g. `Chapter_7__Season_1`). Accounts you removed as friends stay in the list, some with a zero score. The entries are not sorted.
