@@ -11,7 +11,7 @@ Trigger: login screen calls `auth_sign_in_browser { pageStrings, createAccount }
 1. Refuse if one is already running (`sign_in_already_in_progress`) or if the SISU client is not configured.
 2. Generate PKCE `code_verifier` / `code_challenge` (S256) from the OS RNG (`OS RNG unavailable while generating PKCE material`) and a per-attempt `state`.
 3. Bind a loopback listener on `127.0.0.1:0` (OS-assigned port, `EGL_SISU_REDIRECT_PORT` overrides). No IPv4 loopback: retry on `[::1]`. Errors: `loopback_port_unavailable`, `loopback_bind_denied`, `loopback_bind_failed`.
-4. Open in the system browser:
+4. Open in the system browser. Launcher 0.115 logs the endpoint as `https://www.epicgames.com/id/login` (`Auth.Sisu.BrowserOpened`); 0.95's binary built `/id/authorize` with this query (the query itself is not logged):
    - sign in: [`https://www.epicgames.com/id/authorize`](../../EpicGames/Web/Id/Authorize.md)`?client_id=c85f4c6238b04d3399bc0080e83b83fc&response_type=code&redirect_uri=http://127.0.0.1:<port>/launcher/authorized&scope=basic_profile friends_list country presence&code_challenge=<challenge>&code_challenge_method=S256&state=<state>&lang=<lang>&prompt=select_account`
    - create account: [`https://www.epicgames.com/id/register`](../../EpicGames/Web/Id/Register.md) with the same query minus `prompt`
 5. Wait for `GET /launcher/authorized?code=...&state=...` (or `error=access_denied`). The listener serves a static HTML result page built from `pageStrings`. Timeout: `Browser sign-in timed out`; `auth_cancel_browser_sign_in` aborts.
@@ -21,6 +21,19 @@ Trigger: login screen calls `auth_sign_in_browser { pageStrings, createAccount }
 9. Email gate (LaunchDarkly `login-email-gate-enabled`, `login-email-gate-allowed`): during the internal beta only accounts on allowlisted domains get in (`epicgames.com`, `xa.epicgames.com`, `3lateral.com`, `mediatonic.co.uk`, `psyonix.com` are in the binary). Denied: `INTERNAL_BETA_RESTRICTED`, `access-denied-event`.
 10. Persist: refresh token to the keyring, access token to the DPAPI cache, account info + `via_system_browser: true` to `auth.json` ([Token Storage](../Auth/TokenStorage.md)).
 11. Install the session (`Auth.SessionLifetime.Installed`), emit `auth-state-changed-event`, schedule refresh, start EOS login ([EOS](../Auth/EOS.md)) and the other session starters.
+
+Live sign-in on launcher 0.115 with the browser already signed in to epicgames.com took 3.4 s from click to session (`User.AuthSignInCompleted duration_ms=3356`):
+
+| Time | Event |
+| ---- | ----- |
+| +0 ms | `auth_sign_in_browser { createAccount: false }`, loopback listener bound on `127.0.0.1`, OS port (54135 in this run) |
+| +35 ms | Browser opened, waiting for the callback |
+| +2.5 s | Callback received; PKCE code redeemed for EAS tokens. DPoP proof 535 bytes, no nonce yet; the launcher then caches a 56-byte nonce from the response (`Auth.Dpop.NonceCached`) |
+| +2.6 s | Exchange code minted with the EAS token |
+| +3.0 s | Exchange code redeemed for EG1. DPoP proof 624 bytes, nonce attached. Token lifetime 129600 s (36 h) |
+| +3.4 s | Account check, refresh token to the keyring, DPAPI access token cache, `auth.json`; session 2 installed; library refresh and EOS login start |
+
+The EOS login that follows mints its own exchange code with `consumingClientId` = the EOS client (`EosClient.Login.ExchangeCodeMinting`).
 
 The client used for step 7's token request is not logged. Since browser sessions later refresh with the client selected by `via_system_browser`, the EG1 token is inferred to be issued to `egs-desktop` as well.
 
@@ -49,7 +62,7 @@ The client used for step 7's token request is not logged. Since browser sessions
 
 `auth_sign_out` (`src\auth\sign_out.rs`, `session_lifetime.rs`). Stages: `before_credentials_clear`, `stop_publishers`, `close_transports`, `overlay_and_sdk` (EOS logout, DPoP unconfigure), then credentials are cleared: keyring entry deleted, `auth.json` entry removed, DPAPI cache deleted. Emits `auth:signed_out` / `Auth.SignedOut`.
 
-No token revocation request (`DELETE /account/api/oauth/sessions/kill/...`) was found in the binary; sign-out is local only. Needs a capture to confirm.
+Confirmed live on 0.115: sign-out sends no request to revoke the launcher's own EG1 session (no `sessions/kill` or revoke in the verbose log, which records every launcher request URL). Order seen: restore generation bumped, shell and store webview browsing data cleared, `Auth.SignedOut`, then `stop_publishers` (5 tasks), `close_transports` (1), `overlay_and_sdk` (EOS tear-down: overlay notifications cleared, social panel destroyed, `EOS_UI_HideFriends`, party analytics cleared, `EOS_Auth_Logout`). The only revoke is the EOS SDK's own, for its EOS token: `RevokeToken RevokeReason=Logout` ([Revoke](../../EpicGames/EOSAuthService/OAuth/Revoke.md)). The drain took 119 ms. Whether the old refresh token still works afterwards was not tested.
 
 ## Other entry points
 

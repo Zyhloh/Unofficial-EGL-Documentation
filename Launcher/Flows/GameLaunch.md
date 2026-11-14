@@ -17,10 +17,10 @@ Built in this order:
 | # | Argument | Condition |
 |---|---|---|
 | 1 | `-eglv2`, `-eglv2apipath="<install API path>"` | Namespace is not an Unreal Engine one (`ue`, `poodle`, `ecc92c9d225843f5827847052fb9f5f3`); the path only when the local install API is ready (`Install API readiness sender dropped; launching without an install API path`) |
-| 2 | `-AUTH_LOGIN=unused` | Exchange code present |
-| 3 | `-AUTH_PASSWORD=<exchange code>` | Exchange code present (logged as `<redacted>`) |
-| 4 | `-AUTH_TYPE=exchangecode` | Exchange code present |
-| 5 | Manifest `LaunchCommand`, catalog additional command line, per-game user args | Sanitised, see below |
+| 2 | Manifest `LaunchCommand`, catalog additional command line, per-game user args | Sanitised, see below. Before the auth args in 0.115 (Fortnite's `-obfuscationid=...` comes right after `-eglv2apipath`); 0.95's binary placed them after `-AUTH_TYPE` |
+| 3 | `-AUTH_LOGIN=unused` | Exchange code present |
+| 4 | `-AUTH_PASSWORD=<exchange code>` | Exchange code present (logged as `<redacted>`) |
+| 5 | `-AUTH_TYPE=exchangecode` | Exchange code present |
 | 6 | `-epicapp=<appName>` | Unless step 5 already has `epicapp` |
 | 7 | `-epicenv=<env>` | Unless step 5 already has `epicenv`; value `Prod` / `GameDev`, replaced by the `override_epicenv` command-line option when set |
 | 8 | `-epicovt=<path>` | Ownership verification token file written (`src\ovt`) |
@@ -44,7 +44,13 @@ Example (Crosshair V2, captured from the launcher log, `Launch.GameSpawning`, 12
 
 ## Fortnite
 
-Fortnite's `launchExecutable` is `FortniteGame/Binaries/Win64/FortniteBootstrapper.exe` with the manifest launch command `-obfuscationid=<id>`. The bootstrapper starts `FortniteLauncher.exe` with the same arguments, which fetches the anti-cheat deployment (`deployment_id=62a9473a2dca46b29ccf17577fcf42d7 sandbox_id=fn`), writes `EasyAntiCheat/Settings.json`, and starts `FortniteClient-Win64-Shipping_EAC_EOS.exe` with the launcher's arguments plus `-fromfl=eaceos -caldera=<token> -startup=<guid>`. The game then logs in with the exchange code (`FOnlineIdentityMcp::Login Type=exchangecode`, `EOS_Auth_Login succeeded`, `EOS_Connect_Login succeeded`).
+Launch line from the launcher log (0.115, 16 arguments):
+
+```
+"D:\Fortnite\FortniteGame\Binaries\Win64\FortniteBootstrapper.exe" -eglv2 -eglv2apipath="C:\Users\<user>\AppData\Local\com.epicgames.eglv2\api.json" -obfuscationid=<id> -AUTH_LOGIN=unused -AUTH_PASSWORD=<exchange code> -AUTH_TYPE=exchangecode -epicapp=Fortnite -epicenv=Prod -EpicPortal -epicusername=<displayName> -epicuserid=<accountId> -epiclocale=en -named_pipe=<accountId>\<value> -src=12 -pl=01 -epicsandboxid=fn
+```
+
+Fortnite's `launchExecutable` is `FortniteGame/Binaries/Win64/FortniteBootstrapper.exe` with the manifest launch command `-obfuscationid=<id>` (it changes with each build). The bootstrapper starts `FortniteLauncher.exe` with the same arguments, which fetches the anti-cheat deployment (`deployment_id=62a9473a2dca46b29ccf17577fcf42d7 sandbox_id=fn`), writes `EasyAntiCheat/Settings.json`, and starts `FortniteClient-Win64-Shipping_EAC_EOS.exe` with the launcher's arguments plus `-fromfl=eaceos -caldera=<token> -startup=<guid>`. The game then logs in with the exchange code (`FOnlineIdentityMcp::Login Type=exchangecode`, `EOS_Auth_Login succeeded`, `EOS_Connect_Login succeeded`).
 
 A launch built by the [Download Client](../Library/DownloadClient.md) without `-eglv2`, `-named_pipe`, `-src` / `-pl` (auth args, `-obfuscationid`, Epic args, from a copy installed by that client) logged in and played a full match. Within a minute of starting, Fortnite queued a `Repair` of its Battle Royale add-on through the Install API.
 

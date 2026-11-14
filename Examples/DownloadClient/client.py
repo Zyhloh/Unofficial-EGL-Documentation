@@ -378,13 +378,14 @@ class Client:
         api = os.path.expandvars(os.path.expanduser(self.config.get('installApiPath') or ''))
         if api and os.path.exists(api) and record['namespace'] not in ('ue', 'poodle'):
             args += ['-eglv2', f'-eglv2apipath="{api}"']
+        args += game + additional + (extra or [])
         args += [
             '-AUTH_LOGIN=unused',
             '-AUTH_PASSWORD=' + self.epic.exchange_code(),
             '-AUTH_TYPE=exchangecode',
+            '-epicapp=' + epicapp,
+            '-epicenv=Prod',
         ]
-        args += game + additional + (extra or [])
-        args += ['-epicapp=' + epicapp, '-epicenv=Prod']
         if a.get('OwnershipToken') == 'true' and entry:
             args.append('-epicovt=' + self.write_ovt(record, entry))
         deployment = self.deployment_id(record)
