@@ -86,3 +86,20 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `debug_sentry_test_mode` | - | `-sentry-test` mode |
 | `debug_sentry_trigger_ipc_error` | - | Test IPC error |
 | `mock_reset` | - | Mock backend reset (mock builds) |
+
+## Added in 0.115
+
+| Command | Args | Purpose |
+| --- | --- | --- |
+| `begin_self_update_session` | - | Open a self-update session (`SelfUpdate.SessionBegun`) |
+| `set_self_update_target` | `run`, `wanted` | Acknowledge the self-update download target of a run |
+| `get_self_update_disabled` | - | `bool`: self-update is disabled (developer override / `EGL_DISABLE_SELF_UPDATE`) |
+| `check_local_update_bundle` | `buildinfoPath` | Validate a local self-update bundle; only on a developer-eligible launcher |
+| `patch_to_local_bundle` | `buildinfoPath`, `expectedVersion`, `lazy`, `run` | Self-update to a local bundle ("patch-to-tag"); staged bundles are re-checked against their signature at startup; manual channel and developer-eligible launcher only |
+| `get_launcher_path` | - | Path of the running `EpicGamesLauncher.exe` (Settings > About) |
+| `get_os_do_not_disturb` | - | `bool`: Windows Do Not Disturb, used to mute toasts (`os-do-not-disturb-changed-event`) |
+| `get_ui_preferences` | `key` | Read one key of `settings\ui-preferences.json` |
+| `set_ui_preferences` | `key`, `preferences` | Write one key of `settings\ui-preferences.json` |
+| `set_network_reachable` | `reachable` | The frontend's offline detector reports reachability (`Launch.NetworkReachabilityChanged`) |
+| `shell_reclaim_focus` | - | Give keyboard focus back to the main shell webview |
+| `clear_feedback_history` | - | Clear the local feedback history (`feedback\history-<env>.json`) |

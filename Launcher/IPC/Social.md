@@ -51,3 +51,13 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `social_bridge_hide_social` | - | v1 `USocialJSBridge` method, see [Bridge](../Social/Bridge.md) |
 | `social_bridge_is_social_visible` | - | v1 `USocialJSBridge` method, see [Bridge](../Social/Bridge.md) |
 | `social_bridge_focus_launcher` | `direction` | v1 `USocialJSBridge` method, see [Bridge](../Social/Bridge.md) |
+
+## Added in 0.115
+
+| Command | Args | Purpose |
+| --- | --- | --- |
+| `social_bridge_panel_close_requested` | - | The social panel asks to be closed (`Social.Panel.CloseRequested`) |
+| `social_dock_state` | - | `{ state, width }`: seed the panel's dock state and width (per account) |
+| `social_launcher_window_state` | - | `Focused` / `Unfocused` / `Minimized` / `SystemTray`, used to route social notifications |
+| `social_panel_size_settled` | `width`, `reason` | The panel reports its final width after a resize |
+| `social_report_notification_outcome` | `notificationId`, `action`, `reason` | Report what happened to a social notification (shown, suppressed, ...) |

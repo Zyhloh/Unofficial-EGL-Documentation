@@ -11,7 +11,7 @@ async socialOverlay(e) {
 
 so a command either resolves `{ status: "ok", data }` or `{ status: "error", error }` where `error` is the serialized backend error. Error kinds in the binary: `io_error`, `not_authenticated`, `user_cancelled`, `auth_failed`, `install_location_unavailable`, `refused_by_state`, `invalid_input`, `platform_unavailable`, `partner_handoff_failed`, `partner_redemption_required`, `network`, `access_restricted`, `cabined_blocked`, `cloud_save_decision_required`. 16 commands are untyped wrappers that return the raw value (`quit_app`, `relaunch`, `raise_shell`, `deeplink_take_pending`, ...).
 
-305 commands in total: 288 typed wrappers, 16 untyped wrappers and `create_desktop_shortcut` (invoked directly).
+305 commands in total in 0.95: 288 typed wrappers, 16 untyped wrappers and `create_desktop_shortcut` (invoked directly). Launcher 0.115 adds 38 and removes 2 (`get_disk_usage`, `get_linux_install_flavor`); the new ones are listed under "Added in 0.115" on each page. The frontend's name list (`commands.txt`) also contains `callback_error`, `send_error`, `install_fired`, `settled_recheck` and `window_focus`, which are labels, not commands.
 
 | Page | Area |
 | --- | --- |

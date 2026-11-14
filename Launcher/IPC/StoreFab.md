@@ -48,3 +48,11 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `bridge_log_web_perf` | `label`, `metric`, `ms` | Web perf metric |
 | `bridge_take_pending_focus_entry` | - | Focus hand-off entry point |
 | `shell_nav` | `action` | Back / forward from a content webview |
+
+## Added in 0.115
+
+| Command | Args | Purpose |
+| --- | --- | --- |
+| `bridge_checkout_receipt` | `receipt` | The checkout webview hands back the order receipt (offers, items, installer arguments) (`Checkout.ReceiptReceived` / `Confirmed`) |
+| `bridge_notify_content_load` | `started` | A content webview reports that loading started / finished (`Webview.ContentLoadSignalled`) |
+| `get_store_page_slug` | `namespace` | Store product page slug: `POST https://store.epicgames.com/graphql` `catalogNsQuery($namespace) { Catalog { catalogNs(namespace) { mappings(pageType: "productHome") { pageSlug } } } }` (behind a Cloudflare challenge for non-browser clients) |

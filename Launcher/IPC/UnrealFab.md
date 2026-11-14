@@ -64,3 +64,12 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `fab_ue_install_code_plugin_to_engine` | `listingUid`, `enginePath` | Install a code plugin into an engine |
 | `fab_ue_install_code_plugin_to_project` | `listingUid`, `projectPath` | Install a code plugin into a project |
 | `fab_ue_project_thumbnail` | `projectDir` | Project thumbnail |
+
+## Added in 0.115
+
+| Command | Args | Purpose |
+| --- | --- | --- |
+| `add_ue_project_location` | `path` | Register a folder that holds Unreal projects (`project-locations.json`); returns `{ outcome: added / alreadyAdded / noProjects, location, projectCount }` |
+| `list_ue_project_locations` | - | Registered project folders |
+| `remove_ue_project_location` | `path` | Unregister a project folder (files untouched) |
+| `launch_uefn_project` | `appId`, `descriptorPath`, `source`, `catalogRefresh` | Open a `.uefnproject` in public UEFN (`Fortnite_Studio`) with `-ValkyrieProject=<absolute path>`; refused for non-public UEFN or a missing / unreadable descriptor |

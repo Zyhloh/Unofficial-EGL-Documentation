@@ -98,3 +98,23 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `run_v1_uninstall` | `surface` | Run v1 removal via `EpicGamesLauncherMigrate.exe` |
 | `decline_v1_uninstall` | `exitRoute` | User declined (`exitRoute`) |
 | `reveal_previous_launcher` | - | Reveal v1 install folder |
+
+## Added in 0.115
+
+| Command | Args | Purpose |
+| --- | --- | --- |
+| `cancel_app_downloads` | `appId`, `surface` | Cancel every queued or running operation of one app (used when no `operationId` is known) |
+| `deeplink_launch_held` | `appId` | Read / consume a launch that a deep link held until its install finished (`Download.AutoLaunchHold*`) |
+| `deeplink_take_pending_install` | - | Take a deep-link install that arrived before the UI was ready (`DeepLink.PendingInstallTaken`) |
+| `get_kept_content_notice` | - | `bool`: show "the games and apps you kept when you uninstalled the launcher are back in your library" |
+| `dismiss_kept_content_notice` | - | Mark that notice as seen |
+| `dismiss_v1_out_of_tries` | - | Record that the user saw "every v1 launcher removal try is used up" |
+| `download_debug` | `request` = `{ action: "get", rows }` or `{ action: "revealManifest", appId }` | Download debug rows; internal (Epic staff) accounts only |
+| `get_incomplete_install_trees` | - | `IncompleteInstallTrees { resumable, waiting, ... }`: unfinished installs that can be resumed or are waiting |
+| `get_preloads` | - | Preload states (`preloads-changed-event`); see [Install and Update](../Flows/InstallAndUpdate.md) |
+| `install_scan_owed` | - | `bool`: an install import scan is owed for a later launch |
+| `listen_disk_space` | `action` (`start` / `stop`), `onReading` (channel) | Stream free-space readings to the UI (replaces `get_disk_usage`) |
+| `resolve_sd_selection` | `appId`, `requested` (component ids or `null`), `mode` | Resolve a selective-download component selection with its rules (required / default components) |
+| `run_install_check` | `locale`, `consentVersion` | Staff "install data check": looks for broken install records / manifests, returns `{ status, findings, gamesToRepair, referenceCode, uploadError }`, optionally uploads a report |
+
+Removed in 0.115: `get_disk_usage`, `get_linux_install_flavor`.

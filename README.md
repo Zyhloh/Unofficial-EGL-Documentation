@@ -2,7 +2,7 @@
 
 Unofficial documentation of the services, endpoints and internal flows used by the new Epic Games Launcher.
 
-Documented build: `0.115.0+gd6d2ef8` (re-checked against `0.95.1+ge288862`: library host, catalog route, download mirrors, settings, sign-in, launch line and social overlay updated; the IPC command pages still list the 0.95 command set plus removals) <br/>
+Documented build: `0.115.0+gd6d2ef8` (re-checked against `0.95.1+ge288862`: library host, catalog route, download mirrors, settings, sign-in, launch line and social overlay updated; IPC command pages include the 0.115 additions) <br/>
 Social overlay build: `96211b375055f1df17340f9aa9162510c71d90e3` (`social-overlay@2.12.2`) <br/>
 EOS SDK: `1.19.4230.0-57929184@LauncherV2`
 
