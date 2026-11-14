@@ -35,7 +35,7 @@ Live sign-in on launcher 0.115 with the browser already signed in to epicgames.c
 
 The EOS login that follows mints its own exchange code with `consumingClientId` = the EOS client (`EosClient.Login.ExchangeCodeMinting`).
 
-The client used for step 7's token request is not logged. Since browser sessions later refresh with the client selected by `via_system_browser`, the EG1 token is inferred to be issued to `egs-desktop` as well.
+The client used for step 7's token request is not logged. Indirect evidence that it is `egs-desktop`: the launcher's own calls to [Library Tags](../../EpicGames/LibraryService/Tags/Get.md) return 200 (`Store.TagsFetched`), and that route needs `library:public:tags READ`, which an `egs-desktop` token has and a `launcherAppClient2` token does not (403 `missing_permission`). Since browser sessions later refresh with the client selected by `via_system_browser`, the EG1 token is inferred to be issued to `egs-desktop` as well.
 
 ## Session restore (cold start)
 
