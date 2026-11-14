@@ -67,4 +67,38 @@ Common props on every event: `environment`, `event_id`, `launcher_version`, `os`
 | `Account.TimezoneReported` | Data Router | `duration_ms`, `result` (the [K3S time zone report](../EpicGames/KWS/Settings/UpdateUser.md)) |
 | `eos.social.party-leave` | EOS Data Router | `AccountId`, `RoomName`, `Source`, `DisconnectReason`, `AvgJitterBufferDelaySec`, `AvgRoundTripTimeSec`, `IncomingAvgPacketLossFraction`, `OutgoingAvgPacketLossFraction`, `VoiceChatIncomingActivitySec`, `VoiceChatOutgoingActivitySec`, `VoiceModerationEnabled`, `VoiceModerationEnabledDurationSec` |
 
-The binary has more event groups that this session did not trigger (source files `telemetry\{download,install,cloud_save,eula,fab,store,selfupdate,update_check,v1_removal,previous_launcher,social}_events.rs`).
+## Full event registry
+
+The binary's event name table (0.115) has 107 names. Events not in the table above were not triggered in the captured session; their properties are not listed.
+
+| Group | Events |
+| --- | --- |
+| App | `User.AppOpened`, `User.AppMinimized`, `User.AppRestored`, `User.AppExited`, `Startup.Completed`, `App.Heartbeat`, `System.Specs`, `DeepLink.Activated`, `Notification.QuietTimeToastResolved` |
+| Sign-in | `Auth.SignInSurfaceShown`, `User.AuthSignInStarted`, `User.AuthSignInCompleted`, `User.AuthSignOut`, `Account.TimezoneReported` |
+| Settings | `Settings.Snapshot`, `Settings.Changed`, `User.SettingsChanged`, `User.SettingsVisited`, `User.SettingsGraphicsSettingsOpened` |
+| Library | `Library.Loaded`, `Library.Refreshed`, `Library.InstalledSnapshot`, `Library.FilterChanged`, `Library.SortChanged`, `User.LibrarySearchPerformed`, `User.LibraryFilterChanged`, `User.LibrarySortChanged`, `User.LibraryCollectionChanged`, `User.LibraryItemHiddenChanged`, `User.TabVisited` |
+| Install | `Game.InstallDialogShown`, `User.GameInstallDialogClosed`, `User.GameInstallRequested`, `User.GameInstallStarted`, `User.GameUninstallStarted`, `User.GameUninstallCompleted`, `User.GameUpdateStarted`, `User.GameVerifyCompleted`, `User.GameAddonConfigApplied`, `User.GameInstallLocationOpened`, `Game.PrereqCompleted`, `Entitlement.Acquired` |
+| Downloads | `Download.Started`, `Download.Ended`, `Download.Paused`, `Download.Resumed`, `Download.QueueReordered`, `Download.QueueRestored`, `User.DownloadsVisited`, `User.DownloadPauseRequested`, `User.DownloadResumeRequested`, `User.DownloadQueueReorderRequested`, `UpdateCheck.Completed` |
+| Play | `User.GameLaunchCompleted`, `User.GameEnded`, `User.GameExternalSessionEnded`, `Playtime.Published`, `Playtime.Dropped`, `Partner.Handoff` |
+| Cabined | `Cabined.LaunchNoticeShown`, `User.CabinedLaunchNoticeAction`, `Cabined.ContentNoticeShown`, `User.CabinedContentNoticeAction` |
+| First run | `Ftue.Shown`, `User.FtueStepCompleted`, `User.FtueCompleted` |
+| Cloud saves | `User.CloudSavesSyncCompleted`, `User.CloudSavesConflictResolved`, `User.CloudSavesFolderOpened` |
+| Store, EULA | `User.StorePurchaseCompleted`, `User.StorePurchaseLateGranted`, `User.EulaResponded` |
+| Unreal Engine, Fab | `User.UnrealEngineEditorLaunched`, `User.UnrealEngineCustomEngineAdded`, `User.UnrealEngineCustomEngineRemoved`, `User.UnrealEnginePluginStateChanged`, `User.UnrealEngineProjectDeleted`, `User.UnrealEngineProjectEngineReassociated`, `User.FabInstallCompleted`, `User.FabExportCompleted` |
+| Social | `Social.GameInviteShown`, `Social.GameInviteDropped`, `User.SocialGameInviteResponded`, `User.SocialFriendLinkingRequested` |
+| Self update | `SelfUpdate.Completed`, `SelfUpdate.StageResult`, `SelfUpdate.IndicatorShown`, `SelfUpdate.FailureDialogShown`, `User.SelfUpdateIndicatorAction`, `User.SelfUpdateDialogAction` |
+| v1 launcher | `V1Migration.Detected`, `V1Migration.StepCompleted`, `ImportScan.Completed`, `ImportVerify.Completed`, `V1Removal.OfferChecked`, `V1Removal.CloseChecked`, `V1Removal.Started`, `V1Removal.Completed`, `V1Removal.Declined` |
+| Linux | `Compat.RuntimeInstallEnded`, `Compat.RuntimeUpgradeCompleted` |
+| Feedback | `User.FeedbackSubmitted` |
+
+EOS stream (`eosDataRouter`, the v1-parity `eos.social.*` events, sampled by `telemetry-eos-datarouter-sample-rate`). Property names come from the string table next to the event names:
+
+| Event | Props |
+| --- | --- |
+| `eos.social.error` | `ErrorCode`, `Source` |
+| `eos.social.notification-tap-to-message` | `AppState`, `ConversationId`, `ConversationType`, `SenderId`, `Action` |
+| `eos.social.externalchatwindow` | `SecondsInState` |
+| `eos.social.stt-used` | `Latency`, `MessageId`, `MicrophoneUsed`, `Duration` |
+| `eos.social.party-leave` | see the table above |
+
+The spool is capped in size; over the cap the oldest segment is dropped (`telemetry spool over its size cap; dropped the oldest segment`).
