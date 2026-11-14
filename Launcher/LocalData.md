@@ -62,7 +62,10 @@ Keys of a live file:
 | `minimizeToTray`, `startOnBoot` | |
 | `enableNotifications`, `suppressNotificationsWhileGaming` | |
 | `maxConcurrentDownloads`, `downloadSpeedLimit`, `downloadSpeedLimitGameplay`, `downloadSpeedUnit` | |
-| `downloadMemoryLimitMb`, `updateGamesWhilePlaying`, `inPlaceEngineUpdates`, `verifyFilesOnDrive` | Added by 0.115. `verifyFilesOnInstall` is no longer in the file; `verifyFilesOnDrive` likely replaces it (inferred from the name) |
+| `downloadMemoryLimitMb` | Added by 0.115. "Allowed RAM during downloads" before chunks spill to disk; default 2048 |
+| `updateGamesWhilePlaying` | Added by 0.115. "Download updates while a game is running": downloads at the active speed limit, needs space for a temporary copy of the changed files, applies when the game closes; the game can't be started again until the update is done |
+| `inPlaceEngineUpdates` | Added by 0.115. "Update Unreal Engine in place": patches engine files directly, uses less disk space, but the install may not work until the update finishes |
+| `verifyFilesOnDrive` | Added by 0.115, `verifyFilesOnInstall` is gone. "Verify files on the drive itself": reads each written file back from the drive instead of memory to catch failing storage (the uncached read-back that 0.95 did under `verifyFilesOnInstall`) |
 | `downloadScheduleEnabled`, `downloadScheduleStartMinute`, `downloadScheduleEndMinute`, `automaticDownloadsEnabled`, `autoLaunchOnDownloadComplete`, `retryCanceledUpdates`, `verifyFilesOnInstall`, `verifyAllFilesOnUpdate` | |
 | `locale`, `defaultMainTab`, `lastVisitedTab` | |
 | `updaterEndpoint` | Self-update endpoint override (null) |
