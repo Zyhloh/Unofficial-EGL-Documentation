@@ -20,7 +20,9 @@ Keys are the names accepted by `-baseurl.<key>=<url>` (see [Overrides](#override
 
 | Key | Prod | Gamedev / CI | Used for |
 | --- | --- | --- | --- |
-| `library_service` | https://distro-gateway-prod.ol.epicgames.com (0.112+; `library-service.live.use1a.on.epicgames.com` before) | https://distro-gateway-private-gamedev.ol.epicgames.net (0.112+, inferred: the old gamedev library host was removed from the binary) | [Library Service](../EpicGames/LibraryService): items, collections, tags, playtime, state token |
+| `library_service` | https://distro-gateway-prod.ol.epicgames.com (0.112+; `library-service.live.use1a.on.epicgames.com` before) | https://distro-gateway-private-gamedev.ol.epicgames.net (0.112+; confirmed in the 0.115 binary, which has no separate CI table: CI uses the gamedev hosts) | [Library Service](../EpicGames/LibraryService): items, collections, tags, playtime, state token |
+| `artifact_delivery` | https://artifact-delivery-service-public-prod.ol.epicgames.com | https://artifact-delivery-public-service-gamedev.aeee.dev.use1a.on.epicgames.com | Signed chunk URLs, [Download URLs](../EpicGames/ArtifactDeliveryService/Delivery/DownloadUrls.md) (0.115+) |
+| `k3s_service` | https://api.kws.ol.epicgames.com | https://epic-settings-gamedev-api.kws.ol.epicgames.com | Time zone report at sign-in, [Update User](../EpicGames/KWS/Settings/UpdateUser.md) (0.115+) |
 | `catalog_service` | https://catalog-public-service-prod06.ol.epicgames.com | https://catalogv2-public-service-gamedev.ol.epicgames.net | [Catalog Service](../EpicGames/CatalogService) |
 | `account_service` | https://account-public-service-prod03.ol.epicgames.com | https://account-public-service-common-gamedev.ol.epicgames.net | [Account Service](../EpicGames/AccountService): OAuth, account info |
 | `website` | https://www.epicgames.com | https://epicgames-gamedev.ol.epicgames.net | `/id/authorize`, `/id/register`, `/id/exchange`, `/id/link`, `/store`, `/account/parental-controls` ([Sign In](Flows/SignIn.md)) |

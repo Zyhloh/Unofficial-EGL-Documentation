@@ -1,6 +1,6 @@
 ## Catalog Service - Catalog: Bulk Items
 
-Catalog metadata for a batch of catalog items in one namespace. Up to launcher 0.95 the library refresh grouped library records by namespace and called this per namespace (`fetch_catalog_batch`); by 0.111 it had switched to the namespace-less [Shared Bulk Items](SharedBulkItems.md) instead. In 0.95 `refresh_catalog_item`, `refresh_catalog_from_server`, the EULA gate and install-time lookups ("Fetched the uncached catalog entry of ...") use it too. Results are cached in `catalog-cache.json` (per locale; a cache in another language is treated as a miss).
+Catalog metadata for a batch of catalog items in one namespace. Up to launcher 0.95 the library refresh grouped library records by namespace and called this per namespace (`fetch_catalog_batch`); by 0.111 it had switched to the namespace-less [Shared Bulk Items](SharedBulkItems.md) instead. 0.115 still uses this namespaced route for one item or a small set: EULA gate, uncached single entry, install / activate, Play, engine plugins, store tags, Fab library, purchase and the import scan. In 0.95 `refresh_catalog_item`, `refresh_catalog_from_server`, the EULA gate and install-time lookups ("Fetched the uncached catalog entry of ...") use it too. Results are cached in `catalog-cache.json` (per locale; a cache in another language is treated as a miss).
 
 URL: https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/:namespace/bulk/items \
 Method: GET \
@@ -13,8 +13,8 @@ The URL is built by pushing `:namespace`, `bulk`, `items` as path segments onto 
 
 ## Query Parameters
 `id`: Catalog item id, repeated once per item <br/>
-`includeDLCDetails`: Always `true` <br/>
-`includeMainGameDetails`: Always `true` <br/>
+`includeDLCDetails`: `true` in launcher 0.95; `false` in 0.115 (one shared query builder for every catalog call) <br/>
+`includeMainGameDetails`: `true` in launcher 0.95; `false` in 0.115 <br/>
 `country`: Always `US` (hardcoded) <br/>
 `locale`: UI locale <br/>
 

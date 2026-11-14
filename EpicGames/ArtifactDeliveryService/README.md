@@ -5,6 +5,9 @@ This are some (not all) Hosts that you can access the Artifact Delivery Service 
 - epicgames-download1.akamaized.net
 - egdownload.fastly-edge.com
 - content-download-egs.distro.on.epicgames.com
+- egs-cloudfront-chunks.epicgamescdn.com
+- google.epicgamescdn.com
+- artifact-delivery-service-public-prod.ol.epicgames.com (API: [Download URLs](Delivery/DownloadUrls.md), signs chunk URLs; gamedev `artifact-delivery-public-service-gamedev.aeee.dev.use1a.on.epicgames.com`)
 
 <br/>
 

@@ -7,7 +7,7 @@ Method: GET \
 Auth Required: Yes (Bearer access token)
 
 ## Query Parameters
-`id`: Catalog item id, repeated once per item (the launcher sent batches of 1 to 10 ids) <br/>
+`id`: Catalog item id, repeated once per item. Launcher 0.115 dedupes the library's ids and sends the first 100 in batches of 10 (so the library fills in quickly), the rest in batches of 50 <br/>
 `includeDLCDetails`: `false` in launcher 0.115 <br/>
 `includeMainGameDetails`: `false` in launcher 0.115 <br/>
 `country`: `US` <br/>

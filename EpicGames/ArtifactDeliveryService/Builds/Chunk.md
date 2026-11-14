@@ -48,7 +48,8 @@ _Example header (decoded)_
 There is no setting, environment variable or flag to pick a CDN, and the launcher never calls a distribution points endpoint. Per download operation:
 
 - Every mirror starts with a failure count of 0. Before each chunk request the bases are sorted by `(failure count, position in the server's list)`, so the server's first mirror is used until it fails.
-- An HTTP error, transport error, stall or bad chunk adds 1 to that host's failure count (never reset during the operation) and the next base in the sorted list is tried ("Switched preferred CDN", `Download.CdnFailover`).
+- An HTTP error, transport error, stall or bad chunk adds 1 to that host's failure count and the next base in the sorted list is tried ("Switched preferred CDN", `Download.CdnFailover`). In 0.95 the count was never reset during the operation. Since 0.115 it decays: once a CDN has gone a number of intervals without failing, its count is halved ("Halved the failure counts of the CDNs that stopped failing after N served chunks", `Download.CdnFailuresDecayed`); a CDN that fails again after being forgiven waits longer for its next halving.
+- Builds with `useSignedUrl: true` (0.115+) do not build chunk URLs from the manifest mirror: each chunk path is signed through [Download URLs](../Delivery/DownloadUrls.md) and the returned URL is used as is; CDNs that fail are blocked for that download, and all are unblocked again if none is left.
 - Up to 4 attempts per chunk, each trying every base. Before attempt `n` (from 1) the client waits `(1000 << (n - 1)) + random(0..500)` ms (about 1 s, 2 s, 4 s).
 - Stall timeout for the request and the body read: `max(20 s, mean + 4 * stddev)` of the last 100 chunk download times, capped at 60 s.
 - 24 to 64 chunk requests run in parallel: the client starts at 24 and adds or removes slots based on latency / throughput.

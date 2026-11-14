@@ -94,7 +94,9 @@ A small game without selective download or dependency config (`Grunt`, namespace
 }
 ```
 
-The client deserializes `AssetsResponse` (`elements`), `AssetElement` (11 fields: `appName`, `labelName`, `buildVersion`, `hash`, `useSignedUrl`, `metadata`, `manifests`, `selectiveDownload`, `sdMetaHash`, `cdnBaseUrls`, `sidecar`), `ManifestUrl` (`uri`, `queryParams`), `ManifestQueryParam` (`name`, `value`), `SelectiveDownloadUrl` (`uri`, `queryParams`, `headers`), `AssetSidecar` (`config`, `rvn`) and `AssetElementMetadata`. `isPreloaded` is not read by the client; `cdnBaseUrls` and `sidecar` were absent in the captures.
+The client deserializes `AssetsResponse` (`elements`), `AssetElement` (11 fields: `appName`, `labelName`, `buildVersion`, `hash`, `useSignedUrl`, `metadata`, `manifests`, `selectiveDownload`, `sdMetaHash`, `cdnBaseUrls`, `sidecar`), `ManifestUrl` (`uri`, `queryParams`), `ManifestQueryParam` (`name`, `value`), `SelectiveDownloadUrl` (`uri`, `queryParams`, `headers`), `AssetSidecar` (`config`, `rvn`) and `AssetElementMetadata`. `isPreloaded` is not read by the 0.95 client; `cdnBaseUrls` and `sidecar` were absent in the captures. Launcher 0.115 reads 13 fields: it adds `isPreloaded` and `secrets` (decryption keys of a preload once it is released).
+
+- `useSignedUrl: true`: since 0.115 the launcher fetches a [download ticket](CreateTicket.md) and gets every chunk URL from [Download URLs](../../ArtifactDeliveryService/Delivery/DownloadUrls.md) instead of building it from the manifest mirror (0.95 ignored the flag). No build owned by the test accounts had it set.
 
 - `labelName` is `<label>-<platform>` (`Live-Windows` for a `Live` request).
 - `hash` is the manifest SHA-1. Every manifest copy is SHA-1-checked against it; a mismatch rejects that mirror ("Manifest SHA-1 did not match build info, rejecting this copy and trying next"). If `hash` is missing the first copy that parses is accepted.

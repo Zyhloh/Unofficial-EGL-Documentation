@@ -14,4 +14,25 @@ Auth Required: Yes (Bearer access token)
 ## Query Parameters
 `locale`: Locale of the accepted text, e.g. `en` <br/>
 
-The method is inferred (same path shape as the UE launcher's accept call); the binary only shows the path segments and the `locale` pair.
+No body.
+
+---
+
+_Example Response_
+
+`204 No Content`. Afterwards [Get Agreement](GetAgreement.md) for the key returns 204 (nothing pending). Accepting the same version again also returns 204.
+
+_Example Response (unknown version)_
+
+```json
+{
+  "errorCode": "errors.com.epicgames.eulatracking.agreement_not_found",
+  "errorMessage": "The agreement with key emporium and version 999 could not be found.",
+  "messageVars": ["emporium", "999"],
+  "numericErrorCode": 31003,
+  "originatingService": "com.epicgames.eulatracking",
+  "intent": "prod"
+}
+```
+
+Tested live with `emporium` version 4.
