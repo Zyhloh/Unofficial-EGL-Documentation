@@ -36,4 +36,4 @@ Chat chime: the social message chime is skipped too (`Social.Chime.QuietHoursSup
 
 ## Kill switch
 
-LaunchDarkly `quiet-hours-enabled`, boolean, default `true`. False lifts quiet hours for every account and stops the telemetry event. A missing flag reads as on. Changes are logged as `QuietHours.FlagChanged`.
+LaunchDarkly `quiet-hours-enabled`, boolean, default `true`. False lifts quiet hours for every account and stops the telemetry event. A missing flag reads as on. Changes are logged as `QuietHours.FlagChanged`. On 13 November 2026 the [Deck relay](../../EpicGames/DeckService/Features/Evaluate.md) served `false`, so quiet hours were off in production at that point.

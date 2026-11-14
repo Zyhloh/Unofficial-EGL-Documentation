@@ -78,7 +78,7 @@ Changes since 0.95, from the launcher's own [patch notes](../SelfUpdate.md) (`pa
 
 1. The old manifest is read from `.egstore` ("No old manifest found in .egstore, treating all files as new").
 2. A [delta manifest](../../EpicGames/ArtifactDeliveryService/Builds/Delta.md) is merged into the new manifest when available; otherwise old and new manifests are diffed.
-3. Files whose SHA-1 is unchanged are kept. Changed files are built as `<file>.new` temps and swapped in at the end, so an interrupted update resumes from them. Chunk data that already exists in installed files is read from disk ("Chunk-level dedup: reusing existing chunks from installation"); only the rest is downloaded. An in-place mode with a journal also exists (`EGL_DESTRUCTIVE_UPDATES`).
+3. Files whose SHA-1 is unchanged are kept. Changed files are built as `<file>.new` temps and swapped in at the end, so an interrupted update resumes from them. Chunk data that already exists in installed files is read from disk ("Chunk-level dedup: reusing existing chunks from installation"); only the rest is downloaded. An in-place mode with a journal also exists (`EGL_DESTRUCTIVE_UPDATES`; in 0.115 also the `in-place-updates-enabled` kill switch, which patches changed files where they sit when on). On 13 November 2026 the Deck relay served that flag as `false`, so production updates used the `.new` staging path.
 4. Files the new build no longer has are deleted after the swap, except files that another installation in the same folder still lists (add-ons and their parent share a folder). If a sibling's manifest cannot be read, nothing is deleted.
 5. With `verifyAllFilesOnUpdate` the untouched files are verified while the download runs.
 
