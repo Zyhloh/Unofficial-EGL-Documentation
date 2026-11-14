@@ -1,8 +1,10 @@
-## Epic Games Id - Authorize
+## Epic Games Id - Login (authorize)
 
 OAuth 2.0 authorization code + PKCE page opened in the system browser by `auth_sign_in_browser` (`createAccount: false`). Built by `eglv2_lib::auth::sisu` (log: `Opening SISU authorize URL in system browser endpoint=`). See [Sign In](../../../Launcher/Flows/SignIn.md).
 
-URL: https://www.epicgames.com/id/authorize \
+Launcher 0.115 opens `/id/login`; 0.95 opened `/id/authorize`. The 0.115 binary no longer contains `/id/authorize`.
+
+URL: https://www.epicgames.com/id/login \
 Method: GET (browser navigation) \
 Auth Required: No
 
@@ -15,14 +17,14 @@ Appended in this order:
 | `client_id` | `c85f4c6238b04d3399bc0080e83b83fc` (`EGL_SISU_CLIENT_ID` override) |
 | `response_type` | `code` |
 | `redirect_uri` | `http://127.0.0.1:<port>/launcher/authorized` (`http://[::1]:<port>/launcher/authorized` when no IPv4 loopback) |
-| `scope` | `basic_profile friends_list country presence` (`EGL_SISU_SCOPES` override) |
+| `scopes` | `basic_profile friends_list country presence` (`EGL_SISU_SCOPES` override). The key is plural in 0.115 |
 | `code_challenge` | base64url(SHA-256(code_verifier)) |
 | `code_challenge_method` | `S256` |
 | `state` | Per-attempt value held next to the PKCE verifier; read back from the callback (comparison inferred) |
 | `lang` | UI language, `_` replaced by `-`; omitted when empty |
 | `prompt` | `select_account`; sent on sign-in only, omitted for [Register](Register.md) |
 
-`<port>` is an OS-assigned ephemeral port unless `EGL_SISU_REDIRECT_PORT` is set. PKCE material comes from the OS RNG (`OS RNG unavailable while generating PKCE material` on failure).
+`<port>` is an OS-assigned ephemeral port unless `EGL_SISU_REDIRECT_PORT` is set (`EGL_SISU_REDIRECT_HOST` / `EGL_SISU_REDIRECT_PATH` override the rest of the redirect). PKCE material comes from the OS RNG (`OS RNG unavailable while generating PKCE material` on failure).
 
 ## Callback
 

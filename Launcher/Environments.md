@@ -25,7 +25,7 @@ Keys are the names accepted by `-baseurl.<key>=<url>` (see [Overrides](#override
 | `k3s_service` | https://api.kws.ol.epicgames.com | https://epic-settings-gamedev-api.kws.ol.epicgames.com | Time zone report at sign-in, [Update User](../EpicGames/KWS/Settings/UpdateUser.md) (0.115+) |
 | `catalog_service` | https://catalog-public-service-prod06.ol.epicgames.com | https://catalogv2-public-service-gamedev.ol.epicgames.net | [Catalog Service](../EpicGames/CatalogService) |
 | `account_service` | https://account-public-service-prod03.ol.epicgames.com | https://account-public-service-common-gamedev.ol.epicgames.net | [Account Service](../EpicGames/AccountService): OAuth, account info |
-| `website` | https://www.epicgames.com | https://epicgames-gamedev.ol.epicgames.net | `/id/authorize`, `/id/register`, `/id/exchange`, `/id/link`, `/store`, `/account/parental-controls` ([Sign In](Flows/SignIn.md)) |
+| `website` | https://www.epicgames.com | https://epicgames-gamedev.ol.epicgames.net | `/id/login`, `/id/register`, `/id/exchange`, `/id/link`, `/store`, `/account/parental-controls` ([Sign In](Flows/SignIn.md)) |
 | `launcher_service` | https://launcher-public-service-prod06.ol.epicgames.com | https://launcher-public-service-gamedev.aeee.dev.use1a.on.epicgames.com | [Launcher Service](../EpicGames/LauncherService): `/launcher/api/public/assets/v2` |
 | `store` | https://store.epicgames.com | https://store.epicgames-gamedev.ol.epicgames.net | `store-webview` content |
 | `checkout` | https://launcher.store.epicgames.com/purchase | https://launcher.store.epicgames-gamedev.ol.epicgames.net/purchase | `checkout-overlay` ([Purchase](Flows/Purchase.md)) |

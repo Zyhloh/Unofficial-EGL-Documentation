@@ -8,7 +8,7 @@ Games never get the launcher's token. `launch_game` mints a one-time exchange co
 2. `launch_game` takes the cached code or mints one: [`GET /account/api/oauth/exchange`](../../EpicGames/AccountService/OAuth/Exchange.md) with the EG1 bearer.
 3. Failure does not block the launch: `Failed to get exchange code, launching without auth:`; the `-AUTH_*` arguments are then left out.
 
-Cache lifetime and whether a `consumingClientId` is sent for games are not resolved.
+A prefetched code is reused only for the same app and while it is younger than 180 seconds; otherwise a new one is minted. If the prefetch failed, `launch_game` mints synchronously (`Exchange code prefetch failed; launch_game will mint synchronously on next click`). Game codes carry no `consumingClientId`.
 
 ## Arguments
 
@@ -29,8 +29,8 @@ Built in this order:
 | 11 | `-epicusername=<displayName>` | Signed in |
 | 12 | `-epicuserid=<accountId>` | Signed in |
 | 13 | `-epiclocale=<locale>` | Always |
-| 14 | `-named_pipe=<accountId>\<value>` | Catalog namespace is `fn` (Fortnite) and a user id is known |
-| 15 | `-src=12` `-pl=01` | Namespace `fn`, when a helper check on the argument list returns false (meaning not resolved) |
+| 14 | `-named_pipe=<accountId>\<appName>` | Catalog namespace is `fn` (Fortnite) and a user id is known. `<appName>` is the installed record's app name (`Fortnite`); an `-epicapp` override does not change it |
+| 15 | `-src=12` `-pl=01` | Namespace `fn` and no argument named `src` in any source (manifest `LaunchCommand`, catalog `AdditionalCommandLine`, user args, extra launch option). If one has `-src=...`, both are skipped |
 | 16 | remaining manifest / user args | |
 | 17 | `-epicsandboxid=<namespace>` | Always |
 
@@ -47,10 +47,14 @@ Example (Crosshair V2, captured from the launcher log, `Launch.GameSpawning`, 12
 Launch line from the launcher log (0.115, 16 arguments):
 
 ```
-"D:\Fortnite\FortniteGame\Binaries\Win64\FortniteBootstrapper.exe" -eglv2 -eglv2apipath="C:\Users\<user>\AppData\Local\com.epicgames.eglv2\api.json" -obfuscationid=<id> -AUTH_LOGIN=unused -AUTH_PASSWORD=<exchange code> -AUTH_TYPE=exchangecode -epicapp=Fortnite -epicenv=Prod -EpicPortal -epicusername=<displayName> -epicuserid=<accountId> -epiclocale=en -named_pipe=<accountId>\<value> -src=12 -pl=01 -epicsandboxid=fn
+"D:\Fortnite\FortniteGame\Binaries\Win64\FortniteBootstrapper.exe" -eglv2 -eglv2apipath="C:\Users\<user>\AppData\Local\com.epicgames.eglv2\api.json" -obfuscationid=<id> -AUTH_LOGIN=unused -AUTH_PASSWORD=<exchange code> -AUTH_TYPE=exchangecode -epicapp=Fortnite -epicenv=Prod -EpicPortal -epicusername=<displayName> -epicuserid=<accountId> -epiclocale=en -named_pipe=<accountId>\Fortnite -src=12 -pl=01 -epicsandboxid=fn
 ```
 
 Fortnite's `launchExecutable` is `FortniteGame/Binaries/Win64/FortniteBootstrapper.exe` with the manifest launch command `-obfuscationid=<id>` (it changes with each build). The bootstrapper starts `FortniteLauncher.exe` with the same arguments, which fetches the anti-cheat deployment (`deployment_id=62a9473a2dca46b29ccf17577fcf42d7 sandbox_id=fn`), writes `EasyAntiCheat/Settings.json`, and starts `FortniteClient-Win64-Shipping_EAC_EOS.exe` with the launcher's arguments plus `-fromfl=eaceos -caldera=<token> -startup=<guid>`. The game then logs in with the exchange code (`FOnlineIdentityMcp::Login Type=exchangecode`, `EOS_Auth_Login succeeded`, `EOS_Connect_Login succeeded`).
+
+### Named pipe
+
+The pipe is `\\.\pipe\<accountId>\<appName>`. The game is the pipe server; the launcher has no pipe server of its own (`CreateNamedPipe` is not imported). The launcher only uses it for deep links: when a deep link targets a running direct-linked game, it opens the pipe (retrying every 500 ms while it gets `ERROR_PIPE_BUSY`), writes the forwarded URI arguments joined by single spaces, and closes without reading a reply (`Deep-link: messaged running direct-linked game over its named pipe forwarded_args=`, `DeepLink.PipeSend*`). If the write fails, the launcher relaunches the game after it exits.
 
 A launch built by the [Download Client](../Library/DownloadClient.md) without `-eglv2`, `-named_pipe`, `-src` / `-pl` (auth args, `-obfuscationid`, Epic args, from a copy installed by that client) logged in and played a full match. Within a minute of starting, Fortnite queued a `Repair` of its Battle Royale add-on through the Install API.
 

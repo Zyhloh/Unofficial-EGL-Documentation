@@ -13,7 +13,7 @@ Recommended Hosts:
 
 These are browser pages, not APIs. eglv2 never renders them in a webview; it opens them in the system browser (`ShellExecuteW`). Paths come from the launcher's environment table (`website` base):
 
-- [Authorize](Authorize.md) - `/id/authorize`
+- [Login (authorize)](Authorize.md) - `/id/login` (`/id/authorize` before 0.115)
 - [Register](Register.md) - `/id/register`
 - [Exchange](Exchange.md) - `/id/exchange`
 - [Link](Link.md) - `/id/link`

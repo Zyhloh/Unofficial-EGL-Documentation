@@ -40,6 +40,17 @@ On start a refresh token found in `auth.json` is copied to the keyring and clear
 
 Used by session restore as "Lever 2": if the cached token is still valid the launcher skips the token request and the account lookup (`Using cached account_info (skipping account API call)`). Deleted on sign-out (`Auth.Credentials.DpapiDeleted`).
 
+## Retained accounts
+
+Added in 0.115 for `auth_change_account` (`src\auth\credential_store\retained.rs`, events `Auth.RetainedAccounts.*`). Instead of deleting the outgoing account's tokens, the launcher keeps them (`Auth.ChangeAccountRetained`; `Auth.ChangeAccountTokensNotKept` when there is nothing to keep):
+
+| File | Content |
+|---|---|
+| `auth\retained-accounts-<env>.json` | Index of kept accounts |
+| `auth\retained-<env>-<accountId>.dpapi` | That account's tokens, DPAPI protected |
+
+When a kept account signs in again its entry is removed. No IPC command or frontend code lists or restores kept accounts in 0.115, so there is no switch-back UI yet. Neither sign-out nor account change calls a revoke endpoint; the binary references no `/oauth/sessions/kill`.
+
 ## In memory
 
 `TokenResponse` (9 fields, see [OAuth/Token](../../EpicGames/AccountService/OAuth/Token.md)) lives in managed Tauri state. Exposed to:

@@ -22,7 +22,7 @@ Fields are sent in the order below.
 | `grant_type` | `authorization_code` |
 | `code` | `code` from the loopback callback |
 | `code_verifier` | PKCE verifier |
-| `redirect_uri` | Same value sent to [/id/authorize](../../Web/Id/Authorize.md), `http://127.0.0.1:<port>/launcher/authorized` |
+| `redirect_uri` | Same value sent to [/id/login](../../Web/Id/Authorize.md), `http://127.0.0.1:<port>/launcher/authorized` |
 | `token_type` | `eas` |
 
 `exchange_code` (EAS to EG1 step of sign-in, log label `eas_for_eg1`, also the v1 carry-over chain)

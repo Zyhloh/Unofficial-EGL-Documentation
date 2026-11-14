@@ -8,6 +8,8 @@ Tauri app identifier `com.epicgames.eglv2`. Data dir `%LOCALAPPDATA%\com.epicgam
   auth\
     auth.json                        per-environment session info
     access-token-<env>.dpapi         DPAPI encrypted access token cache
+    retained-accounts-<env>.json     accounts kept by auth_change_account (0.115)
+    retained-<env>-<accountId>.dpapi kept account's tokens
   cache\
     disk-size-cache.json
     manifest-summaries\<hash>.json

@@ -12,7 +12,7 @@ Tauri commands and events of `eglv2_lib::commands::auth` (`src\commands\auth.rs`
 | `auth_cancel_browser_sign_in` | - | - | Aborts the loopback wait (`Browser sign-in was cancelled`) |
 | `auth_force_refresh` | - | - | `auth_force_refresh: dev-triggered token refresh` |
 | `auth_sign_out` | - | - | Full sign-out drain |
-| `auth_change_account` | - | - | Added in 0.115 ("Switch account", patch notes 0.109): signs the current account out so another can sign in (`Auth.ChangeAccount*`) |
+| `auth_change_account` | - | - | Added in 0.115 ("Switch account", patch notes 0.109): signs the current account out locally so another can sign in (`Auth.ChangeAccount*`). It waits for any token refresh (`Auth.ChangeAccountRefreshBusy`), sends no revoke, and keeps the outgoing account's tokens ([Token Storage](TokenStorage.md#retained-accounts)) |
 | `auth_recheck_cabined_mode` | - | - | See [Cabined Mode](CabinedMode.md) |
 | `auth_open_parental_consent` | - | - | See [Cabined Mode](CabinedMode.md#parental-consent) |
 | `cabined_gate_acknowledge` | `appId` | - | Unblocks a cabined launch |

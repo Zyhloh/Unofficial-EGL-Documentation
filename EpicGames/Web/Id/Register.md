@@ -16,4 +16,4 @@ Auth Required: No
 `state`: Per-attempt value <br/>
 `lang`: UI language <br/>
 
-The choice between `/id/authorize` + `prompt=select_account` and `/id/register` is a single branch on the `createAccount` flag in the sign-in task (`sub_1400DC690`); the register mapping is inferred from the endpoint struct layout (`authorize` at +0xA8, `register` at +0xC0).
+The choice between `/id/login` (0.95: `/id/authorize`) + `prompt=select_account` and `/id/register` is a single branch on the `createAccount` flag in the sign-in task (`sub_1400DC690`); the register mapping is inferred from the endpoint struct layout (0.95: `authorize` at +0xA8, `register` at +0xC0; 0.115: `login` at +168, `register` at +192).
