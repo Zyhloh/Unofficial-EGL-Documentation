@@ -15,7 +15,25 @@ eglv2 creates the EOS platform with the external-overlay mode (`EOS_PF_EXTERNAL_
 | `EOS_ExternalOverlay_AddNotifyResolveJSCallbackRequested` | `bridge_reply` settles the page promise for that `callback_id` |
 | `EOS_ExternalOverlay_ReportBrowserStatus` | `external_overlay::status`: `Ready`, `BeginLoad`, `EndLoad`, `LoadError`, `Closed`, `Crashed` |
 
-The SDK script merges `getNextChanges`, `getNextNotifications`, `getFeatures`, `sendIntent`, `getVersion`, `getCodeVerifier`, `verifyIntent`, `sanitizeStrings` onto `window.ue.social`. Their presence plus `window.social.broker` puts the app in unified mode, so every voice intent below reaches the SDK through `sendIntent` -> `eosBridge` -> `ReportJSFunctionInvoked`, and every SDK voice state comes back through `getNextChanges`. Which JS function name the SDK script calls on `eosBridge` is not in the launcher binary (it is SDK-supplied script text); needs a capture of the evaluated script.
+The SDK script merges `getNextChanges`, `getNextNotifications`, `getFeatures`, `sendIntent`, `getVersion`, `getCodeVerifier`, `verifyIntent`, `sanitizeStrings` onto `window.ue.social`. Their presence plus `window.social.broker` puts the app in unified mode, so every voice intent below reaches the SDK through `sendIntent` -> `eosBridge` -> `ReportJSFunctionInvoked`, and every SDK voice state comes back through `getNextChanges`.
+
+### `eosBridge.invoke`
+
+The host object is a plain `IDispatch` with one method. `GetIDsOfNames` accepts only `invoke` (case-insensitive, DISPID 1), and `Invoke` requires a method call with exactly 9 arguments, in this order:
+
+| # | Name | Type |
+| --- | --- | --- |
+| 1 | `bindingId` | string, the binding the SDK registered |
+| 2 | `name` | string, the bound function name (e.g. `sendIntent`, `getNextChanges`) |
+| 3 | `tags` | array, one node type per node |
+| 4 | `keys` | array, object keys |
+| 5 | `values` | array, scalar values |
+| 6 | `firstChild` | array, index of each container's first child |
+| 7 | `count` | array, child count of each container |
+| 8 | `settle` | function, resolves the page promise |
+| 9 | `reject` | function, rejects it |
+
+Arguments 3 to 7 are the call's arguments flattened into parallel node arrays (a JSON tree as a node table), not a JSON string. The launcher rebuilds the JSON and refuses malformed input (`TooDeep`, `TooManyNodes`, `ContainerTooLong`, `StringTooLong`, `MalformedArray`; `bridge_reply: refusing a page call error=`). It then forwards `bindingId`, `name` and the JSON with `EOS_ExternalOverlay_ReportJSFunctionInvoked` and later calls `settle` / `reject` when the SDK answers. Without a connected SDK it rejects with `social bridge is not connected`. A wrong argument count returns `DISP_E_BADPARAMCOUNT`, a non-method call `DISP_E_MEMBERNOTFOUND`. The launcher also refuses to alias a binding the SDK registered under `eosBridge` (`social.panel: refusing to alias a binding the SDK registered`). The SDK's script text that builds these arrays is not stored as plain text in `EOSSDK-Win64-Shipping.dll` (only a small `window.eossdk.getHostProperties()` stub is).
 
 ## SDK login
 

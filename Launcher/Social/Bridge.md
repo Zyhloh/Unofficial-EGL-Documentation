@@ -79,7 +79,14 @@ In unified mode every launcher-side request is wrapped as a broker intent:
 { "feature": "application", "name": "send-notification", "payload": { "content": "{\"feature\":\"social\",\"name\":\"get-version\",\"payload\":{}}" } }
 ```
 
-The broker forwards it with `window.ue.social.sendIntent` (SDK). Answers and pushes come back from `window.ue.social.getNextNotifications()` (long poll, JSON string per message, `{ name, payload }`); request/response pairs match on `<name>-response`. The launcher handles these in `src\social\handlers\{common,social,game,productinfo,stt,tts}.rs` (inferred routing: SDK host callback -> launcher, from the matching handler names).
+The broker forwards it with `window.ue.social.sendIntent` (SDK). Answers and pushes come back from `window.ue.social.getNextNotifications()` (long poll, JSON string per message, `{ name, payload }`); request/response pairs match on `<name>-response`. The launcher handles these in `src\social\handlers\{common,social,game,productinfo,stt,tts}.rs`. Routing, from the EOS imports and log strings:
+
+1. Page: `window.ue.social.sendIntent` (via `eosBridge.invoke`, see [Native Bridge](../Voice/NativeBridge.md#eosbridgeinvoke)) with the `send-notification` intent.
+2. SDK: hands `content` to the launcher through the `EOS_UI_AddNotifyNotificationReceived` callback (`Social.NotificationReceived`). If registering that callback fails, the overlay browser is never spawned (`Failed to register EOS_UI_AddNotifyNotificationReceived; overlay browser will not spawn`).
+3. Launcher: parses `{feature, name, payload}` and routes it by `feature` to the matching handler (`Social.NotificationRouted`; unknown names log `Social.Bridge.NameUnhandled`).
+4. Replies and pushes go back with `EOS_UI_SendNotification` (`EosManager::ui_send_notification dispatching json_len=`, `EosClient.Op.UiSendNotification`), and the page reads them from `getNextNotifications()`.
+
+Badge counts and chimes take their own SDK callbacks: `EOS_UI_AddNotifyBadgeCountUpdated` (re-emitted as `social://badge-count-updated`) and `EOS_UI_AddNotifyAudioChimeRequested`.
 
 | feature | name | payload | response / push |
 | --- | --- | --- | --- |
