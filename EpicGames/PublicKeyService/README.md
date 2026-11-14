@@ -16,4 +16,4 @@ Called without `X-Epic-Agent` / `X-EPIC-CORRELATION-ID`. Plain EG1 bearer token 
 | --- | --- | --- |
 | POST | `/publickey/v2/publickey/` | [Register Public Key](PublicKey/Register.md) (chat signing and voice moderation) |
 | GET | `/publickey/v2/publickey/signing` | [Get Signing Keys](PublicKey/SigningKeys.md) (verify key JWTs) |
-| POST | `/publickey/v2/so/` | SDK route `CreatePublicKeyV2SO`; rejects EG1, not documented further |
+| POST | `/publickey/v2/so/` | SDK route `CreatePublicKeyV2SO`; refuses EG1, EOS user, EOS Connect and client credentials tokens, see [Register](PublicKey/Register.md) |

@@ -25,7 +25,16 @@ Auth Required: Yes (Bearer EG1 access token, any client)
 
 `key`: standard base64 of the raw 32-byte Ed25519 public key.
 
-The SDK also has `POST /publickey/v2/so/` (`CreatePublicKeyV2SO`); it rejects an EG1 token (expects a different token type, not identified).
+The SDK also has `POST /publickey/v2/so/` (`CreatePublicKeyV2SO`, task `PublicKeyRegisterSOTask`) with the same body (`algorithm` `ED25519`, `key`). The SDK picks between the two routes by the type of user id, and Emerald has the same pair (`/emerald/v1/init` and `/emerald/v1/so/init`). The `/so/` route wants a JWT signed by a key it knows. Every token a launcher client can get was refused live with 401 `errors.com.epicgames.unauthorized`:
+
+| Token | `messageVars` |
+| --- | --- |
+| EG1 (`eg1~...`) | `invalid jwt: illegal base64 data at input byte 3` |
+| EOS user token ([Epic Account Token](../../EOSAuthService/OAuth/EpicToken.md)) | `invalid jwt: could not find or process public key for kid: <kid>` |
+| EOS Connect token (`external_auth`, `epicgames_access_token`) | same, `kid` `2022-06-14T06:17:57.047928700Z` |
+| `client_credentials` token | same, `kid` `2022-06-14T06:17:57.047928700Z` |
+
+So `/so/` is for a token issuer the launcher does not use; the launcher's flows only need `/publickey/v2/publickey/`.
 
 ---
 
