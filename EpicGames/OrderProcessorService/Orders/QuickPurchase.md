@@ -32,12 +32,14 @@ Field names come from `QuickPurchaseRequest` / `QuickPurchaseLineOffer`. `Window
 
 ---
 
-_Example Response (shape from client, `QuickPurchaseResponse`)_
+_Example Response_
 
 ```json
 {
-  "quickPurchaseStatus": "..."
+  "quickPurchaseStatus": "CHECKOUT"
 }
 ```
+
+Tested live (November 2026) with the body above and a plain account access token: both a weekly free game (price 0 during the promotion) and a free-to-play base game (Rocket League, base offer price 0) answered `200 {"quickPurchaseStatus":"CHECKOUT"}` and granted nothing; the library was unchanged afterwards. `CHECKOUT` tells the launcher to open the `checkout-overlay` instead. Which offers complete here without checkout was not found.
 
 Errors are read as `OrderErrorEnvelope` (`numericErrorCode`). `2007` (subscription) routes to the checkout overlay (`quickPurchase rejected with numeric error 2007 (subscription); routing to checkout overlay`).
