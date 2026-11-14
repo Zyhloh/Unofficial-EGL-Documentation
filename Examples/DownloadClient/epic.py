@@ -2,7 +2,7 @@ import json
 
 import httpx
 
-LIBRARY = 'https://library-service.live.use1a.on.epicgames.com/library/api/public'
+LIBRARY = 'https://distro-gateway-prod.ol.epicgames.com/library/api/public'
 CATALOG = 'https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace'
 LAUNCHER = 'https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public'
 ACCOUNT = 'https://account-public-service-prod.ol.epicgames.com/account/api'
