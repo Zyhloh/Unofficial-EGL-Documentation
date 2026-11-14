@@ -29,7 +29,7 @@ Claims, in this order:
 | `htu` | Request URL without query or fragment (`htu canonicalization rejected the URL` on failure) |
 | `jti` | Random, base64url (OS RNG, thread-local PRNG fallback) |
 | `iat` | Integer seconds, corrected by the trusted clock and `-dpop-iat-offset-seconds` |
-| `ens` | `true`, only when an option flag is set (logged as `ens=` on attach; meaning not resolved) |
+| `ens` | `true`, only when an option flag is set (logged as `ens=` on attach). Turned off together with nonce handling by LaunchDarkly `dpop-nonce-enabled` (ADR-0066); its meaning is not stated |
 | `nonce` | Only after a nonce was harvested |
 
 There is no `ath` claim: proofs go only on token requests, never on resource requests. Covered requests: `POST /account/api/oauth/token` (EG1) and `POST /auth/v1/oauth/token` (EAS), for `authorization_code`, `exchange_code` and `refresh_token`. Live sizes: 535 bytes without a nonce, 624 with one.

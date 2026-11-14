@@ -6,7 +6,7 @@ Events the Rust backend emits to the frontend. Typed through tauri-specta (`even
 
 | Event | When |
 | --- | --- |
-| `access-denied-event` | Backend refused an action for the current account |
+| `access-denied-event` | Backend refused an action for the current account (removed in 0.115 with the email gate) |
 | `auth-state-changed-event` | Auth state changed, see [Auth IPC](../Auth/IPC.md) |
 | `cabined-launch-blocked-event` | Launch blocked for a cabined account |
 | `cabined-mode-changed-event` | Cabined mode toggled |

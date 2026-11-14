@@ -18,7 +18,7 @@ Trigger: login screen calls `auth_sign_in_browser { pageStrings, createAccount }
 6. Redeem the code: [`POST /account/api/oauth/token`](../../EpicGames/AccountService/OAuth/Token.md), Basic `egs-desktop`, `grant_type=authorization_code&code=<code>&code_verifier=<verifier>&redirect_uri=<same>&token_type=eas` (`Exchanging PKCE authorization code for EAS tokens (SISU)`). DPoP proof attached when enabled ([DPoP](../Auth/DPoP.md)).
 7. EAS to EG1 (`eas_for_eg1`): [`GET /account/api/oauth/exchange`](../../EpicGames/AccountService/OAuth/Exchange.md) with the EAS bearer and `consumingClientId`, then `POST /account/api/oauth/token` `grant_type=exchange_code&exchange_code=<code>&token_type=eg1`. The EAS and EG1 account ids must match (`EG1 account mismatch: EAS ... vs EG1 ...`).
 8. Account check: [`GET /account/api/public/account/:accountId`](../../EpicGames/AccountService/Account/GetAccount.md). Reads `displayName`, `email`, `emailVerified`, `cabinedMode`.
-9. Email gate (LaunchDarkly `login-email-gate-enabled`, `login-email-gate-allowed`): during the internal beta only accounts on allowlisted domains get in (`epicgames.com`, `xa.epicgames.com`, `3lateral.com`, `mediatonic.co.uk`, `psyonix.com` are in the binary). Denied: `INTERNAL_BETA_RESTRICTED`, `access-denied-event`.
+9. Email gate: removed in 0.115. Up to 0.95, LaunchDarkly `login-email-gate-enabled` / `login-email-gate-allowed` let only accounts on allowlisted domains in during the internal beta (denied: `INTERNAL_BETA_RESTRICTED`, `access-denied-event`). 0.115 has neither flag nor error code. The domain list (`epicgames.com`, `xa.epicgames.com`, `3lateral.com`, `mediatonic.co.uk`, `psyonix.com`) now only decides staff eligibility (`get_staff_eligibility`, `staff-eligibility-changed-event`): staff-only settings and EGS Zero Trust are refused for other accounts (`Settings.StaffOnly.Ignored`, `EGS Zero Trust refused: not staff-eligible`). The same step now also resolves [Quiet Hours](../Auth/QuietHours.md).
 10. Persist: refresh token to the keyring, access token to the DPAPI cache, account info + `via_system_browser: true` to `auth.json` ([Token Storage](../Auth/TokenStorage.md)).
 11. Install the session (`Auth.SessionLifetime.Installed`), emit `auth-state-changed-event`, schedule refresh, start EOS login ([EOS](../Auth/EOS.md)) and the other session starters.
 
@@ -55,7 +55,7 @@ The client used for step 7's token request is not logged. Indirect evidence that
 - Lead time: `min(expires_in / 2, 1800 s)` before `expires_at`. The timer sleeps at most 1500 s per arm and re-checks (`Auth.Refresh.RearmedStillFresh`), so laptop sleep does not skip it.
 - Also on demand: any API call getting 401 refreshes once and retries (`Got 401, attempting token refresh`); `refresh_if_stale` before sensitive work; `auth_force_refresh`.
 - Concurrent callers wait on the in-flight refresh (`Auth.Refresh.DedupWaiting`, capped).
-- After refresh: account check again (401 signs out, transport failure keeps the session, malformed fails closed), email gate, cabined-mode update.
+- After refresh: account check again (401 signs out, transport failure keeps the session, malformed fails closed), cabined-mode and quiet-hours update.
 - Revoked / `TOKEN_NOT_FOUND`: sign out. Transient: exponential backoff, session and token retained.
 
 ## Sign out

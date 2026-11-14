@@ -33,9 +33,13 @@ Tauri commands and events of `eglv2_lib::commands::auth` (`src\commands\auth.rs`
   "displayName": "Player",
   "email": "player@example.com",
   "errorCode": null,
-  "cabinedMode": false
+  "cabinedMode": false,
+  "quietHoursApply": false,
+  "restoreRetrying": false
 }
 ```
+
+`quietHoursApply` (0.115) says whether [Quiet Hours](QuietHours.md) apply to the account; it is `true` when signed out. `restoreRetrying` (0.115) is set while a session restore is retrying; the startup poll keeps waiting for it instead of showing the sign-in screen.
 
 | `authenticationStatus` | Meaning (doc comments in the binary) |
 |---|---|
@@ -56,7 +60,7 @@ Fields: `accesstoken`, `cabinedmode`, `country`, `displayname`, `email`, `extern
 | `auth-state-changed-event` | `AuthStateChangedPayload` (`authenticationStatus`, `accountId`, verified email for LaunchDarkly `identify()`, `cabinedMode`) |
 | `cabined-mode-changed-event` | `{ cabinedMode }` |
 | `cabined-launch-blocked-event` | `{ appId, ... }` |
-| `access-denied-event` | `AccessDeniedPayload` (internal beta gate) |
+| `access-denied-event` | `AccessDeniedPayload` (internal beta gate; removed in 0.115) |
 | `store-auth-injected-event` | Store webview received the bearer |
 | `partner-account-link-completed-event` | `{ provider }` |
 
