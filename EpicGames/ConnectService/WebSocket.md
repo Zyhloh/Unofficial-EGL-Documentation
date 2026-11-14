@@ -11,7 +11,7 @@ Auth Required: Yes (EG1 access token from any client, in the `auth-token` query 
 
 ## Query Parameters
 `auth-token`: EG1 access token <br/>
-`avatarFnDeploymentId`: `62a9473a2dca46b29ccf17577fcf42d7` (overlay only, optional) <br/>
+`avatarFnDeploymentId`: `9c9906b240c74a92a6b9100d6e4ccbd0` since overlay build `96211b37...` (`62a9473a2dca46b29ccf17577fcf42d7` before; overlay only, optional) <br/>
 `accept-language`: Locale, e.g. `en` or `en-US` <br/>
 
 ## Frames

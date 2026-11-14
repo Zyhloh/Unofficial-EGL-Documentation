@@ -4,7 +4,7 @@ Epic Connect is the realtime push channel: STOMP over WebSocket. The overlay ope
 
 ## Overlay connection
 
-URL: `wss://connect.ol.epicgames.com/?auth-token=<elevated token>&avatarFnDeploymentId=62a9473a2dca46b29ccf17577fcf42d7&accept-language=<locale>`
+URL: `wss://connect.ol.epicgames.com/?auth-token=<elevated token>&avatarFnDeploymentId=9c9906b240c74a92a6b9100d6e4ccbd0&accept-language=<locale>`
 
 - `auth-token` is the EG1 access token (`account-info.elevatedToken`); any client's EG1 token works.
 - Any `wss://`, `ws://`, `https://`, `http://` prefix in the configured URL is stripped and replaced with `wss://`.

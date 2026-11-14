@@ -43,7 +43,7 @@ The app is a React + Redux store fed by a "broker" (`window.social.broker`). Mod
 | `EPIC_ITS_SERVICE_ENDPOINT_URL` | `https://api.epicgames.dev/epic/interactions` |
 | `EPIC_EMERALD_SERVICE_ENDPOINT_URL` | `https://emerald-service-live.ecosec.on.epicgames.com` |
 | `EPIC_AVATARS_SERVICE_ENDPOINT_URL` | `https://api.epicgames.dev/epic/avatar` (overlay build `96211b37...`; `https://avatars-service-prod.social.live.on.epicgames.com` in `48a8a998...`) |
-| `EPIC_AVATARS_FN_DEPLOYMENT_ID` | `62a9473a2dca46b29ccf17577fcf42d7` |
+| `EPIC_AVATARS_FN_DEPLOYMENT_ID` | `9c9906b240c74a92a6b9100d6e4ccbd0` (`62a9473a2dca46b29ccf17577fcf42d7` in build `48a8a998...`) |
 
 Overlay build `48a8a998...` configured an avatars client but sent no request with it; the deployment id only went to Epic Connect (`avatarFnDeploymentId`). Build `96211b37...` uses it: own avatar settings, fallback avatar, and avatar assignments for friends, party members and group chats, see [Avatar Service](../../EpicGames/AvatarService). `e3s-prod.social.live.on.epicgames.com` is not referenced by the overlay.
 
