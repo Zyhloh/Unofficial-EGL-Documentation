@@ -62,7 +62,8 @@ Hardcoded in the exe, same in every environment:
 | https://quixel-megascans-static.s3.us-west-2.amazonaws.com/fab/manifest/prod/plugins_v1.json | Fab DCC plugin manifest |
 | https://o10593.ingest.us.sentry.io | [Sentry](../ThirdParty/Sentry) |
 | https://api.mixpanel.com | Mixpanel `/track?ip=0` (`telemetry::sinks::mixpanel`) |
-| https://clientsdk.launchdarkly.com, https://clientstream.launchdarkly.com, https://mobile.launchdarkly.com, https://events.launchdarkly.com | [LaunchDarkly](../ThirdParty/LaunchDarkly) mobile SDK (feature flags, see [Architecture](Architecture.md#feature-flags)). Mobile key per environment: prod `mob-756bbe9a...`, gamedev `mob-a3ca5f1c...`, ci `mob-a2836a0b...` |
+| https://distro-gateway-prod.ol.epicgames.com/deck/v1/features (gamedev `distro-gateway-private-gamedev.ol.epicgames.net`, ci `distro-gateway-private-ci.ol.epicgames.net`) | Feature flag relay used since 0.115, [Deck](../EpicGames/DeckService/Features/Evaluate.md) |
+| https://clientsdk.launchdarkly.com, https://clientstream.launchdarkly.com, https://mobile.launchdarkly.com, https://events.launchdarkly.com | [LaunchDarkly](../ThirdParty/LaunchDarkly) mobile SDK, used up to 0.95 (feature flags, see [Architecture](Architecture.md#feature-flags)); 0.115 keeps the hosts only in the CSP. Mobile key per environment: prod `mob-756bbe9a...`, gamedev `mob-a3ca5f1c...`, ci `mob-a2836a0b...` |
 | https://epicgamesinc.cloudflareaccess.com | Staff only: "EGS Zero Trust" store sign-in (`egs_zero_trust`) |
 | https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton10-34/GE-Proton10-34.tar.gz | Linux: Proton runtime (`install_proton_runtime`) |
 | https://media-cdn.epicgames.com | CSP `connect-src` only (store media) |

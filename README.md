@@ -32,6 +32,7 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
   - [Compass Service](./EpicGames/CompassService)
   - [Connect Service](./EpicGames/ConnectService)
   - [Data Router Service](./EpicGames/DataRouterService)
+  - [Deck (feature flag relay)](./EpicGames/DeckService)
   - [Data Storage Service](./EpicGames/DataStorageService)
   - [E3S Service](./EpicGames/E3SService)
   - [Ecommerce Integration Service](./EpicGames/EcommerceIntegrationService)

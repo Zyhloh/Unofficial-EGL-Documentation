@@ -23,7 +23,8 @@ Tauri app identifier `com.epicgames.eglv2`. Data dir `%LOCALAPPDATA%\com.epicgam
       product-mapping-cache.json
       sd-cache.json                  selective download metadata
       store-tags-cache.json
-      launchdarkly\flags.json         last known flag values
+      launchdarkly\relay-flags.json   last flag values from the Deck relay (0.115)
+      launchdarkly\flags.json         last LaunchDarkly SDK values (up to 0.95)
   device.json                        { device_id, login_id }
   download\
     queue.json
