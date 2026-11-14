@@ -171,4 +171,19 @@ Fortnite `props` values are type-prefixed strings (`i` int, `b` bool, `s` string
 
 ## Launcher connection (Rust)
 
-`src\epic_connect\{episode,ws}.rs` dials `wss://connect.epicgames.dev` (environment table) with the EG1 access token in a request header (header name not recovered; `TokenHeaderInvalid` aborts the dial), offering `Sec-WebSocket-Protocol: v10.stomp,v11.stomp,v12.stomp` and retrying without the offer if the server does not echo one. It sends STOMP heartbeats (`Social.EpicConnect.HeartbeatSent`) and captures the connection id (`ConnectionIdCaptured`). Consumers: party leave (`Social.PartyLeave.EpicConnect*`) and launcher presence (`epic-connect: (re)publishing presence on connect`, see [Update Presence (Launcher)](../../EpicGames/PresenceService/Presence/UpdatePresenceLauncher.md)).
+`src\epic_connect\{episode,ws}.rs` dials `wss://connect.epicgames.dev` (environment table) with the EG1 access token as `authorization: bearer <token>` on the upgrade request (`epic-connect: EG1 access token is not a valid header value; aborting unauthenticated dial` / `TokenHeaderInvalid`), offering `Sec-WebSocket-Protocol: v10.stomp,v11.stomp,v12.stomp` and retrying without the offer if the server does not echo one. A dial rejected as an auth failure forces one token refresh per episode. Once open it sends two frames (`src\epic_connect\stomp.rs`):
+
+```
+CONNECT
+accept-version:1.0,1.1,1.2
+heart-beat:35000,0
+
+^@
+SUBSCRIBE
+id:0
+destination:launcher
+
+^@
+```
+
+Unlike the overlay (45 s), the launcher heartbeats every 35 s and subscribes to the `launcher` destination. It takes the connection id from the first `MESSAGE` whose body is `{"type":"core.connect.v1.connected","payload":{"connectionId":"..."}}` (`epic-connect: captured connectionId from connected MESSAGE`), not from the `CONNECTED` frame. Dials share an attempt budget; a connection that stays up past a stability window restores it (`episode complete, budget restored`), an exhausted budget leaves the transport down for the session. It sends STOMP heartbeats (`Social.EpicConnect.HeartbeatSent`) and captures the connection id (`ConnectionIdCaptured`). Consumers: party leave (`Social.PartyLeave.EpicConnect*`) and launcher presence (`epic-connect: (re)publishing presence on connect`, see [Update Presence (Launcher)](../../EpicGames/PresenceService/Presence/UpdatePresenceLauncher.md)).
