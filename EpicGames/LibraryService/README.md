@@ -12,4 +12,4 @@ Recommended Hosts:
 
 - distro-gateway-prod.ol.epicgames.com
 
-Since 0.115 the launcher sends every library request (items, collections, playtime, tags, state token) to `distro-gateway-prod.ol.epicgames.com`, same paths. `library-service.live.use1a.on.epicgames.com` still answered as of launcher 0.95.
+Since 0.115 the launcher sends every library request (items, collections, playtime, tags, state token) to `distro-gateway-prod.ol.epicgames.com`, same paths. The gateway sits behind Cloudflare (`cf-cache-status`, `alt-svc` headers) and returns the same bodies as `library-service.live.use1a.on.epicgames.com`, which still answers too (both tested 2026-11-14).
