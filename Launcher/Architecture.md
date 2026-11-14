@@ -58,7 +58,7 @@ Events go through one dispatcher (`telemetry::dispatcher`) to several sinks, eac
 | Mixpanel | `POST https://api.mixpanel.com/track?ip=0`, form body `data=<base64 JSON>`, project token `5c241d3ffdc4cb50a9d52f92c885b12f`, props `distinct_id`, `$device_id`, `$insert_id`, `$user_id`, `time`, `mp_lib=rust-backend` |
 | Sentry | [Sentry](../ThirdParty/Sentry/Envelope/Send.md) |
 
-Events are spooled to `telemetry\spool\*.jsonl` first. `-disable-telemetry`, `EGL_DISABLE_TELEMETRY` turn egress off.
+Events are spooled to `telemetry\spool\*.jsonl` first ([Telemetry](Telemetry.md): spool format and the events seen). `-disable-telemetry`, `EGL_DISABLE_TELEMETRY` turn egress off.
 
 ## Feedback
 

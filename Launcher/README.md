@@ -9,6 +9,7 @@ Notes on the Rust / Tauri Epic Games Launcher ("eglv2", reversed from `0.95.1+ge
 - [Local Data](LocalData.md): files under `%LOCALAPPDATA%\com.epicgames.eglv2`
 - [Deep Links](DeepLinks.md): `com.epicgames.launcher://` routes, partner hand-off URIs, external pages
 - [Self Update](SelfUpdate.md): flags, stable target, `buildinfo.json`, update splash, what's new, v1 migration
+- [Telemetry](Telemetry.md): spool format and the analytics events with their properties
 - [IPC](IPC/README.md): every Tauri command, event and injected bridge
 
 ## Flows
