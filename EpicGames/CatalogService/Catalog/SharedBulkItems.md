@@ -1,6 +1,6 @@
 ## Catalog Service - Catalog: Shared Bulk Items
 
-Catalog metadata for a batch of catalog items across namespaces. Since launcher 0.115 the library refresh uses this route for all its catalog lookups (`fetch_catalog_batch`) instead of the per-namespace [Bulk Items](BulkItems.md).
+Catalog metadata for a batch of catalog items across namespaces. Since launcher 0.111 at the latest (somewhere between 0.96 and 0.111; older logs are gone) the library refresh uses this route for all its catalog lookups (`fetch_catalog_batch`) instead of the per-namespace [Bulk Items](BulkItems.md).
 
 URL: https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/items \
 Method: GET \

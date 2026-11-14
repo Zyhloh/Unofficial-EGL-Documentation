@@ -20,7 +20,7 @@ Keys are the names accepted by `-baseurl.<key>=<url>` (see [Overrides](#override
 
 | Key | Prod | Gamedev / CI | Used for |
 | --- | --- | --- | --- |
-| `library_service` | https://distro-gateway-prod.ol.epicgames.com (0.115+; `library-service.live.use1a.on.epicgames.com` before) | https://distro-gateway-private-gamedev.ol.epicgames.net (0.115+, inferred: the old gamedev library host was removed from the binary) | [Library Service](../EpicGames/LibraryService): items, collections, tags, playtime, state token |
+| `library_service` | https://distro-gateway-prod.ol.epicgames.com (0.112+; `library-service.live.use1a.on.epicgames.com` before) | https://distro-gateway-private-gamedev.ol.epicgames.net (0.112+, inferred: the old gamedev library host was removed from the binary) | [Library Service](../EpicGames/LibraryService): items, collections, tags, playtime, state token |
 | `catalog_service` | https://catalog-public-service-prod06.ol.epicgames.com | https://catalogv2-public-service-gamedev.ol.epicgames.net | [Catalog Service](../EpicGames/CatalogService) |
 | `account_service` | https://account-public-service-prod03.ol.epicgames.com | https://account-public-service-common-gamedev.ol.epicgames.net | [Account Service](../EpicGames/AccountService): OAuth, account info |
 | `website` | https://www.epicgames.com | https://epicgames-gamedev.ol.epicgames.net | `/id/authorize`, `/id/register`, `/id/exchange`, `/id/link`, `/store`, `/account/parental-controls` ([Sign In](Flows/SignIn.md)) |
@@ -108,7 +108,7 @@ Command-line flags (parsed in `eglv2_lib::command_line`): `-debugtools`, `-debug
 
 | Area | v1 (UE launcher) | v2 |
 | --- | --- | --- |
-| Library | `/library/api/public/items` | `/library/api/public/v2/items`, collections, tags and `stateToken` on `distro-gateway-prod.ol.epicgames.com` (0.115+; `library-service.live.use1a.on.epicgames.com` before), see [Library](Flows/Library.md) |
+| Library | `/library/api/public/items` | `/library/api/public/v2/items`, collections, tags and `stateToken` on `distro-gateway-prod.ol.epicgames.com` (0.112+; `library-service.live.use1a.on.epicgames.com` before), see [Library](Flows/Library.md) |
 | Catalog gamedev | `catalog-public-service-gamedev` | `catalogv2-public-service-gamedev.ol.epicgames.net` |
 | New `*.on.epicgames.com` hosts | - | `datastorage-public-service-liveegs.live.use1a`, `fortnite-app-service.eeef.live.use1a`, `e3s-prod.social.live`, `content-download-egs.distro`, `selective-download-egs.distro`, `library-service-gamedev.aeee.dev.use1a`, `launcher-public-service-gamedev.aeee.dev.use1a`, `www.fab-public.cceb.dev.use1a` |
 | EOS | Launcher was not an EOS client | Full EOS SDK client (`api.epicgames.dev` token, `wss://connect.epicgames.dev`, EOS overlay for social) |

@@ -8,8 +8,8 @@ Auth Required: Yes (Bearer access token)
 
 ## Query Parameters
 `includeMetadata`: Always `true` <br/>
-`includeTitles`: `true` adds a `title` field (display name) to every record (sent from launcher 0.115) <br/>
-`count`: Page size. Launcher 0.95 sent `500` (the server caps it at 100); 0.115 no longer sends it <br/>
+`includeTitles`: `true` adds a `title` field (display name) to every record (sent from launcher 0.113) <br/>
+`count`: Page size. Launcher 0.95 sent `500` (the server caps it at 100); 0.113+ no longer sends it <br/>
 `includeCategories`: Repeated once per category, see table. The filter is applied to each page after paging, so filtered pages come back short (live: 63 records over 3 pages unfiltered, 44 over the same 3 pages with the launcher's 7 categories, first page 38 vs 19). Always follow `nextCursor` <br/>
 `cursor`: `responseMetadata.nextCursor` of the previous page, omitted on the first page <br/>
 
@@ -23,7 +23,7 @@ Auth Required: Yes (Bearer access token)
 | addons            |
 | subscription      |
 
-Full first-page request as sent by launcher 0.115 (0.95 sent `count=500` instead of `includeTitles=true`):
+Full first-page request as sent by launcher 0.113+ (0.95 sent `count=500` instead of `includeTitles=true`):
 
 ```
 GET /library/api/public/v2/items?includeMetadata=true&includeTitles=true&includeCategories=games&includeCategories=software&includeCategories=engines&includeCategories=digitalextras&includeCategories=mods&includeCategories=addons&includeCategories=subscription
