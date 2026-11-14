@@ -95,7 +95,8 @@ The dialog's switches are saved in `settings/game-settings.json` under `addons`,
 Applying the dialog calls the IPC command `set_app_configuration { parentAppId, configs: [{ appId, shouldBeInstalled }], allowUninstall }`. Seen live on Fortnite:
 
 - **Turning an add-on off** saves `false` in the map and uninstalls it right away (not through the download queue): its manifest is loaded from `.egstore`, its files are deleted from the parent folder (`zbbrtest.txt` for Fortnite OG), and a tombstone `{"installationId":"5AF4B638FAEB9CF47D46642B635F017C","deleted":true}` is appended to `installations.jsonl`.
-- **Turning add-ons on** saves `true` and queues one install per add-on, linked to the parent's installation id. A re-enabled add-on gets a new installation id (OG came back as `BFD921F1FA9DDF221DC144E43D5D0E17`). The queue runs one operation at a time, so OG waited behind the 20 GB UEFN download.
+- **Turning add-ons on** saves `true` and queues one install per add-on, linked to the parent's installation id. A re-enabled add-on gets a new installation id (OG came back as `BFD921F1FA9DDF221DC144E43D5D0E17`). The queue runs one operation at a time, so OG waited behind the 20 GB UEFN download (seen on 0.95).
+- Since 0.105 a game and its owned DLC selected in the install dialog are installed together as one install operation (patch notes; not re-captured). 0.101 added a select-all toggle for add-ons in the install options.
 
 ## Unreal Editor for Fortnite
 

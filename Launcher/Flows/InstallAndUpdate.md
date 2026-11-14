@@ -63,6 +63,15 @@ Live example, Crosshair V2: 626 files, 203 chunks, 101.5 MB download, 201.5 MB o
 1. The first check runs 5 s plus up to 3 s after start, once signed in. After that the delay is `interval + random(0, interval * jitter / 1000)` from the LaunchDarkly flags `game-update-check-interval` (default 20 minutes, clamped to 1 minute - 24 hours) and `game-update-check-jitter` (default 1500), so one check every 20 to 50 minutes. The library refresh uses the same timer settings. A deep link or `trigger_update_check` runs a check early.
 2. Installed apps are sent to Batch App Info in groups of 50: `{"appKeys":[{"artifactId","catalogId","sandboxId"}]}`. The response is a bare array of `{appName, labelName, buildVersion, catalogItemId, namespace, assetId}`.
 3. An update exists when `buildVersion` differs from the install record's `version`. The same pass refreshes sidecars and notices `sdMetaHash` changes.
+Changes since 0.95, from the launcher's own [patch notes](../SelfUpdate.md) (`patch-notes/en.json`):
+
+- 0.102: update checks also run when Play is pressed and when a game closes; downloads wait for the network instead of failing.
+- 0.104: a game with a pending update is updated before it launches.
+- 0.105: a game and its owned DLC are installed together as a single install operation.
+- 0.110: closing the installer window during an install cancels the install and rolls it back.
+- 0.113: when a drive is full the download queue pauses and its items wait.
+- 0.114: installs on hard disk drives are up to three times faster.
+
 4. Since 0.115, with `updateGamesWhilePlaying` on, an update can download while the game runs (at the active download speed limit), staged as a temporary copy of the changed files and applied once the game closes; the game can't be started again until it is applied. Automatic download: only with `automaticDownloadsEnabled`, the game's `autoUpdate` setting, and inside the download window (`downloadScheduleEnabled`, `downloadScheduleStartMinute`, `downloadScheduleEndMinute`). Add-ons wait for their parent's update. Otherwise the update is offered manually. The new manifest and delta can be fetched ahead of the click.
 
 ## Update
