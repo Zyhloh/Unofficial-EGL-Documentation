@@ -4,7 +4,7 @@ Account lookup used by the EOS SDK's UserInfo client (route `FetchAccountsForSdk
 
 URL: https://api.epicgames.dev/epic/id/v2/sdk/accounts \
 Method: GET \
-Auth Required: Yes (Bearer Epic account access token, inferred)
+Auth Required: Yes (Bearer EOS token from [Epic Account Token](../OAuth/EpicToken.md); an EG1 account-service token gets 401 `errors.com.epicgames.unauthorized`)
 
 ## Headers
 `X-Epic-Correlation-ID`: random id <br/>
@@ -24,7 +24,7 @@ Auth Required: Yes (Bearer Epic account access token, inferred)
 
 ---
 
-_Example Response (shape from client; array wrapper inferred)_
+_Example Response (own account by `accountId`)_
 
 ```json
 [
@@ -34,18 +34,19 @@ _Example Response (shape from client; array wrapper inferred)_
     "preferredLanguage": "en",
     "linkedAccounts": [
       {
-        "identityProviderId": "steam",
-        "accountId": "76561198000000000",
-        "displayName": "SteamName"
+        "identityProviderId": "nintendo",
+        "accountId": "0123456789abcdef",
+        "externalAuthEnv": "lp1"
+      },
+      {
+        "identityProviderId": "psn",
+        "accountId": "0000000000000000000"
       }
     ],
-    "email": "...",
-    "emailVerified": true,
     "country": "US",
-    "dateOfBirth": "...",
     "cabinedMode": false
   }
 ]
 ```
 
-Field names are from the SDK deserializers; which ones the service fills for a non-self lookup is not known. Linked account entries also have a `countryCode` field.
+An array. For your own account the live response had no `email`, `emailVerified` or `dateOfBirth` (the SDK deserializer knows those fields too). Linked account entries vary by provider: `identityProviderId` always, plus some of `accountId`, `displayName`, `countryCode` and `externalAuthEnv` (`externalAuthEnv` on the Nintendo link; one entry had `displayName` and `countryCode` but no `accountId`).

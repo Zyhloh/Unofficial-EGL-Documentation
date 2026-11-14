@@ -14,23 +14,60 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response (manifest tokens shortened)_
 
-Same `AssetsResponse` shape as [Get Asset (v2)](GetAssetV2.md); the client selects the element with `appName` `EpicGamesLauncherContent`.
+Same `AssetsResponse` shape as [Get Asset (v2)](GetAssetV2.md). It returns two elements, the old launcher (`EpicGamesLauncher`) and the content build; the client selects the element with `appName` `EpicGamesLauncherContent`.
 
 ```json
 {
   "elements": [
     {
-      "appName": "EpicGamesLauncherContent",
-      "labelName": "Live-Krampus",
-      "buildVersion": "1.0.0-12345678",
-      "hash": "94b1569506b04f9f8557af611e8c5e4794b15695",
-      "useSignedUrl": false,
+      "appName": "EpicGamesLauncher",
+      "buildVersion": "20.3.8-60034553+++UE5+Release-Distro-5.5-Windows",
+      "hash": "a251afbffd08511a1d791643ecedddf5f3116db9",
+      "isPreloaded": false,
+      "labelName": "Live-Krampus-Windows",
       "manifests": [
-        { "uri": "https://<cdn host>/.../content.manifest", "queryParams": [] }
-      ]
+        {
+          "queryParams": [
+            { "name": "Expires", "value": "1794626250" },
+            { "name": "KeyName", "value": "epic-key-01" },
+            { "name": "Signature", "value": "..." }
+          ],
+          "uri": "https://google.epicgamescdn.com/Builds/UnrealEngineLauncher/CloudDir/0_iQRSxNUEQ8f8fmfkC_nzoIs3XTEw.manifest"
+        },
+        {
+          "queryParams": [ { "name": "cf_token", "value": "1794626250_..." } ],
+          "uri": "https://egs-cloudfront-chunks.epicgamescdn.com/Builds/UnrealEngineLauncher/CloudDir/0_iQRSxNUEQ8f8fmfkC_nzoIs3XTEw.manifest"
+        }
+      ],
+      "metadata": { "status": "NOT_DEPRECATED" },
+      "useSignedUrl": false
+    },
+    {
+      "appName": "EpicGamesLauncherContent",
+      "buildVersion": "++UE5+Dev-Distro-5.5+prod-CL-60376003-Windows",
+      "hash": "7152271c2ad5409a6c07f8072de7247245b8db4f",
+      "isPreloaded": false,
+      "labelName": "Live-Krampus-Windows",
+      "manifests": [
+        {
+          "queryParams": [ { "name": "cf_token", "value": "1794626250_..." } ],
+          "uri": "https://egs-cloudfront-chunks.epicgamescdn.com/Builds/UnrealEngineLauncher/CloudDir/Wan8NU8tD0fF3JDUAkiDAwj5K5DHPg.manifest"
+        },
+        {
+          "queryParams": [ { "name": "ak_token", "value": "exp=1794626250~hmac=..." } ],
+          "uri": "https://epicgames-download1.akamaized.net/Builds/UnrealEngineLauncher/CloudDir/Wan8NU8tD0fF3JDUAkiDAwj5K5DHPg.manifest"
+        },
+        {
+          "queryParams": [ { "name": "f_token", "value": "1794626250_..." } ],
+          "uri": "https://egdownload.fastly-edge.com/Builds/UnrealEngineLauncher/CloudDir/Wan8NU8tD0fF3JDUAkiDAwj5K5DHPg.manifest"
+        }
+      ],
+      "useSignedUrl": false
     }
   ]
 }
 ```
+
+`labelName` comes back as `Live-Krampus-Windows`. The old launcher element has four mirrors (Google, CloudFront, Akamai, Fastly; two shown) and a `metadata.status`. The content element has three mirrors and no `metadata`.

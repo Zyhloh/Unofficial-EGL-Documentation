@@ -21,10 +21,13 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response (shortened)_
 
 ```json
 {
-  "b9cd1f0b1b1a4fd7a2f1d1e4c3b2a190": [ { "last_online": "2026-10-14T00:00:00.000Z" } ]
+  "b9cd1f0b1b1a4fd7a2f1d1e4c3b2a190": [ { "last_online": "2026-11-12T15:29:54.030Z" } ],
+  "c1f0a37e2b6d4e8a9f5c7d1e3b2a4f60": [ { "last_online": "2026-11-13T20:50:29.210Z" } ]
 }
 ```
+
+One key per friend (18 for 18 friends on the test account), each holding a one-element array.

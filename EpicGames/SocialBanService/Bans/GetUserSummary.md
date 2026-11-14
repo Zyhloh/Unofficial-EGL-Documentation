@@ -17,7 +17,16 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response (no bans)_
+
+```json
+{
+  "bans": [],
+  "warnings": []
+}
+```
+
+_Example Response (with a ban, shape from client)_
 
 ```json
 {

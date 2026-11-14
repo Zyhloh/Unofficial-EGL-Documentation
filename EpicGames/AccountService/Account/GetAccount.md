@@ -14,18 +14,44 @@ Auth Required: Yes (Bearer access token)
 
 ---
 
-_Example Response (shape from client, `struct AccountApiResponse with 5 elements`)_
+_Example Response (own account)_
 
 ```json
 {
+  "id": "94b1569506b04f9f8557af611e8c5e47",
   "displayName": "Player",
+  "name": "First",
+  "lastName": "Last",
   "email": "player@example.com",
+  "failedLoginAttempts": 0,
+  "lastLogin": "2026-11-07T19:41:27.217Z",
+  "numberOfDisplayNameChanges": 3,
+  "ageGroup": "UNKNOWN",
+  "headless": false,
+  "country": "US",
+  "countryUpdatedTime": "2026-01-01T00:00:00.000Z",
+  "preferredLanguage": "en",
+  "lastDisplayNameChange": "2026-01-01T00:00:00.000Z",
+  "canUpdateDisplayName": false,
+  "canUpdateDisplayNameNext": "2026-12-01T00:00:00.000Z",
+  "tfaEnabled": true,
   "emailVerified": true,
-  "cabinedMode": false
+  "minorVerified": false,
+  "minorExpected": false,
+  "minorStatus": "NOT_MINOR",
+  "siweNotificationEnabled": true,
+  "accountLinkingControlsAvailable": true,
+  "accountLinkingControlsEnforced": false,
+  "accountLinkingControlsSelfApprover": true,
+  "cabinedMode": false,
+  "hasHashedEmail": false,
+  "lastReviewedSecuritySettings": "2026-01-01T00:00:00.000Z",
+  "lastDeclinedMFASetup": "2026-01-01T00:00:00.000Z",
+  "lastReviewedLinkConsole": "2026-01-01T00:00:00.000Z"
 }
 ```
 
-`displayName`, `email`, `cabinedMode` and `emailVerified` are read. The struct has a fifth field whose name is shared with another struct in the string table and is not resolved (the cached account info stores `country`, so it is probably `country`).
+The launcher's `AccountApiResponse` reads 5 of these: `displayName`, `email`, `emailVerified`, `cabinedMode` and (almost certainly) `country`, which the cached account info stores and the response carries.
 
 | Missing field | Behaviour |
 |---|---|

@@ -10,7 +10,7 @@ Auth Required: No (the SDK may attach a token; the endpoint answers without one)
 `X-Epic-Correlation-ID`: random id <br/>
 
 ## Query Parameters
-`platformId`: SDK platform id, `WIN` on Windows (value inferred from the SDK platform string table) <br/>
+`platformId`: SDK platform id, `WIN` on Windows (confirmed live) <br/>
 
 ---
 

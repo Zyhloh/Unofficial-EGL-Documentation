@@ -17,7 +17,22 @@ Auth Required: Yes (Bearer Epic account access token, inferred)
 
 ---
 
-_Example Response (shape from client)_
+_Example Response (shape from client; not reproducible with the launcher's client)_
+
+With an EOS token of the launcher's client (`34a02cf8...`) the call is refused:
+
+```json
+{
+  "errorCode": "errors.com.epicgames.account.client_feature_not_allowed",
+  "errorMessage": "Client has no ExchangeCodeCreation feature.",
+  "messageVars": [],
+  "numericErrorCode": 18171,
+  "originatingService": "com.epicgames.account.admin",
+  "intent": "prod"
+}
+```
+
+So the SDK mints these codes with a client that has the `ExchangeCodeCreation` feature, not with the launcher's EOS client. Expected success shape:
 
 ```json
 {

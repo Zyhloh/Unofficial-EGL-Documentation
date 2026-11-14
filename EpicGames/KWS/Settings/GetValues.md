@@ -224,6 +224,8 @@ _Example Response (general call, `namespace=profile,chat,communications`; transl
 
 Without `game` the values are org-level (`isOrgLevel: true`, `definition` has no `productId` / `inheritFromOrg`); the same account's `game=fn` call returned its own preference for `enhanced-voice-reporting` (`recording`, `effectiveSource: "preference"`). The live `translations` carry many locales (`ar`, `de`, `es`, `es-ES`, `es-MX`, `fr`, ...); `require-pin-to-add-friend` also has a long `parentNotice`. `communications` / `curtain-tower` was requested but not returned for the test account.
 
+With no query parameters the call returns every org-level setting. On the test account that included `chat` / `ample-hammer` (boolean, `userHidden`, label `TBD`, default `true`), `enhanced-text-reporting`, `enhanced-voice-reporting`, `filter-out-mature-language`, `filter-out-pii`, `text` and `voice`, all `effectiveSource: "default"` (the body was over 30 KB, so the list may go on).
+
 Fields the overlay reads on other settings (shape from client):
 
 ```json

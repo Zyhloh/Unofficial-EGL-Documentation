@@ -4,7 +4,7 @@ Current party, pending invites (both directions) and join requests of the signed
 
 URL: https://api.epicgames.dev/epic/party/internal/v2/users/:accountId \
 Method: GET \
-Auth Required: Yes (Bearer EG1 access token, any client)
+Auth Required: Yes (Bearer EG1 access token, any client; an EOS token gets 403 `errors.com.epicgames.forbidden`, 1003)
 
 ## Headers
 `X-Epic-Agent`: epic-social <br/>
