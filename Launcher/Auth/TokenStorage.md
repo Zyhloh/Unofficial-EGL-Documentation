@@ -51,6 +51,17 @@ Added in 0.115 for `auth_change_account` (`src\auth\credential_store\retained.rs
 
 When a kept account signs in again its entry is removed. No IPC command or frontend code lists or restores kept accounts in 0.115, so there is no switch-back UI yet. Neither sign-out nor account change calls a revoke endpoint; the binary references no `/oauth/sessions/kill`.
 
+## Isolated credentials
+
+Added in 0.115: `-isolated-credentials` or `EGL_ISOLATED_CREDENTIALS` (any value except `0`, `no`, `off`). For that run the OS keyring and the CNG DPoP key are neither read, written nor cleared. Instead, under the data root:
+
+| File | Content |
+|---|---|
+| `auth\auth.isolated.json` | The only credential store; the normal `auth.json` is never opened |
+| `auth\dpop-key.isolated.pkcs8` | The only DPoP key: an ES256 key as a PKCS#8 document, minted on first use and stored owner-only (`Auth.DpopIsolatedKeyLoaded`) |
+
+This lets a second session sign in with another account without touching the user's normal profile. If the write fails the key is regenerated on the next launch.
+
 ## In memory
 
 `TokenResponse` (9 fields, see [OAuth/Token](../../EpicGames/AccountService/OAuth/Token.md)) lives in managed Tauri state. Exposed to:
