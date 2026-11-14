@@ -119,6 +119,14 @@ Seen live on Crosshair V2 (`uninstall_game`, `trigger=user`):
 
 Add-ons share their parent's folder, so they are removed file by file instead: the files listed by the add-on's manifest are deleted, except files another installation in the same folder still lists. Uninstalling a base game uninstalls its add-ons first. Ownership token files are removed. Manifest uninstall actions (`uninstallActionPath`) are not run.
 
+## Preloads (0.115)
+
+A pre-purchased game can be downloaded before release. Its Get Asset (v2) element has `isPreloaded`; the manifest is read without decryption keys, for its file and chunk layout only. While someone is signed in the launcher polls the release status ("Preload release status released="); once the game is released and the build info carries `secrets` (the keys), the unlock is queued behind the game's other work (`Download.EncryptionKeysReceived`, `preloads-changed-event`). Product states `Preloaded`, `Preloading` and `CanResumePreload` were added. Not captured live (no owned preload).
+
+## Kept content (0.100+)
+
+When the launcher is uninstalled, the user is asked whether to keep the installed games. After a reinstall the kept games are put back in the library and a one-time notice is shown ("The games and apps you kept when you uninstalled the launcher are back in your library."; `Install.KeptContentRestored`, `get_kept_content_notice`). The marker is removed afterwards.
+
 ## Queue and resume
 
 One operation runs at a time; others wait in `download\queue.json` (`{version, operations[]}`, each with `op_id`, `app_id`, `kind`, `priority`, `volume`, `state` `Queued` / `Active` / `Paused`, install parameters). On resume the launcher re-reads the cached manifest (`.resume_manifest.bin`), counts chunks already in `chunk_cache` and reuses `.new` / `.egl-part` temps. Speed limits: `downloadSpeedLimit`, `downloadSpeedLimitGameplay` (while a game runs).
