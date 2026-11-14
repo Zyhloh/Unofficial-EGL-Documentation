@@ -45,27 +45,34 @@ query friend($displayNames: Boolean, $accountId: String!) {
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 {
   "data": {
     "Friends": {
-      "friend": { "alias": "Nick", "account": [ {
+      "friend": {
+        "alias": "",
+        "account": [
+          {
             "id": "94b1569506b04f9f8557af611e8c5e47",
             "displayName": "Example",
-            "displayNameType": "<type, HIDDEN = de-identified>",
+            "displayNameType": null,
             "externalAuths": [
               {
-                "type": "steam",
-                "externalAuthId": "76561190000000000",
-                "externalAuthIdType": "<idType>",
+                "type": "xbl",
+                "externalAuthId": null,
+                "externalAuthIdType": "xuid",
                 "externalDisplayName": "Example",
-                "authIds": [{ "id": "76561190000000000", "type": "<idType>" }]
+                "authIds": []
               }
             ]
-          } ] }
+          }
+        ]
+      }
     }
   }
 }
 ```
+
+No alias is `""`. `displayNameType` was `null` for a normal Epic display name. An Xbox link carries its gamertag in `externalDisplayName` but no `externalAuthId` or `authIds` here.

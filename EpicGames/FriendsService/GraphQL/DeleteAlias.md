@@ -33,7 +33,7 @@ mutation deleteAlias($friendId: String!) {
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
 { "data": { "Friends": { "deleteAlias": { "success": true } } } }

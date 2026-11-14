@@ -1,6 +1,6 @@
 ## Friends Service - GraphQL: Set Privacy Settings
 
-`acceptInvites` is a `FriendInviteType`; the app sends `all`, `none` or `friends_of_friends` (auto-decline toggle sends `none` / `all`). Success is `setSettings.acceptInvites` equal to the sent value.
+`acceptInvites` is a `FriendInviteType`; the app sends `all`, `none` or `friends_of_friends` (auto-decline toggle sends `none` / `all`). Success is `setSettings.acceptInvites` equal to the sent value. The server stores and returns `public` / `private` (the values [Get Settings](GetSettings.md) returns); sending `public` was accepted live.
 
 URL: https://api.epicgames.dev/overlay-graphql/v1/graphql \
 Method: POST \
@@ -15,7 +15,7 @@ Auth Required: Yes (Bearer elevated EG1 access token)
 ```json
 {
   "query": "<query below>",
-  "variables": { "acceptInvites": "none" }
+  "variables": { "acceptInvites": "public" }
 }
 ```
 
@@ -33,8 +33,8 @@ mutation setPrivacySettings($acceptInvites: FriendInviteType!) {
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
-{ "data": { "Friends": { "setSettings": { "acceptInvites": "none" } } } }
+{ "data": { "Friends": { "setSettings": { "acceptInvites": "public" } } } }
 ```

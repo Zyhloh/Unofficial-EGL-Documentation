@@ -33,8 +33,8 @@ query privacySettings {
 
 ---
 
-_Example Response (shape from client)_
+_Example Response_
 
 ```json
-{ "data": { "Friends": { "settings": { "acceptInvites": "all" } } } }
+{ "data": { "Friends": { "settings": { "acceptInvites": "public" } } } }
 ```

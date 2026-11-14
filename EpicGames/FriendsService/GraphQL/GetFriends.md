@@ -80,24 +80,24 @@ query friends($displayNames: Boolean) {
 
 ---
 
-_Example Response (shape from client)_
+_Example Response (shortened)_
 
 ```json
 {
   "data": {
     "Friends": {
       "summary": {
-        "friends": [ { "alias": null, "account": [ {
+        "friends": [ { "alias": "", "account": [ {
             "id": "94b1569506b04f9f8557af611e8c5e47",
             "displayName": "Example",
-            "displayNameType": "<type, HIDDEN = de-identified>",
+            "displayNameType": null,
             "externalAuths": [
               {
-                "type": "steam",
-                "externalAuthId": "76561190000000000",
-                "externalAuthIdType": "<idType>",
+                "type": "xbl",
+                "externalAuthId": null,
+                "externalAuthIdType": "xuid",
                 "externalDisplayName": "Example",
-                "authIds": [{ "id": "76561190000000000", "type": "<idType>" }]
+                "authIds": []
               }
             ]
           } ] } ],
@@ -109,3 +109,5 @@ _Example Response (shape from client)_
   }
 }
 ```
+
+Live (an account with 18 friends): every `displayNameType` was `null`; linked platforms seen in `externalAuths.type`: `xbl`, `psn`, `nintendo`, `steam`. `blocklist` entries carry `alias` and `account` only.
