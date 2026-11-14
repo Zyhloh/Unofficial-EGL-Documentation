@@ -21,6 +21,22 @@ The frontend uses `localUrl` (downsampled local copy) when present, else the CDN
 - When an image lands, `image-cached-event` tells the frontend to swap the CDN URL for the local one in place.
 - `set_priority_covers { items }` moves visible covers to the front of the queue; `recache_cover { cdnUrl, md5 }` forces one cover to be fetched again.
 
+### China mirror (0.115)
+
+When the image CDN answers with a redirect to its ICP mirror (Tencent COS, `*-1251447533.file.myqcloud.com`), the launcher fetches from the mirror for the rest of the session (`image CDN redirects to its ICP mirror; fetching from the mirror for this session`, `Images.MirrorDetected`, `image-mirror-detected-event`). If the mirror cannot be reached it goes back to the CDN URL (`Images.MirrorForgotten`); a later redirect learns it again (`Images.MirrorRelearned`). Host map:
+
+| CDN host | Mirror host |
+| --- | --- |
+| `cdn1.epicgames.com` | `cdn1-epicgames-1251447533.file.myqcloud.com` |
+| `static-assets-prod.epicgames.com` | `static-assets-prod-1251447533.file.myqcloud.com` |
+| `media-cdn.epicgames.com` | `media-epicgames-1251447533.file.myqcloud.com` |
+| `cdn1.unrealengine.com` | `cdn1-unrealengine-1251447533.file.myqcloud.com` |
+| `cdn2.unrealengine.com` | `cdn2-unrealengine-1251447533.file.myqcloud.com` |
+| `static-assets-prod.unrealengine.com` | `static-assets-prod-ue-1251447533.file.myqcloud.com` |
+| `unrealstudio.epicgames.com` | `unrealstudio-epicgames-1251447533.file.myqcloud.com` |
+
+The shell CSP `img-src` also allows `assetseg2-` and `assetseg3-1251447533.file.myqcloud.com`. If a resized fetch from the mirror fails, the original URL is used (`Images.MirrorResizeFellBack`).
+
 ## Hero art
 
 - `get_hero` / `prefetch_hero { hero }` and `cache_detail_hero { sourceUrl }` keep detail-pane hero images in a separate hero cache (`HeroInfo`: `localUrl`, `palette`); the palette is computed from the image and is empty when that fails. `heroCopy` on the catalog landscape image points at that copy.
