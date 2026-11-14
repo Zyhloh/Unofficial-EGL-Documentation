@@ -26,6 +26,7 @@ Errors follow the usual [Epic Games error format](./EpicGames/Errors.md).
 - [Epic Games](./EpicGames)
   - [Account Service](./EpicGames/AccountService)
   - [Artifact Delivery Service](./EpicGames/ArtifactDeliveryService)
+  - [Avatar Service](./EpicGames/AvatarService)
   - [Catalog Service](./EpicGames/CatalogService)
   - [Chat Service](./EpicGames/ChatService)
   - [Compass Service](./EpicGames/CompassService)
