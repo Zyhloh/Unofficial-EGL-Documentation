@@ -15,7 +15,7 @@ Each `manifests[]` entry is the same file on a different CDN, each with its own 
 | `egdownload.fastly-edge.com` | `f_token` |
 | `epicgames-download1.akamaized.net` | `ak_token` |
 | `egs-cloudfront-chunks.epicgamescdn.com` | `cf_token` |
-| `google.epicgamescdn.com` | `Expires`, `KeyName`, `Signature` (Google Cloud CDN signed URL). Seen from launcher 0.115 on, first in the list for some Fortnite builds |
+| `google.epicgamescdn.com` | `Expires`, `KeyName`, `Signature` (Google Cloud CDN signed URL). Occasional fourth mirror since November 2026: in 1 of 18 build-info responses the launcher logged (listed first), in 0 of 12 of ours; likely a gradual rollout |
 
 The order of the entries differs between responses. A token is `<unix expiry>_<hex signature>` and expires about 5 minutes after the Get Asset call, so fetch the asset right before downloading. Expired tokens fail per CDN: CloudFront `403` with body `expired token`, Akamai `403` HTML error page, Fastly `410 Gone`.
 
