@@ -2,13 +2,14 @@
 
 Paginated list of every library record the account owns. Used by the library refresh (`get_library`, `get_library_full_bundle`, periodic / sign-in / focus refreshes). Pages are walked with `cursor` until `responseMetadata.nextCursor` is absent; the walk stops after 50 pages (5,000 records at the server's 100-record page cap) and returns a partial library. Duplicate records across pages are removed client-side.
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/v2/items \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/v2/items \
 Method: GET \
 Auth Required: Yes (Bearer access token)
 
 ## Query Parameters
 `includeMetadata`: Always `true` <br/>
-`count`: Page size, always `500` (the server caps it at 100) <br/>
+`includeTitles`: `true` (added in launcher 0.115) <br/>
+`count`: Page size. Launcher 0.95 sent `500` (the server caps it at 100); 0.115 no longer sends it <br/>
 `includeCategories`: Repeated once per category, see table <br/>
 `cursor`: `responseMetadata.nextCursor` of the previous page, omitted on the first page <br/>
 
@@ -22,10 +23,10 @@ Auth Required: Yes (Bearer access token)
 | addons            |
 | subscription      |
 
-Full first-page request as built by the client:
+Full first-page request as sent by launcher 0.115 (0.95 sent `count=500` instead of `includeTitles=true`):
 
 ```
-GET /library/api/public/v2/items?includeMetadata=true&count=500&includeCategories=games&includeCategories=software&includeCategories=engines&includeCategories=digitalextras&includeCategories=mods&includeCategories=addons&includeCategories=subscription
+GET /library/api/public/v2/items?includeMetadata=true&includeTitles=true&includeCategories=games&includeCategories=software&includeCategories=engines&includeCategories=digitalextras&includeCategories=mods&includeCategories=addons&includeCategories=subscription
 ```
 
 The server returns at most 100 records per page regardless of `count` (live: `count=500` returned 95 records and a `nextCursor` of `{"offset":100}`). `nextCursor` is base64 JSON, e.g. `eyJvZmZzZXQiOjEwMH0=` = `{"offset":100}`.

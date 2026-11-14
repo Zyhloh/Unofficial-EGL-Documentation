@@ -2,7 +2,7 @@
 
 Creates a custom collection. Backs `create_collection`.
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/collection/account/:accountId \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/collection/account/:accountId \
 Method: POST \
 Auth Required: Yes (Bearer access token)
 

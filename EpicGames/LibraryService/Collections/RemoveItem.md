@@ -2,7 +2,7 @@
 
 Removes a catalog item from a collection. Backs `set_collection_item` with `member: false`.
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/collection/:collectionId/item/account/:accountId/sandbox/:sandbox/catalog/:catalogId \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/collection/:collectionId/item/account/:accountId/sandbox/:sandbox/catalog/:catalogId \
 Method: DELETE \
 Auth Required: Yes (Bearer access token)
 

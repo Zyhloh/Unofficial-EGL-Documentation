@@ -2,7 +2,7 @@
 
 Members of one collection, cursor-paginated. Backs `list_collection_items` (cached per collection). The client follows `cursor` and stops after 200 pages (`Library.CollectionItemsPageCapReached`).
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/collection/:collectionId/item/account/:accountId \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/collection/:collectionId/item/account/:accountId \
 Method: GET \
 Auth Required: Yes (Bearer access token)
 

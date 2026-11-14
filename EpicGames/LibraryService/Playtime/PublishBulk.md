@@ -2,7 +2,7 @@
 
 Publishes a batch of play intervals recorded locally in the playtime journal (`playtimejournal.json`). On success the launcher emits `playtime-published-event` with the accepted artifact ids. Disabled by `EGL_DISABLE_PLAYTIME_REPORTING`.
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/:accountId/bulk \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/playtime/account/:accountId/bulk \
 Method: PUT \
 Auth Required: Yes (Bearer access token)
 

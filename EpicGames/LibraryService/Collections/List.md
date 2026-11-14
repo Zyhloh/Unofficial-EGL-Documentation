@@ -2,7 +2,7 @@
 
 Lists the account's collection definitions. Backs `list_collections` (cached in `collections-cache.json`). The favorites list is the collection with id `EGS_STATIC_FAV_COLLECTION` (named `Favorites`).
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/collection/account/:accountId \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/collection/account/:accountId \
 Method: GET \
 Auth Required: Yes (Bearer access token)
 

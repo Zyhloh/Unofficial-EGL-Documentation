@@ -2,7 +2,7 @@
 
 Total playtime per artifact for the account. Backs `get_playtime` (cached in `playtime-cache.json`, refreshed in the background).
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/:accountId/all \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/playtime/account/:accountId/all \
 Method: GET \
 Auth Required: Yes (Bearer access token)
 

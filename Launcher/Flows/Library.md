@@ -42,8 +42,8 @@ Steps:
 2. Otherwise [State Token Status](../../EpicGames/LibraryService/StateToken/Status.md):
    - `valid: true` → extend the library cache by 1 hour and stop; no frontend events ("Refresh skipped (state token valid)"). If the catalog cache is unusable, the catalog is re-fetched for the cached library without walking it ("enriching from cached library (no walk)").
    - `valid: false` → full refresh.
-3. Full refresh: walk [Library Items](../../EpicGames/LibraryService/Library/Items.md) (requests `count=500`, the server returns at most 100 per page; `cursor` = base64 `{"offset":N}`, max 50 pages, dedupe), save `library-cache.json` with the new `stateToken`.
-4. Group records by namespace and call [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) for each (`fetch_catalog_batch`): 50 item ids per request, up to 10 requests at once, `includeDLCDetails=true`, `includeMainGameDetails=true`, `country=US` and the UI locale. The namespace-less `/catalog/api/shared/bulk/items` is never called. Progressive snapshots are pushed as `catalog-updated-event { partial: true }` (merged, never dropping entries); the final one has `partial: false` and replaces the frontend catalog. Saved to `catalog-cache.json`.
+3. Full refresh: walk [Library Items](../../EpicGames/LibraryService/Library/Items.md) on `distro-gateway-prod.ol.epicgames.com` (0.115 sends `includeTitles=true` and no `count`; 0.95 sent `count=500`; the server returns at most 100 per page; `cursor` = base64 `{"offset":N}`, max 50 pages, dedupe), save `library-cache.json` with the new `stateToken`.
+4. Launcher 0.115 calls [Shared Bulk Items](../../EpicGames/CatalogService/Catalog/SharedBulkItems.md) (no namespace, `includeDLCDetails=false`, `includeMainGameDetails=false`). Launcher 0.95 grouped records by namespace and called [Catalog Bulk Items](../../EpicGames/CatalogService/Catalog/BulkItems.md) for each (`fetch_catalog_batch`): 50 item ids per request, up to 10 requests at once, `includeDLCDetails=true`, `includeMainGameDetails=true`, `country=US` and the UI locale. Progressive snapshots are pushed as `catalog-updated-event { partial: true }` (merged, never dropping entries); the final one has `partial: false` and replaces the frontend catalog. Saved to `catalog-cache.json`.
 5. Seed product states (`Library.ProductStatesSeeded`) and emit `library-updated-event { items, fromCache, cachedAt, refreshFailed }`. On failure `refreshFailed: true` is sent with empty `items` and the caches stay untouched.
 
 A catalog item the library does not list (first seen by an install) is fetched on demand and pushed as `catalog-item-cached-event`.
@@ -62,7 +62,7 @@ Library records carry tags as `{id, name, groupName}`. The genre / feature tag d
 ## Playtime and recency
 
 - `get_playtime` → [Playtime Get All](../../EpicGames/LibraryService/Playtime/GetAll.md), served from `playtime-cache.json` and refreshed in the background.
-- Play sessions are written to a local journal (`playtimejournal.json`) and uploaded with [Playtime Publish Bulk](../../EpicGames/LibraryService/Playtime/PublishBulk.md) → `playtime-published-event`. Unpublished time is lost if the journal is corrupt.
+- Play sessions are written to a local journal (`playtime\journal.json` in the data folder) and uploaded with [Playtime Publish Bulk](../../EpicGames/LibraryService/Playtime/PublishBulk.md) → `playtime-published-event`. Unpublished time is lost if the journal is corrupt.
 - `get_recently_played` and `get_last_played` are local only (`recently-played.json`, `last-played.json`); `get_last_played` returns `{ appName: ISO timestamp }`.
 
 ## Art

@@ -2,7 +2,7 @@
 
 Localized store tag dictionary for one tag group. Library records carry tag ids in `tags`; this maps them to names for the genre / feature filters. Backs `get_store_tags` (cached in `store-tags-cache.json` per group + locale).
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/tags \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/tags \
 Method: GET \
 Auth Required: Yes (`library:public:tags READ`; a user token of the `egs-desktop` client `c85f4c6238b04d3399bc0080e83b83fc` has it, a `launcherAppClient2` token does not)
 

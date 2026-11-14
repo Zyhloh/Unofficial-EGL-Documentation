@@ -1,6 +1,6 @@
 ## Catalog Service - Catalog: Bulk Items
 
-Catalog metadata for a batch of catalog items in one namespace. The library refresh groups library records by namespace and calls this per namespace (`fetch_catalog_batch`); `refresh_catalog_item`, `refresh_catalog_from_server`, the EULA gate and install-time lookups ("Fetched the uncached catalog entry of ...") use it too. Results are cached in `catalog-cache.json` (per locale; a cache in another language is treated as a miss).
+Catalog metadata for a batch of catalog items in one namespace. Up to launcher 0.95 the library refresh grouped library records by namespace and called this per namespace (`fetch_catalog_batch`); since 0.115 it uses the namespace-less [Shared Bulk Items](SharedBulkItems.md) instead. In 0.95 `refresh_catalog_item`, `refresh_catalog_from_server`, the EULA gate and install-time lookups ("Fetched the uncached catalog entry of ...") use it too. Results are cached in `catalog-cache.json` (per locale; a cache in another language is treated as a miss).
 
 URL: https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/:namespace/bulk/items \
 Method: GET \

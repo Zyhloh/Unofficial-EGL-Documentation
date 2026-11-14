@@ -25,7 +25,7 @@ Local-only state (not caches of a service):
 | ---- | -------- |
 | `library-settings.json` | View settings incl. `hiddenItems` |
 | `recently-played.json`, `last-played.json` | Recency data for sorting |
-| `playtimejournal.json` | Unpublished play intervals |
+| `playtime\journal.json` | Unpublished play intervals |
 | `installations.jsonl` | Install records (`Installation`: `installationId`, `dir`, `platform`, `namespace`, `itemId`, `artifactId`, `version`, `tags`, `pendingVersion`, `pendingTags`, `parentInstallationId`, `mainArtifactId`, `isFab`, `prereqSha1Hash`, `lastPrereqSucceededSha1Hash`, `componentSelection`, `dependencyConfig`, `sidecar`, `launchCommand`, `launchExecutable`, `writtenAt`) |
 | `external-library.json`, `igdb-metadata-cache.json` | External sources, see [External Sources](ExternalSources.md) |
 

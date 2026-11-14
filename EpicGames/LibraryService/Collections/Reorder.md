@@ -2,7 +2,7 @@
 
 Sets the display order of the account's collections. Backs `reorder_collections` (`orderedCollectionIds`).
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/collection/order/account/:accountId \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/collection/order/account/:accountId \
 Method: PUT \
 Auth Required: Yes (Bearer access token)
 

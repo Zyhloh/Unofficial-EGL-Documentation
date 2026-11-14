@@ -2,7 +2,7 @@
 
 Total playtime of one game for an account.
 
-URL: https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/:accountId/artifact/:artifactId \
+URL: https://distro-gateway-prod.ol.epicgames.com/library/api/public/playtime/account/:accountId/artifact/:artifactId \
 Method: GET \
 Auth Required: Yes (Bearer access token)
 

@@ -28,7 +28,7 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `refresh_install_disk_size` | `appId` | Re-measure one install |
 | `get_install_state_health` | - | Installation records health |
 | `get_disk_free_space` | `path` | Free space of a path |
-| `get_disk_usage` | - | Per-volume usage |
+| `get_disk_usage` | - | Per-volume usage (removed in 0.115) |
 | `check_install_location_writable` | `path` | Writable check |
 | `get_build_label` | - | Build label override (staff) |
 | `set_build_label` | `label` | Switch build label (staff) |
@@ -67,7 +67,7 @@ Args are the keys of the object the frontend passes to `invoke` (camelCase). Wra
 | `deeplink_cancel_pending_launch` | `appId` | Cancel a deferred deep link launch |
 | `install_proton_runtime` | `appId` | Linux: install Proton for an app |
 | `cancel_proton_install` | - | Linux: cancel it |
-| `get_linux_install_flavor` | - | Linux: `deb` / `appimage` |
+| `get_linux_install_flavor` | - | Linux: `deb` / `appimage` (removed in 0.115) |
 
 ## Cloud saves
 

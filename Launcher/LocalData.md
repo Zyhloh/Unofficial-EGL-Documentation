@@ -48,7 +48,7 @@ Tauri app identifier `com.epicgames.eglv2`. Data dir `%LOCALAPPDATA%\com.epicgam
   update-splash\EpicGamesLauncherUpdate-<version>.exe, close
 ```
 
-Other names in the exe that live under the data dir (exact folder not confirmed): `pending-uninstalls.json`, `recently-played.json`, `last-played.json`, `playtime-cache.json`, `project-state.json`, `in-place-update.json`, `self-update-applied.json`, `stable-target.json`, `fab-settings.json`, `ld-overrides.json` / `ld-overrides.jsonc`, `api.json` (see [Install API](InstallApi.md)), `cloud-saves\` (confirmed directly under the data dir, see [Cloud Saves](Flows/CloudSaves.md#local-state)), `listings_v1.db` (Fab vault index), `fab.jsonl`, `ue-gates-cache.json`, `platform-availability-cache.json`, `voice-settings.json`, per-account `app-settings.json`.
+Confirmed on disk: `download\pending-uninstalls.json`, `recently-played.json`, `last-played.json`, `playtime\journal.json`, `feedback\history-prod.json`, `settings\voice-settings.json`. Other names in the exe that live under the data dir (exact folder not confirmed): `playtime-cache.json`, `project-state.json`, `in-place-update.json`, `self-update-applied.json`, `stable-target.json`, `fab-settings.json`, `ld-overrides.json` / `ld-overrides.jsonc`, `api.json` (see [Install API](InstallApi.md)), `cloud-saves\` (confirmed directly under the data dir, see [Cloud Saves](Flows/CloudSaves.md#local-state)), `listings_v1.db` (Fab vault index), `fab.jsonl`, `ue-gates-cache.json`, `platform-availability-cache.json`, `voice-settings.json`, per-account `app-settings.json`.
 
 Refresh tokens are not on disk; see [Token Storage](Auth/TokenStorage.md) (Credential Manager service `com.epicgames.eglv2.<env>`).
 
@@ -62,12 +62,13 @@ Keys of a live file:
 | `minimizeToTray`, `startOnBoot` | |
 | `enableNotifications`, `suppressNotificationsWhileGaming` | |
 | `maxConcurrentDownloads`, `downloadSpeedLimit`, `downloadSpeedLimitGameplay`, `downloadSpeedUnit` | |
+| `downloadMemoryLimitMb`, `updateGamesWhilePlaying`, `inPlaceEngineUpdates`, `verifyFilesOnDrive` | Added by 0.115. `verifyFilesOnInstall` is no longer in the file; `verifyFilesOnDrive` likely replaces it (inferred from the name) |
 | `downloadScheduleEnabled`, `downloadScheduleStartMinute`, `downloadScheduleEndMinute`, `automaticDownloadsEnabled`, `autoLaunchOnDownloadComplete`, `retryCanceledUpdates`, `verifyFilesOnInstall`, `verifyAllFilesOnUpdate` | |
 | `locale`, `defaultMainTab`, `lastVisitedTab` | |
 | `updaterEndpoint` | Self-update endpoint override (null) |
 | `environment` | Persisted environment, see [Environments](Environments.md) |
 | `releaseChannel` | `stable` / `stage` / `canary` / `manual` |
-| `showBuildBadges`, `showPerformanceOverlay`, `developerModeEnabled`, `enableDeveloperShortcuts`, `devBuildPollingTier`, `verboseLogs` | Staff / developer |
+| `showBuildBadges`, `showPerformanceOverlay`, `developerModeEnabled`, `enableDeveloperShortcuts`, `devBuildPollingTier` (`devBuildPollingTierChoice` in 0.115), `verboseLogs`, `showLogConsole`, `showDownloadDebugInfo`, `cpuRendering`, `fabStyleOverrides` | Staff / developer (the last four added by 0.115) |
 | `hideSocialPanel`, `socialOverlayUrl` | Social panel; the URL only applies with `-debugtools` |
 | `egsZeroTrust` | Staff: load the EGS v2 store behind Cloudflare Access |
 | `performanceProfile` | `{ preset, customOverrides }` |
